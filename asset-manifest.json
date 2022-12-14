@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/geometric-harmony/static/css/main.56cb5c79.css",
+    "main.js": "/geometric-harmony/static/js/main.fb8d3b37.js",
+    "static/js/787.244e6189.chunk.js": "/geometric-harmony/static/js/787.244e6189.chunk.js",
+    "index.html": "/geometric-harmony/index.html",
+    "main.56cb5c79.css.map": "/geometric-harmony/static/css/main.56cb5c79.css.map",
+    "main.fb8d3b37.js.map": "/geometric-harmony/static/js/main.fb8d3b37.js.map",
+    "787.244e6189.chunk.js.map": "/geometric-harmony/static/js/787.244e6189.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.56cb5c79.css",
+    "static/js/main.fb8d3b37.js"
+  ]
+}
