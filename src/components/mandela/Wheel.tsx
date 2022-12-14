@@ -23,6 +23,35 @@ function Wheel(props: Props) {
         }
     }
 
+    const getIntervalDistance = (loc1: number, loc2: number) =>
+    {
+        const dist1 = Math.abs(loc1-loc2);
+        // const dist2 = (props.subdivisionCount-loc1 +loc2) % (Math.ceil(props.subdivisionCount/2));
+        const dist2 = (props.subdivisionCount-Math.max(loc1, loc2) +Math.min(loc1, loc2));
+        return Math.min(dist1, dist2);
+    }
+
+    const getIntervalColor = (distance: number) =>
+    {
+        switch (distance)
+        {
+            case 1:
+                return "violet"
+            case 2:
+                return "indigo"
+            case 3:
+                return "blue"
+            case 4:
+                return "green"
+            case 5:
+                return "yellow"
+            case 6:
+                return "red"
+            default:
+                return "white"
+        }
+    }
+
     const notes: JSX.Element[] = React.useMemo(() => {
         return [...Array(props.subdivisionCount)].map((_, i) => {
             const noteLoc = getNoteLocation(i);
@@ -31,7 +60,6 @@ function Wheel(props: Props) {
                 // toggle enabled state
                 const newMap = enabledNotes.set(i, enabledNotes.get(i) !== true)
                 setEnabledNotes(new Map(newMap))
-                console.log(intervals);
             };
             return (
                 <Note x={props.x + noteLoc.x} y={props.y + noteLoc.y} isEnabled={enabledNotes.get(i) === true} onClick={onClick} />
@@ -50,19 +78,24 @@ function Wheel(props: Props) {
             {
                 const aLoc = getNoteLocation(filteredNotes[a]);
                 const bLoc = getNoteLocation(filteredNotes[b]);
-                intervalLines.push(<Line x={props.x} y={props.y} stroke="white" points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]}/>);
+                const dist = getIntervalDistance(filteredNotes[a], filteredNotes[b]);
+                const discColor = getIntervalColor(dist);
+                const emphasisColor = "black";
+                intervalLines.push(<Line x={props.x} y={props.y} stroke={discColor} strokeWidth={3} shadowColor={"green"} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]}/>);
+                intervalLines.push(<Line x={props.x} y={props.y} stroke={emphasisColor} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]}/>);
             }
         }
         return intervalLines;
     }, [enabledNotes, props.x, props.y]);
 
     const centerPointRadius = 7;
-    const centerpoint = (<Line stroke="white" x={props.x} y={props.y} points={[-centerPointRadius, 0, centerPointRadius, 0, 0, 0, 0, -centerPointRadius, 0, centerPointRadius]}></Line>);
+    // const centerpoint = (<Line stroke="white" x={props.x} y={props.y} points={[-centerPointRadius, 0, centerPointRadius, 0, 0, 0, 0, -centerPointRadius, 0, centerPointRadius]}></Line>);
+    const centerpoint = (<Circle x={props.x} y={props.y} radius={1} fill="white"></Circle>);
 
     return (
         <div>
-            {notes}
             {intervals}
+            {notes}
             {centerpoint}
         </div>
     );
