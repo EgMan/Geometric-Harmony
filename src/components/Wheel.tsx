@@ -67,7 +67,7 @@ function Wheel(props: Props) {
             {
                 notesArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} fill="white" radius={7} />);
             }
-            clickListenersArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} radius={11.3} onClick={onClick} />);
+            clickListenersArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} radius={11.3} onClick={onClick} onTap={onClick} />);
             notesHaloArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} stroke="grey" radius={11.3} />);
         }
         return {
