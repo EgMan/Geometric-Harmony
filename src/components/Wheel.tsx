@@ -3,7 +3,6 @@ import React from 'react';
 import { Circle, Line } from 'react-konva';
 import internal from 'stream';
 import { InternalSymbolName } from 'typescript';
-import Note from './Note';
 type Props = {
     x: number
     y: number
@@ -38,13 +37,13 @@ function Wheel(props: Props) {
             case 1:
                 return "violet"
             case 2:
-                return "indigo"
+                return "rgb(112, 0, 195)"
             case 3:
                 return "blue"
             case 4:
                 return "green"
             case 5:
-                return "yellow"
+                return "orange"
             case 6:
                 return "red"
             default:
@@ -52,19 +51,30 @@ function Wheel(props: Props) {
         }
     }
 
-    const notes: JSX.Element[] = React.useMemo(() => {
-        return [...Array(props.subdivisionCount)].map((_, i) => {
+    const notes = React.useMemo(() => {
+        let notesArr = [];
+        let notesHaloArr = [];
+        let clickListenersArr = [];
+        for (let i = 0; i < props.subdivisionCount; i++)
+        {
             const noteLoc = getNoteLocation(i);
-            // const radians = i * 2 * Math.PI / props.subdivisionCount;
             const onClick = () => {
                 // toggle enabled state
                 const newMap = enabledNotes.set(i, enabledNotes.get(i) !== true)
                 setEnabledNotes(new Map(newMap))
             };
-            return (
-                <Note x={props.x + noteLoc.x} y={props.y + noteLoc.y} isEnabled={enabledNotes.get(i) === true} onClick={onClick} />
-            )
-        })
+            if (enabledNotes.get(i) === true)
+            {
+                notesArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} fill="white" radius={7} />);
+            }
+            clickListenersArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} radius={11.3} onClick={onClick} />);
+            notesHaloArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} stroke="grey" radius={11.3} />);
+        }
+        return {
+            values: notesArr,
+            halos: notesHaloArr,
+            clickListeners: clickListenersArr,
+        }
     }, [props.subdivisionCount, props.x, props.y, props.radius, enabledNotes, setEnabledNotes]);
 
     const intervals: JSX.Element[] = React.useMemo(() => {
@@ -80,22 +90,22 @@ function Wheel(props: Props) {
                 const bLoc = getNoteLocation(filteredNotes[b]);
                 const dist = getIntervalDistance(filteredNotes[a], filteredNotes[b]);
                 const discColor = getIntervalColor(dist);
-                const emphasisColor = "black";
-                intervalLines.push(<Line x={props.x} y={props.y} stroke={discColor} strokeWidth={3} shadowColor={"green"} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]}/>);
-                intervalLines.push(<Line x={props.x} y={props.y} stroke={emphasisColor} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]}/>);
+                const emphasisColor = "rgba(55,55,55,255)";
+                intervalLines.push(<Line x={props.x} y={props.y} stroke={discColor} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]}/>);
+                // intervalLines.push(<Line x={props.x} y={props.y} stroke={emphasisColor} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]}/>);
             }
         }
         return intervalLines;
     }, [enabledNotes, props.x, props.y]);
 
-    const centerPointRadius = 7;
-    // const centerpoint = (<Line stroke="white" x={props.x} y={props.y} points={[-centerPointRadius, 0, centerPointRadius, 0, 0, 0, 0, -centerPointRadius, 0, centerPointRadius]}></Line>);
-    const centerpoint = (<Circle x={props.x} y={props.y} radius={1} fill="white"></Circle>);
+    const centerpoint = (<Circle x={props.x} y={props.y} radius={1} fill="grey"></Circle>);
 
     return (
         <div>
+            {notes.halos}
             {intervals}
-            {notes}
+            {notes.values}
+            {notes.clickListeners}
             {centerpoint}
         </div>
     );
