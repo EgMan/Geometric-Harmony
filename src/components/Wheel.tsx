@@ -72,7 +72,7 @@ function Wheel(props: Props) {
                 setIsNoteActive(i, !isNoteActive(i));
             };
             const emphasize = () => {
-                setIsNoteEmphasized(i, true);
+                setIsNoteEmphasized(i, true, true);
             };
             const deemphasize = () => {
                 setIsNoteEmphasized(i, false);

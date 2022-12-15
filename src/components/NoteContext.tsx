@@ -4,7 +4,7 @@ const ActiveNoteContext = React.createContext((i: number) => new Boolean());
 const ActiveNotesContext = React.createContext(() => new Array<number>());
 const ActiveNoteUpdateContext = React.createContext((i: number, isActive: boolean)=>{});
 const EmphasizedNoteContext = React.createContext((i: number) => new Boolean());
-const EmphasizedNoteUpdateContext = React.createContext((i: number, isEmphasized: boolean)=>{});
+const EmphasizedNoteUpdateContext = React.createContext((i: number, isEmphasized: boolean, clearOthers: boolean = false)=>{});
 
 export function useGetAllActiveNotes()
 {
@@ -56,9 +56,15 @@ export function NoteProvider(props:Props) {
 
     const [emphasizedNotes, setEmphasizedNotes] = React.useState(new Map());
 
-    const useSetIsNoteEmphasized = (i: number, isEmphasized: boolean) => {
-            const newMap = emphasizedNotes.set(i, isEmphasized);
-            setEmphasizedNotes(new Map(newMap))
+    const useSetIsNoteEmphasized = (i: number, isEmphasized: boolean, clearOthers: boolean = false) => {
+            if (clearOthers)
+            {
+                setEmphasizedNotes(new Map().set(i, isEmphasized));
+            }
+            else
+            {
+                setEmphasizedNotes(new Map(emphasizedNotes.set(i, isEmphasized)));
+            }
         }
 
     const getIsNoteEmphasized = (i: number) => {
