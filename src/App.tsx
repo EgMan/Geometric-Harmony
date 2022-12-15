@@ -23,8 +23,8 @@ function App() {
   const limitingAxisSize = limitingAxisIsHeight ? windowHeight : windowWidth;
   const padding = limitingAxisSize/6;
   const wheelRadius = limitingAxisSize/2 - padding;
-  const pianoOctaveCount = limitingAxisIsHeight ? 6 : 3;
-  const pianoHeight = padding/2;
+  const pianoOctaveCount = limitingAxisIsHeight ? 4 : 2;
+  const pianoHeight = ((windowHeight/2) - wheelRadius) * 2 / 3;
   const pianoWidth = (windowWidth / pianoOctaveCount)-.5;
 
   return (
