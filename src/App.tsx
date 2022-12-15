@@ -31,7 +31,7 @@ function App() {
       <header className="App-header">
         <Stage width={windowWidth} height={windowHeight}>
           <Layer>
-            <Wheel subdivisionCount={12} radius={wheelRadius} x={windowWidth / 2} y={windowHeight / 2} />
+            <Wheel subdivisionCount={12} radius={wheelRadius} x={windowWidth / 2} y={windowHeight / 2} isCircleOfFifths={false}/>
             <Piano x={windowWidth / 2} y={windowHeight-1} height={pianoHeight} width={pianoWidth} octaveCount={pianoOctaveCount} />
           </Layer>
         </Stage>

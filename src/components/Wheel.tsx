@@ -8,6 +8,7 @@ type Props = {
     y: number
     radius: number
     subdivisionCount: number
+    isCircleOfFifths: boolean
 }
 
 function Wheel(props: Props) {
@@ -15,10 +16,14 @@ function Wheel(props: Props) {
     const [enabledNotes, setEnabledNotes] = React.useState(new Map<number, boolean>());
 
     const getNoteLocation = (i: number) => {
+        if (props.isCircleOfFifths)
+        {
+            i = (i * 5) % props.subdivisionCount;
+        }
         const radians = i * 2 * Math.PI / props.subdivisionCount;
         return {
-            x: Math.cos(radians) * props.radius,
-            y: Math.sin(radians) * props.radius,
+            x: Math.sin(radians) * props.radius,
+            y: -Math.cos(radians) * props.radius,
         }
     }
 
