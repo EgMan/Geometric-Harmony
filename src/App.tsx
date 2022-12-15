@@ -33,7 +33,8 @@ function App() {
         <NoteProvider>
           <Stage width={windowWidth} height={windowHeight}>
             <Layer>
-              <Wheel subdivisionCount={12} radius={wheelRadius} x={windowWidth / 2} y={windowHeight / 2} isCircleOfFifths={false}/>
+              <Wheel subdivisionCount={12} radius={wheelRadius} x={windowWidth / 4} y={windowHeight / 2} isCircleOfFifths={false}/>
+              <Wheel subdivisionCount={12} radius={wheelRadius} x={3*windowWidth / 4} y={windowHeight / 2} isCircleOfFifths={true}/>
               <Piano x={windowWidth / 2} y={windowHeight-1} height={pianoHeight} width={pianoWidth} octaveCount={pianoOctaveCount} />
             </Layer>
           </Stage>
