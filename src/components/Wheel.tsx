@@ -83,7 +83,7 @@ function Wheel(props: Props) {
             }
             if (isNoteEmphasized(i))
             {
-                notesArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} fill="yellow" radius={7} />);
+                notesArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} fill="yellow" radius={11.3} />);
             }
             notesHaloArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} stroke="grey" radius={11.3} />);
             clickListenersArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} radius={11.3} onClick={toggleActive} onTap={toggleActive} onMouseEnter={emphasize} onMouseLeave={deemphasize} />);
@@ -102,12 +102,25 @@ function Wheel(props: Props) {
         {
             for (var b = a; b < activeNotes.length; b++)
             {
-                const aLoc = getNoteLocation(activeNotes[a]);
-                const bLoc = getNoteLocation(activeNotes[b]);
-                const dist = getIntervalDistance(activeNotes[a], activeNotes[b]);
+                const noteA = activeNotes[a];
+                const noteB = activeNotes[b];
+                const aLoc = getNoteLocation(noteA);
+                const bLoc = getNoteLocation(noteB);
+                const dist = getIntervalDistance(noteA, noteB);
                 const discColor = getIntervalColor(dist);
                 const emphasisColor = "rgba(55,55,55,255)";
+                const emphasize = () => {
+                    console.log("emphasize?");
+                    setIsNoteEmphasized(noteA, true)
+                    setIsNoteEmphasized(noteB, true);
+                };
+                const deemphasize = () => {
+                    console.log("deemphasize");
+                    setIsNoteEmphasized(noteA, false);
+                    setIsNoteEmphasized(noteB, false);
+                };
                 intervalLines.push(<Line x={props.x} y={props.y} stroke={discColor} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]}/>);
+                intervalLines.push(<Line x={props.x} y={props.y} stroke={'rgba(0,0,0,0)'} strokeWidth={5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} onMouseEnter={emphasize} onMouseLeave={deemphasize}/>);
                 // intervalLines.push(<Line x={props.x} y={props.y} stroke={emphasisColor} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]}/>);
             }
         }
