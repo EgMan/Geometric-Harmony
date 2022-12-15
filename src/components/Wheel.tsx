@@ -23,7 +23,7 @@ function Wheel(props: Props) {
     const getNoteLocation = (i: number) => {
         if (props.isCircleOfFifths)
         {
-            i = (i * 5) % props.subdivisionCount;
+            i = (i * 7) % props.subdivisionCount;
         }
         const radians = i * 2 * Math.PI / props.subdivisionCount;
         return {
