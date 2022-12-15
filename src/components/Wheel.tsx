@@ -3,6 +3,7 @@ import React from 'react';
 import { Circle, Line } from 'react-konva';
 import internal from 'stream';
 import { InternalSymbolName } from 'typescript';
+import { useGetAllActiveNotes, useIsNoteActive, useSetIsNoteActive, } from './NoteContext';
 type Props = {
     x: number
     y: number
@@ -13,7 +14,9 @@ type Props = {
 
 function Wheel(props: Props) {
 
-    const [enabledNotes, setEnabledNotes] = React.useState(new Map<number, boolean>());
+    const isNoteActive = useIsNoteActive();
+    const setIsNoteActive = useSetIsNoteActive();
+    const getAllActiveNotes = useGetAllActiveNotes();
 
     const getNoteLocation = (i: number) => {
         if (props.isCircleOfFifths)
@@ -65,10 +68,9 @@ function Wheel(props: Props) {
             const noteLoc = getNoteLocation(i);
             const onClick = () => {
                 // toggle enabled state
-                const newMap = enabledNotes.set(i, enabledNotes.get(i) !== true)
-                setEnabledNotes(new Map(newMap))
+                setIsNoteActive(i, !isNoteActive(i));
             };
-            if (enabledNotes.get(i) === true)
+            if (isNoteActive(i))
             {
                 notesArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} fill="white" radius={7} />);
             }
@@ -80,20 +82,18 @@ function Wheel(props: Props) {
             halos: notesHaloArr,
             clickListeners: clickListenersArr,
         }
-    }, [props.subdivisionCount, props.x, props.y, props.radius, enabledNotes, setEnabledNotes]);
+    }, [props.subdivisionCount, props.x, props.y, props.radius, isNoteActive, setIsNoteActive]);
 
     const intervals: JSX.Element[] = React.useMemo(() => {
-        const filteredNotes = Array.from(enabledNotes).filter((elem) => {return elem[1] === true}).map(elem => {
-            return elem[0];
-        });
+        const activeNotes = getAllActiveNotes();
         var intervalLines = [];
-        for (var a = 0; a < filteredNotes.length; a++)
+        for (var a = 0; a < activeNotes.length; a++)
         {
-            for (var b = a; b < filteredNotes.length; b++)
+            for (var b = a; b < activeNotes.length; b++)
             {
-                const aLoc = getNoteLocation(filteredNotes[a]);
-                const bLoc = getNoteLocation(filteredNotes[b]);
-                const dist = getIntervalDistance(filteredNotes[a], filteredNotes[b]);
+                const aLoc = getNoteLocation(activeNotes[a]);
+                const bLoc = getNoteLocation(activeNotes[b]);
+                const dist = getIntervalDistance(activeNotes[a], activeNotes[b]);
                 const discColor = getIntervalColor(dist);
                 const emphasisColor = "rgba(55,55,55,255)";
                 intervalLines.push(<Line x={props.x} y={props.y} stroke={discColor} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]}/>);
@@ -101,7 +101,7 @@ function Wheel(props: Props) {
             }
         }
         return intervalLines;
-    }, [enabledNotes, props.x, props.y]);
+    }, [getAllActiveNotes, props.x, props.y]);
 
     const centerpoint = (<Circle x={props.x} y={props.y} radius={1} fill="grey"></Circle>);
 
