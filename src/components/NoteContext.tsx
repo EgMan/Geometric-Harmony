@@ -3,6 +3,8 @@ import React from "react";
 const ActiveNoteContext = React.createContext((i: number) => new Boolean());
 const ActiveNotesContext = React.createContext(() => new Array<number>());
 const ActiveNoteUpdateContext = React.createContext((i: number, isActive: boolean)=>{});
+const EmphasizedNoteContext = React.createContext((i: number) => new Boolean());
+const EmphasizedNoteUpdateContext = React.createContext((i: number, isEmphasized: boolean)=>{});
 
 export function useGetAllActiveNotes()
 {
@@ -17,6 +19,16 @@ export function useIsNoteActive()
 export function useSetIsNoteActive()
 {
     return React.useContext(ActiveNoteUpdateContext);
+}
+
+export function useIsNoteEmphasized()
+{
+    return React.useContext(EmphasizedNoteContext);
+}
+
+export function useSetIsNoteEmphasized()
+{
+    return React.useContext(EmphasizedNoteUpdateContext);
 }
 
 type Props = {
@@ -42,13 +54,28 @@ export function NoteProvider(props:Props) {
         return notes;
     }
 
+    const [emphasizedNotes, setEmphasizedNotes] = React.useState(new Map());
+
+    const useSetIsNoteEmphasized = (i: number, isEmphasized: boolean) => {
+            const newMap = emphasizedNotes.set(i, isEmphasized);
+            setEmphasizedNotes(new Map(newMap))
+        }
+
+    const getIsNoteEmphasized = (i: number) => {
+            return emphasizedNotes.get(i) === true;
+        }
+
     return (
-        <ActiveNotesContext.Provider value={getAllActiveNotes}>
-            <ActiveNoteContext.Provider value={getIsNoteActive}>
-                <ActiveNoteUpdateContext.Provider value={setIsNoteActive}>
-                    {props.children}
-                </ActiveNoteUpdateContext.Provider>
-            </ActiveNoteContext.Provider>
-        </ActiveNotesContext.Provider>
+        <EmphasizedNoteContext.Provider value={getIsNoteEmphasized}>
+            <EmphasizedNoteUpdateContext.Provider value={useSetIsNoteEmphasized}>
+                <ActiveNotesContext.Provider value={getAllActiveNotes}>
+                    <ActiveNoteContext.Provider value={getIsNoteActive}>
+                        <ActiveNoteUpdateContext.Provider value={setIsNoteActive}>
+                            {props.children}
+                        </ActiveNoteUpdateContext.Provider>
+                    </ActiveNoteContext.Provider>
+                </ActiveNotesContext.Provider>
+            </EmphasizedNoteUpdateContext.Provider>
+        </EmphasizedNoteContext.Provider>
     );
 }

@@ -3,7 +3,7 @@ import React from 'react';
 import { Circle, Line } from 'react-konva';
 import internal from 'stream';
 import { InternalSymbolName } from 'typescript';
-import { useGetAllActiveNotes, useIsNoteActive, useSetIsNoteActive, } from './NoteContext';
+import { useGetAllActiveNotes, useIsNoteActive, useIsNoteEmphasized, useSetIsNoteActive, useSetIsNoteEmphasized, } from './NoteContext';
 type Props = {
     x: number
     y: number
@@ -17,6 +17,8 @@ function Wheel(props: Props) {
     const isNoteActive = useIsNoteActive();
     const setIsNoteActive = useSetIsNoteActive();
     const getAllActiveNotes = useGetAllActiveNotes();
+    const isNoteEmphasized = useIsNoteEmphasized();
+    const setIsNoteEmphasized = useSetIsNoteEmphasized();
 
     const getNoteLocation = (i: number) => {
         if (props.isCircleOfFifths)
@@ -66,16 +68,25 @@ function Wheel(props: Props) {
         for (let i = 0; i < props.subdivisionCount; i++)
         {
             const noteLoc = getNoteLocation(i);
-            const onClick = () => {
-                // toggle enabled state
+            const toggleActive = () => {
                 setIsNoteActive(i, !isNoteActive(i));
+            };
+            const emphasize = () => {
+                setIsNoteEmphasized(i, true);
+            };
+            const deemphasize = () => {
+                setIsNoteEmphasized(i, false);
             };
             if (isNoteActive(i))
             {
                 notesArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} fill="white" radius={7} />);
             }
-            clickListenersArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} radius={11.3} onClick={onClick} onTap={onClick} />);
+            if (isNoteEmphasized(i))
+            {
+                notesArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} fill="yellow" radius={7} />);
+            }
             notesHaloArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} stroke="grey" radius={11.3} />);
+            clickListenersArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} radius={11.3} onClick={toggleActive} onTap={toggleActive} onMouseEnter={emphasize} onMouseLeave={deemphasize} />);
         }
         return {
             values: notesArr,
