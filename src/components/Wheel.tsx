@@ -119,8 +119,10 @@ function Wheel(props: Props) {
                     setIsNoteEmphasized(noteA, false);
                     setIsNoteEmphasized(noteB, false);
                 };
-                intervalLines.push(<Line x={props.x} y={props.y} stroke={discColor} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]}/>);
-                intervalLines.push(<Line x={props.x} y={props.y} stroke={'rgba(0,0,0,0)'} strokeWidth={5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} onMouseEnter={emphasize} onMouseLeave={deemphasize}/>);
+                const isIntervalEmphasized = isNoteEmphasized(noteA) && isNoteEmphasized(noteB);
+                const lineWidth = isIntervalEmphasized ? 3 : 1.5;
+                intervalLines.push(<Line x={props.x} y={props.y} stroke={discColor} strokeWidth={lineWidth} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]}/>);
+                intervalLines.push(<Line x={props.x} y={props.y} stroke={'rgba(0,0,0,0)'} strokeWidth={5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseEnter={emphasize} onMouseLeave={deemphasize}/>);
                 // intervalLines.push(<Line x={props.x} y={props.y} stroke={emphasisColor} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]}/>);
             }
         }
