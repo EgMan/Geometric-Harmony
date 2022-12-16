@@ -5,6 +5,7 @@ import { Stage, Layer, Rect, Circle } from 'react-konva';
 import Wheel from './components/Wheel';
 import Piano from './components/Piano';
 import { NoteProvider } from './components/NoteContext';
+import SoundEngine from './components/SoundEngine';
 function App() {
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth)
   const [windowHeight, setWindowHeight] = React.useState(window.innerHeight)
@@ -31,13 +32,16 @@ function App() {
     <div className="App">
       <header className="App-header">
         <NoteProvider>
-          <Stage width={windowWidth} height={windowHeight}>
-            <Layer>
-              <Wheel subdivisionCount={12} radius={wheelRadius} x={windowWidth / 4} y={windowHeight / 2} isCircleOfFifths={false}/>
-              <Wheel subdivisionCount={12} radius={wheelRadius} x={3*windowWidth / 4} y={windowHeight / 2} isCircleOfFifths={true}/>
-              <Piano x={windowWidth / 2} y={windowHeight-1} height={pianoHeight} width={pianoWidth} octaveCount={pianoOctaveCount} />
-            </Layer>
-          </Stage>
+          <div>
+            <Stage width={windowWidth} height={windowHeight}>
+              <Layer>
+                <Wheel subdivisionCount={12} radius={wheelRadius} x={windowWidth / 4} y={windowHeight / 2} isCircleOfFifths={false}/>
+                <Wheel subdivisionCount={12} radius={wheelRadius} x={3*windowWidth / 4} y={windowHeight / 2} isCircleOfFifths={true}/>
+                <Piano x={windowWidth / 2} y={windowHeight-1} height={pianoHeight} width={pianoWidth} octaveCount={pianoOctaveCount} />
+              </Layer>
+            </Stage>
+            <SoundEngine/>
+          </div>
         </NoteProvider>
       </header>
     </div>
