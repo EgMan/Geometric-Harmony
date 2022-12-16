@@ -83,10 +83,10 @@ function Wheel(props: Props) {
             }
             if (isNoteEmphasized(i))
             {
-                notesArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} fill="yellow" radius={11.3} />);
+                notesArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} fill="red" stroke="red" radius={11.3} />);
             }
             notesHaloArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} stroke="grey" radius={11.3} />);
-            clickListenersArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} radius={11.3} onClick={toggleActive} onTap={toggleActive} onMouseEnter={emphasize} onMouseLeave={deemphasize} />);
+            clickListenersArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} radius={11.3} onClick={toggleActive} onTap={toggleActive} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseEnter={emphasize} onMouseLeave={deemphasize} />);
         }
         return {
             values: notesArr,
