@@ -1,9 +1,10 @@
 import { Console } from 'console';
 import React from 'react';
+import { act } from 'react-dom/test-utils';
 import { Circle, Line } from 'react-konva';
 import internal from 'stream';
 import { InternalSymbolName } from 'typescript';
-import { useGetAllActiveNotes, useIsNoteActive, useIsNoteEmphasized, useSetIsNoteActive, useSetIsNoteEmphasized, } from './NoteContext';
+import { useActiveNotes, useSetAreNotesActive, useEmphasizedNotes, useSetAreNotesEmphasized } from './NoteProvider';
 type Props = {
     x: number
     y: number
@@ -13,12 +14,11 @@ type Props = {
 }
 
 function Wheel(props: Props) {
+    const activeNotes = useActiveNotes();
+    const setAreNotesActive = useSetAreNotesActive();
 
-    const isNoteActive = useIsNoteActive();
-    const setIsNoteActive = useSetIsNoteActive();
-    const getAllActiveNotes = useGetAllActiveNotes();
-    const isNoteEmphasized = useIsNoteEmphasized();
-    const setIsNoteEmphasized = useSetIsNoteEmphasized();
+    const emphasizedNotes = useEmphasizedNotes();
+    const setAreNotesEmphasized = useSetAreNotesEmphasized();
 
     const getNoteLocation = (i: number) => {
         if (props.isCircleOfFifths)
@@ -69,19 +69,19 @@ function Wheel(props: Props) {
         {
             const noteLoc = getNoteLocation(i);
             const toggleActive = () => {
-                setIsNoteActive(i, !isNoteActive(i));
+                setAreNotesActive([i], !activeNotes.has(i));
             };
             const emphasize = () => {
-                setIsNoteEmphasized(i, true, true);
+                setAreNotesEmphasized([i], true, true);
             };
             const deemphasize = () => {
-                setIsNoteEmphasized(i, false);
+                setAreNotesEmphasized([i], false);
             };
-            if (isNoteActive(i))
+            if (activeNotes.has(i))
             {
                 notesArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} fill="white" radius={7} />);
             }
-            if (isNoteEmphasized(i))
+            if (emphasizedNotes.has(i))
             {
                 notesArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} fill="red" stroke="red" radius={11.3} />);
             }
@@ -93,33 +93,29 @@ function Wheel(props: Props) {
             halos: notesHaloArr,
             clickListeners: clickListenersArr,
         }
-    }, [props.subdivisionCount, props.x, props.y, props.radius, isNoteActive, setIsNoteActive]);
+    }, [props.subdivisionCount, props.x, props.y, props.radius, activeNotes.has, setAreNotesActive]);
 
     const intervals: JSX.Element[] = React.useMemo(() => {
-        const activeNotes = getAllActiveNotes();
         var intervalLines = [];
-        for (var a = 0; a < activeNotes.length; a++)
+        const activeNoteArr = Array.from(activeNotes);
+        for (var a = 0; a < activeNoteArr.length; a++)
         {
-            for (var b = a; b < activeNotes.length; b++)
+            for (var b = a; b < activeNoteArr.length; b++)
             {
-                const noteA = activeNotes[a];
-                const noteB = activeNotes[b];
+                const noteA = activeNoteArr[a];
+                const noteB = activeNoteArr[b];
                 const aLoc = getNoteLocation(noteA);
                 const bLoc = getNoteLocation(noteB);
                 const dist = getIntervalDistance(noteA, noteB);
                 const discColor = getIntervalColor(dist);
                 const emphasisColor = "rgba(55,55,55,255)";
                 const emphasize = () => {
-                    console.log("emphasize?");
-                    setIsNoteEmphasized(noteA, true)
-                    setIsNoteEmphasized(noteB, true);
+                    setAreNotesEmphasized([noteA, noteB], true)
                 };
                 const deemphasize = () => {
-                    console.log("deemphasize");
-                    setIsNoteEmphasized(noteA, false);
-                    setIsNoteEmphasized(noteB, false);
+                    setAreNotesEmphasized([noteA, noteB], false);
                 };
-                const isIntervalEmphasized = isNoteEmphasized(noteA) && isNoteEmphasized(noteB);
+                const isIntervalEmphasized = emphasizedNotes.has(noteA) && emphasizedNotes.has(noteB);
                 const lineWidth = isIntervalEmphasized ? 3 : 1.5;
                 intervalLines.push(<Line x={props.x} y={props.y} stroke={discColor} strokeWidth={lineWidth} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]}/>);
                 intervalLines.push(<Line x={props.x} y={props.y} stroke={'rgba(0,0,0,0)'} strokeWidth={5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseEnter={emphasize} onMouseLeave={deemphasize}/>);
@@ -127,7 +123,7 @@ function Wheel(props: Props) {
             }
         }
         return intervalLines;
-    }, [getAllActiveNotes, props.x, props.y]);
+    }, [activeNotes, emphasizedNotes, props.x, props.y]);
 
     const centerpoint = (<Circle x={props.x} y={props.y} radius={1} fill="grey"></Circle>);
 

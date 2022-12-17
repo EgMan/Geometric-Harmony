@@ -1,5 +1,6 @@
 import { Song, Track, Instrument } from 'reactronica';
-import { useGetAllEmphasizedNotes, useIsNoteEmphasized } from './NoteContext';
+import useKeypressPlayer from './KeypressPlayer';
+import { useEmphasizedNotes } from './NoteProvider';
 
 const numberToNote = ["C3", "C#3", "D3", "D#3", "E3", "F3", "F#3", "G3", "G#3", "A3", "A#3", "B3"];
 
@@ -15,9 +16,11 @@ type Props =
 
 function SoundEngine(props:Props)
 {
-    const emphasizedNotes = useGetAllEmphasizedNotes()();
+    useKeypressPlayer();
 
-    const playNotes = emphasizedNotes.map(note=>{
+    const emphasizedNotes = useEmphasizedNotes();
+
+    const playNotes = Array.from(emphasizedNotes).map(note=>{
         return {
             name: getNoteName(note),
             velocity: 0.8,
