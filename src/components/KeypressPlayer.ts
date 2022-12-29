@@ -25,18 +25,18 @@ const keyToNoteNumber = new Map<string, number>(
     ]
 );
 
-function useKeypressPlayer()
-{
+function useKeypressPlayer() {
     const keysPressed = useKeysPressed();
     const setAreNotesEmphasized = useSetAreNotesEmphasized();
     const setAreNotesActive = useSetAreNotesActive();
 
-    React.useEffect(()=>{
+    React.useEffect(() => {
         const notesPressed = Array.from(keysPressed).filter(key => keyToNoteNumber.get(key) !== undefined).map(key => {
             return keyToNoteNumber.get(key) ?? -1;
         })
         setAreNotesEmphasized(notesPressed, true, true);
         setAreNotesActive(notesPressed, true, true);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [keysPressed])
 }
 

@@ -1,5 +1,6 @@
 import React from "react";
 
+// eslint-disable-next-line no-new-wrappers
 const KeyPressedContext = React.createContext((key: string) => new Boolean());
 const KeysPressedContext = React.createContext(new Set<string>());
 
@@ -8,31 +9,30 @@ type Props = {
     children: JSX.Element
 }
 
-function KeypressProvider(props:Props) {
+function KeypressProvider(props: Props) {
     const [keysPressed, setKeysPressed] = React.useState(new Set<string>());
 
-    const onKeyDown = (event: KeyboardEvent)=> {
-        keysPressed.add(event.key);
-        setKeysPressed(new Set(keysPressed));
-    }
 
-    const onKeyUp = (event: KeyboardEvent)=> {
-        keysPressed.delete(event.key);
-        setKeysPressed(new Set(keysPressed));
-    }
+    React.useEffect(() => {
+        const onKeyDown = (event: KeyboardEvent) => {
+            keysPressed.add(event.key);
+            setKeysPressed(new Set(keysPressed));
+        }
 
-    React.useEffect(()=>{
+        const onKeyUp = (event: KeyboardEvent) => {
+            keysPressed.delete(event.key);
+            setKeysPressed(new Set(keysPressed));
+        }
         window.addEventListener("keydown", onKeyDown);
         window.addEventListener("keyup", onKeyUp);
 
-        return ()=>{
+        return () => {
             window.removeEventListener("keydown", onKeyDown);
             window.removeEventListener("keyup", onKeyUp);
         }
-    }, []);
+    }, [keysPressed]);
 
-    const isKeyPressed = (key: string) =>
-    {
+    const isKeyPressed = (key: string) => {
         return keysPressed.has(key);
     }
 
@@ -45,11 +45,11 @@ function KeypressProvider(props:Props) {
     );
 }
 
-export function useIsKeyPressed(){
+export function useIsKeyPressed() {
     return React.useContext(KeyPressedContext);
 }
 
-export function useKeysPressed(){
+export function useKeysPressed() {
     return React.useContext(KeysPressedContext);
 }
 

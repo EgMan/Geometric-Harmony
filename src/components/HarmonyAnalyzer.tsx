@@ -1,13 +1,12 @@
 import React from "react";
-import { act } from "react-dom/test-utils";
 import { useActiveNotes } from "./NoteProvider";
 
 
-type Props = 
-{
-    subdivisionCount: number
-}
-type NoteInContext = [boolean]|[boolean, string];
+type Props =
+    {
+        subdivisionCount: number
+    }
+type NoteInContext = [boolean] | [boolean, string];
 
 // type NoteInContext = 
 // {
@@ -15,14 +14,14 @@ type NoteInContext = [boolean]|[boolean, string];
 //     nameInContext: string|null,
 // }
 
-type HarmonicShape = 
-{
-    name: string,
-    notes: NoteInContext[],
-}
+type HarmonicShape =
+    {
+        name: string,
+        notes: NoteInContext[],
+    }
 
 const knownShapes: HarmonicShape[][] = [
-    [],[],
+    [], [],
 
     // Intervals
     [
@@ -51,7 +50,7 @@ const knownShapes: HarmonicShape[][] = [
             notes: [[true], [false], [false], [false], [false], [false], [true]],
         },
     ],
-    
+
     // Triads
     [
         {
@@ -74,30 +73,23 @@ const knownShapes: HarmonicShape[][] = [
 ];
 
 
-function HarmonyAnalyzer(props:Props)
-{
+function HarmonyAnalyzer(props: Props) {
     const activeNotes = useActiveNotes();
 
-    const doesShapeFit = (shape: HarmonicShape, notes: Set<number>) =>
-    {
+    const doesShapeFit = React.useCallback((shape: HarmonicShape, notes: Set<number>) => {
         const noteArr = Array.from(notes);
 
-        const findNextNoteInShape = (startingIdx: number) =>
-        {
-            for (var i = startingIdx + 1; i < shape.notes.length; i++)
-            {
+        const findNextNoteInShape = (startingIdx: number) => {
+            for (var i = startingIdx + 1; i < shape.notes.length; i++) {
                 if (shape.notes[i][0]) return i;
             }
             return -1;
         }
 
-        const doesShapeFitStartingHere = (noteStart: number) =>
-        {
+        const doesShapeFitStartingHere = (noteStart: number) => {
             var idx = findNextNoteInShape(-1);
-            while (idx != -1)
-            {
-                if (!notes.has((noteStart+idx) % props.subdivisionCount))
-                {
+            while (idx !== -1) {
+                if (!notes.has((noteStart + idx) % props.subdivisionCount)) {
                     return false;
                 }
                 idx = findNextNoteInShape(idx);
@@ -105,31 +97,28 @@ function HarmonyAnalyzer(props:Props)
             return true;
         }
 
-        for (const note of noteArr)
-        {
-            if (doesShapeFitStartingHere(note))
-            {
+        for (const note of noteArr) {
+            if (doesShapeFitStartingHere(note)) {
                 return true;
             }
         }
 
         return false;
-    }
+    }, [props.subdivisionCount])
 
-    const getAllExactFits = () =>
-    {
+    const getAllExactFits = React.useCallback(() => {
         const shapesOfCorrectSize = knownShapes[activeNotes.size] ?? [];
 
         return shapesOfCorrectSize.filter((shape) => {
             return doesShapeFit(shape, activeNotes);
         });
-    }
+    }, [activeNotes, doesShapeFit])
 
     React.useEffect(() => {
         getAllExactFits().forEach((shape) => {
             console.log(shape.name);
         })
-    }, [activeNotes])
+    }, [activeNotes, getAllExactFits])
 
     return null;
 }

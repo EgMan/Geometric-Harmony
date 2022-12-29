@@ -1,9 +1,5 @@
-import { Console } from 'console';
 import React from 'react';
-import { act } from 'react-dom/test-utils';
 import { Circle, Line } from 'react-konva';
-import internal from 'stream';
-import { InternalSymbolName } from 'typescript';
 import { useActiveNotes, useSetAreNotesActive, useEmphasizedNotes, useSetAreNotesEmphasized } from './NoteProvider';
 type Props = {
     x: number
@@ -20,9 +16,8 @@ function Wheel(props: Props) {
     const emphasizedNotes = useEmphasizedNotes();
     const setAreNotesEmphasized = useSetAreNotesEmphasized();
 
-    const getNoteLocation = (i: number) => {
-        if (props.isCircleOfFifths)
-        {
+    const getNoteLocation = React.useCallback((i: number) => {
+        if (props.isCircleOfFifths) {
             i = (i * 7) % props.subdivisionCount;
         }
         const radians = i * 2 * Math.PI / props.subdivisionCount;
@@ -30,20 +25,12 @@ function Wheel(props: Props) {
             x: Math.sin(radians) * props.radius,
             y: -Math.cos(radians) * props.radius,
         }
-    }
+    }, [props.isCircleOfFifths, props.radius, props.subdivisionCount])
 
-    const getIntervalDistance = (loc1: number, loc2: number) =>
-    {
-        const dist1 = Math.abs(loc1-loc2);
-        // const dist2 = (props.subdivisionCount-loc1 +loc2) % (Math.ceil(props.subdivisionCount/2));
-        const dist2 = (props.subdivisionCount-Math.max(loc1, loc2) +Math.min(loc1, loc2));
-        return Math.min(dist1, dist2);
-    }
 
-    const getIntervalColor = (distance: number) =>
-    {
-        switch (distance)
-        {
+
+    const getIntervalColor = (distance: number) => {
+        switch (distance) {
             case 1:
                 return "violet"
             case 2:
@@ -62,11 +49,10 @@ function Wheel(props: Props) {
     }
 
     const notes = React.useMemo(() => {
-        let notesArr = [];
-        let notesHaloArr = [];
-        let clickListenersArr = [];
-        for (let i = 0; i < props.subdivisionCount; i++)
-        {
+        let notesArr: JSX.Element[] = [];
+        let notesHaloArr: JSX.Element[] = [];
+        let clickListenersArr: JSX.Element[] = [];
+        for (let i = 0; i < props.subdivisionCount; i++) {
             const noteLoc = getNoteLocation(i);
             const toggleActive = () => {
                 setAreNotesActive([i], !activeNotes.has(i));
@@ -77,12 +63,10 @@ function Wheel(props: Props) {
             const deemphasize = () => {
                 setAreNotesEmphasized([i], false);
             };
-            if (activeNotes.has(i))
-            {
+            if (activeNotes.has(i)) {
                 notesArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} fill="white" radius={7} />);
             }
-            if (emphasizedNotes.has(i))
-            {
+            if (emphasizedNotes.has(i)) {
                 notesArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} fill="red" stroke="red" radius={11.3} />);
             }
             notesHaloArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} stroke="grey" radius={11.3} />);
@@ -93,22 +77,25 @@ function Wheel(props: Props) {
             halos: notesHaloArr,
             clickListeners: clickListenersArr,
         }
-    }, [props.subdivisionCount, props.x, props.y, props.radius, activeNotes.has, setAreNotesActive]);
+    }, [props.subdivisionCount, props.x, props.y, activeNotes, emphasizedNotes, getNoteLocation, setAreNotesEmphasized, setAreNotesActive]);
 
     const intervals: JSX.Element[] = React.useMemo(() => {
-        var intervalLines = [];
+        const getIntervalDistance = (loc1: number, loc2: number) => {
+            const dist1 = Math.abs(loc1 - loc2);
+            // const dist2 = (props.subdivisionCount-loc1 +loc2) % (Math.ceil(props.subdivisionCount/2));
+            const dist2 = (props.subdivisionCount - Math.max(loc1, loc2) + Math.min(loc1, loc2));
+            return Math.min(dist1, dist2);
+        }
+        var intervalLines: JSX.Element[] = [];
         const activeNoteArr = Array.from(activeNotes);
-        for (var a = 0; a < activeNoteArr.length; a++)
-        {
-            for (var b = a; b < activeNoteArr.length; b++)
-            {
+        for (var a = 0; a < activeNoteArr.length; a++) {
+            for (var b = a; b < activeNoteArr.length; b++) {
                 const noteA = activeNoteArr[a];
                 const noteB = activeNoteArr[b];
                 const aLoc = getNoteLocation(noteA);
                 const bLoc = getNoteLocation(noteB);
                 const dist = getIntervalDistance(noteA, noteB);
                 const discColor = getIntervalColor(dist);
-                const emphasisColor = "rgba(55,55,55,255)";
                 const emphasize = () => {
                     setAreNotesEmphasized([noteA, noteB], true)
                 };
@@ -117,13 +104,13 @@ function Wheel(props: Props) {
                 };
                 const isIntervalEmphasized = emphasizedNotes.has(noteA) && emphasizedNotes.has(noteB);
                 const lineWidth = isIntervalEmphasized ? 3 : 1.5;
-                intervalLines.push(<Line x={props.x} y={props.y} stroke={discColor} strokeWidth={lineWidth} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]}/>);
-                intervalLines.push(<Line x={props.x} y={props.y} stroke={'rgba(0,0,0,0)'} strokeWidth={5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseEnter={emphasize} onMouseLeave={deemphasize}/>);
+                intervalLines.push(<Line x={props.x} y={props.y} stroke={discColor} strokeWidth={lineWidth} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />);
+                intervalLines.push(<Line x={props.x} y={props.y} stroke={'rgba(0,0,0,0)'} strokeWidth={5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseEnter={emphasize} onMouseLeave={deemphasize} />);
                 // intervalLines.push(<Line x={props.x} y={props.y} stroke={emphasisColor} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]}/>);
             }
         }
         return intervalLines;
-    }, [activeNotes, emphasizedNotes, props.x, props.y]);
+    }, [activeNotes, emphasizedNotes, getNoteLocation, props.subdivisionCount, props.x, props.y, setAreNotesEmphasized]);
 
     const centerpoint = (<Circle x={props.x} y={props.y} radius={1} fill="grey"></Circle>);
 
