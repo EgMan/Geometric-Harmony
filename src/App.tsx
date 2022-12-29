@@ -7,6 +7,7 @@ import SoundEngine from './components/SoundEngine';
 import NoteProvider from './components/NoteProvider';
 import KeypressProvider from './components/KeypressProvider';
 import HarmonyAnalyzer from './components/HarmonyAnalyzer';
+import BackPlate from './components/BackPlate';
 function App() {
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth)
   const [windowHeight, setWindowHeight] = React.useState(window.innerHeight)
@@ -37,6 +38,7 @@ function App() {
             <div>
               <Stage width={windowWidth} height={windowHeight}>
                 <Layer>
+                  <BackPlate width={windowWidth} height={windowHeight} />
                   <Wheel subdivisionCount={12} radius={wheelRadius} x={windowWidth / 4} y={windowHeight / 2} isCircleOfFifths={false} />
                   <Wheel subdivisionCount={12} radius={wheelRadius} x={3 * windowWidth / 4} y={windowHeight / 2} isCircleOfFifths={true} />
                   <Piano x={windowWidth / 2} y={windowHeight - 1} height={pianoHeight} width={pianoWidth} octaveCount={pianoOctaveCount} />
