@@ -1,6 +1,7 @@
 import React from "react";
 import { useActiveNotes } from "./NoteProvider";
 import { Text } from 'react-konva';
+import { HarmonicShape, knownShapes } from "./KnownHarmonicShapes";
 
 
 type Props =
@@ -10,71 +11,6 @@ type Props =
         width: number
         subdivisionCount: number
     }
-type NoteInContext = [boolean] | [boolean, string];
-
-// type NoteInContext = 
-// {
-//     isInShape: boolean
-//     nameInContext: string|null,
-// }
-
-type HarmonicShape =
-    {
-        name: string,
-        notes: NoteInContext[],
-    }
-
-const knownShapes: HarmonicShape[][] = [
-    [], [],
-
-    // Intervals
-    [
-        {
-            name: "Minor Second / Major Seventh",
-            notes: [[true], [true]],
-        },
-        {
-            name: "Major Second / Minor Seventh",
-            notes: [[true], [false], [true]],
-        },
-        {
-            name: "Minor Third / Major Sixth",
-            notes: [[true], [false], [false], [true]],
-        },
-        {
-            name: "Major Third / Minor Sixth",
-            notes: [[true], [false], [false], [false], [true]],
-        },
-        {
-            name: "Perfect Fourth / Perfect Fifth",
-            notes: [[true], [false], [false], [false], [false], [true]],
-        },
-        {
-            name: "Tritone",
-            notes: [[true], [false], [false], [false], [false], [false], [true]],
-        },
-    ],
-
-    // Triads
-    [
-        {
-            name: "Minor Triad",
-            notes: [[true], [false], [false], [true], [false], [false], [false], [true]],
-        },
-        {
-            name: "Major Triad",
-            notes: [[true], [false], [false], [false], [true], [false], [false], [true]],
-        },
-        {
-            name: "Diminished Triad",
-            notes: [[true], [false], [false], [true], [false], [false], [true]],
-        },
-        {
-            name: "Augmented Triad",
-            notes: [[true], [false], [false], [false], [true], [false], [false], [false], [true]],
-        },
-    ]
-];
 
 
 function HarmonyAnalyzer(props: Props) {
