@@ -6,6 +6,7 @@ import Piano from './components/Piano';
 import SoundEngine from './components/SoundEngine';
 import NoteProvider from './components/NoteProvider';
 import KeypressProvider from './components/KeypressProvider';
+import HarmonyAnalyzer from './components/HarmonyAnalyzer';
 function App() {
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth)
   const [windowHeight, setWindowHeight] = React.useState(window.innerHeight)
@@ -42,6 +43,7 @@ function App() {
                 </Layer>
               </Stage>
               <SoundEngine/>
+              <HarmonyAnalyzer subdivisionCount={12} />
             </div>
           </NoteProvider>
         </KeypressProvider>

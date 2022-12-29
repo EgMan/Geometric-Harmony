@@ -14,13 +14,11 @@ function KeypressProvider(props:Props) {
     const onKeyDown = (event: KeyboardEvent)=> {
         keysPressed.add(event.key);
         setKeysPressed(new Set(keysPressed));
-        console.log(keysPressed);
     }
 
     const onKeyUp = (event: KeyboardEvent)=> {
         keysPressed.delete(event.key);
         setKeysPressed(new Set(keysPressed));
-        console.log(keysPressed);
     }
 
     React.useEffect(()=>{
