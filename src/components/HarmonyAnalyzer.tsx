@@ -1,9 +1,13 @@
 import React from "react";
 import { useActiveNotes } from "./NoteProvider";
+import { Text } from 'react-konva';
 
 
 type Props =
     {
+        x: number
+        y: number
+        width: number
         subdivisionCount: number
     }
 type NoteInContext = [boolean] | [boolean, string];
@@ -114,13 +118,15 @@ function HarmonyAnalyzer(props: Props) {
         });
     }, [activeNotes, doesShapeFit])
 
+    const exactFits = getAllExactFits();
+    const exactFit = exactFits[0] ? exactFits[0].name : "";
+
     React.useEffect(() => {
-        getAllExactFits().forEach((shape) => {
+        exactFits.forEach((shape) => {
             console.log(shape.name);
         })
-    }, [activeNotes, getAllExactFits])
-
-    return null;
+    }, [activeNotes, exactFits])
+    return (<Text text={exactFit} x={props.x} y={props.y} fontSize={30} fontFamily='Calibri' fill="white" align="center" width={props.width}></Text>);
 }
 
 export default HarmonyAnalyzer;
