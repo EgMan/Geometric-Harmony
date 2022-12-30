@@ -1,6 +1,7 @@
 import { Song, Track, Instrument } from 'reactronica';
 import useKeypressPlayer from './KeypressPlayer';
 import { useActiveNotes, useEmphasizedNotes } from './NoteProvider';
+import React from 'react';
 
 const numberToNote = ["C3", "C#3", "D3", "D#3", "E3", "F3", "F#3", "G3", "G#3", "A3", "A#3", "B3"];
 
@@ -20,8 +21,9 @@ function SoundEngine(props:Props)
 
     const emphasizedNotes = useEmphasizedNotes();
     const activeNotes = useActiveNotes();
+    const playingNotes = Array.from(emphasizedNotes).filter(note => activeNotes.has(note));
 
-    const playNotes = Array.from(emphasizedNotes).filter(note => activeNotes.has(note)).map(note=>{
+    const playNotes = playingNotes.map(note=>{
         return {
             name: getNoteName(note),
             velocity: 0.8,
@@ -35,7 +37,7 @@ function SoundEngine(props:Props)
           type="amSynth"
           notes={playNotes}
           envelope={{
-            attack: 0.5,
+            attack: .1,
             release: 0.5,
           }}
         />
