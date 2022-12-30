@@ -64,13 +64,13 @@ function Wheel(props: Props) {
                 setAreNotesEmphasized([i], false);
             };
             if (activeNotes.has(i)) {
-                notesArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} fill="white" radius={7} />);
+                notesArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} fill="white" radius={10} />);
             }
             if (emphasizedNotes.has(i)) {
-                notesArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} fill="red" stroke="red" radius={11.3} />);
+                notesArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} fill="red" stroke="red" radius={20} />);
             }
-            notesHaloArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} stroke="grey" radius={11.3} />);
-            clickListenersArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} radius={11.3} onClick={toggleActive} onTap={toggleActive} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize} />);
+            notesHaloArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} stroke="grey" radius={20} />);
+            clickListenersArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} radius={20} onClick={toggleActive} onTap={toggleActive} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize} />);
         }
         return {
             values: notesArr,
