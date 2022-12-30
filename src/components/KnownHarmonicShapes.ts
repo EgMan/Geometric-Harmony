@@ -42,19 +42,19 @@ export const knownShapes: HarmonicShape[][] = [
     [
         {
             name: "Minor Triad",
-            notes: [[true], [false], [false], [true], [false], [false], [false], [true]],
+            notes: [[true, "1"], [false], [false], [true, "♭3"], [false], [false], [false], [true, "5"]],
         },
         {
             name: "Major Triad",
-            notes: [[true], [false], [false], [false], [true], [false], [false], [true]],
+            notes: [[true, "1"], [false], [false], [false], [true, "3"], [false], [false], [true, "5"]],
         },
         {
             name: "Diminished Triad",
-            notes: [[true], [false], [false], [true], [false], [false], [true]],
+            notes: [[true, "1"], [false], [false], [true, "♭3"], [false], [false], [true, "♭5"]],
         },
         {
             name: "Augmented Triad",
-            notes: [[true], [false], [false], [false], [true], [false], [false], [false], [true]],
+            notes: [[true, "1"], [false], [false], [false], [true, "3"], [false], [false], [false], [true, "#5"]],
         },
     ],
 
@@ -99,8 +99,16 @@ export const knownShapes: HarmonicShape[][] = [
             notes: [[true, "Ionian (Major)"], [false], [true, "Dorian"], [false], [true, "Phrygian"], [true, "Lydian"], [false], [true, "Mixolydian"], [false], [true, "Aeolian (Minor)"], [false], [true, "Locrian"]],
         },
         {
+            name: "Melodic Mode Family",
+            notes: [[true, "Melodic Minor"], [false], [true, "Phrygidorian (Phrygian ♯6, Dorian ♭2)"], [true, "Lydian Augmented (Lydian #5)"], [false], [true, "Lydian dominant"], [false], [true, "Melodic Major (Mixolydian ♭6)"], [false], [true, "Half-Diminished (Locrian ♯2)"], [false], [true, "Super Locrian"]],
+        },
+        {
             name: "Harmonic Mode Family",
-            notes: [[true, "Ionian (Major)"], [false], [true, "Dorian"], [false], [true, "Phrygian"], [true, "Lydian"], [false], [false], [true, "Mixolydian"], [true, "Aeolian (Minor)"], [false], [true, "Locrian"]],
+            notes: [[true, "Augmented Major (Ionian ♯5)"], [false], [true, "Ukranian Dorian"], [false], [true, "Phrygian Dominant"], [true, "Lydian ♯2"], [false], [false], [true, "Super Locrian ♭♭7"], [true, "Harmonic minor (Aeolian ♯7)"], [false], [true, "Locrian ♮6"]],
+        },
+        {
+            name: "Double Harmonic Mode Family",
+            notes: [[true, "Ionian ♯2 ♯5"], [false], [false], [true, "Locrian ♭♭3 ♭♭7"], [true, "Double Harmonic Major"], [true, "Lydian ♯2 ♯6"], [false], [false], [true, "Ultraphrygian"], [true, "Hungarian/Gypsy Minor"], [false], [true, "Oriental"]],
         }
     ],
 
