@@ -13,7 +13,7 @@ type Props = {
 }
 
 function NoteProvider(props: Props) {
-    const [activeNotes, setActiveNotes] = React.useState(new Set<number>());
+    const [activeNotes, setActiveNotes] = React.useState(new Set<number>(Array(12).keys()));
 
     const setAreNotesActive = (nums: Array<number>, areActive: boolean, overwriteExisting: boolean = false) => {
         const startingPoint = overwriteExisting ? new Set<number>() : activeNotes;
