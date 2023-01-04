@@ -5,7 +5,6 @@ import Wheel from './components/Wheel';
 import Piano from './components/Piano';
 import SoundEngine from './components/SoundEngine';
 import NoteProvider from './components/NoteProvider';
-import KeypressProvider from './components/KeypressProvider';
 import HarmonyAnalyzer from './components/HarmonyAnalyzer';
 import BackPlate from './components/BackPlate';
 function App() {
@@ -33,7 +32,6 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <KeypressProvider>
           <NoteProvider>
             <div>
               <Stage width={windowWidth} height={windowHeight}>
@@ -48,7 +46,6 @@ function App() {
               <SoundEngine />
             </div>
           </NoteProvider>
-        </KeypressProvider>
       </header>
     </div>
   );

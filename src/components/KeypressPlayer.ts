@@ -1,6 +1,5 @@
 import React from "react";
-import { useKeysPressed } from "./KeypressProvider";
-import { useSetAreNotesActive, useSetAreNotesEmphasized } from "./NoteProvider";
+import { useSetAreNotesEmphasized } from "./NoteProvider";
 
 const keyToNoteNumber = new Map<string, number>(
     [
@@ -26,9 +25,29 @@ const keyToNoteNumber = new Map<string, number>(
 );
 
 function useKeypressPlayer() {
-    const keysPressed = useKeysPressed();
+    const [keysPressed, setKeysPressed] = React.useState(new Set<string>());
     const setAreNotesEmphasized = useSetAreNotesEmphasized();
-    // const setAreNotesActive = useSetAreNotesActive();
+
+
+    React.useEffect(() => {
+        const onKeyDown = (event: KeyboardEvent) => {
+            keysPressed.add(event.key);
+            setKeysPressed(new Set(keysPressed));
+        }
+
+        const onKeyUp = (event: KeyboardEvent) => {
+            keysPressed.delete(event.key);
+            setKeysPressed(new Set(keysPressed));
+        }
+        window.addEventListener("keydown", onKeyDown);
+        window.addEventListener("keyup", onKeyUp);
+
+        return () => {
+            window.removeEventListener("keydown", onKeyDown);
+            window.removeEventListener("keyup", onKeyUp);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     React.useEffect(() => {
         const notesPressed = Array.from(keysPressed).filter(key => keyToNoteNumber.get(key) !== undefined).map(key => {
