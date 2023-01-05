@@ -68,7 +68,10 @@ function useKeypressPlayer() {
         })
         setAreNotesEmphasized(notesPressed, true, true);
     
-    }, [keysPressed, setAreNotesEmphasized])
+    // setAreNotesEmphasized can not trigger this effect otherwise "no keys pressed" will constantly
+    // Be overwriting emphasized notes when the keyboard is not being touched.  
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [keysPressed])
 }
 
 export default useKeypressPlayer;
