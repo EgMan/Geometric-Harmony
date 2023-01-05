@@ -1,5 +1,6 @@
 import React from "react";
 import { useSetAreNotesEmphasized } from "./NoteProvider";
+import { useModulateActiveNotes } from "./HarmonicModulation";
 
 const keyToNoteNumber = new Map<string, number>(
     [
@@ -27,12 +28,25 @@ const keyToNoteNumber = new Map<string, number>(
 function useKeypressPlayer() {
     const [keysPressed, setKeysPressed] = React.useState(new Set<string>());
     const setAreNotesEmphasized = useSetAreNotesEmphasized();
+    const modulateActiveNotes = useModulateActiveNotes();
 
+    const handleKeyDowns = React.useCallback((key: string) => {
+        switch (key)
+        {
+            case "ArrowRight":
+                modulateActiveNotes(1);
+                break;
+            case "ArrowLeft":
+                modulateActiveNotes(-1);
+                break;
+        }
+    }, [modulateActiveNotes]);
 
     React.useEffect(() => {
         const onKeyDown = (event: KeyboardEvent) => {
             keysPressed.add(event.key);
             setKeysPressed(new Set(keysPressed));
+            handleKeyDowns(event.key);
         }
 
         const onKeyUp = (event: KeyboardEvent) => {
@@ -46,17 +60,15 @@ function useKeypressPlayer() {
             window.removeEventListener("keydown", onKeyDown);
             window.removeEventListener("keyup", onKeyUp);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [handleKeyDowns, keysPressed, modulateActiveNotes]);
 
     React.useEffect(() => {
-        const notesPressed = Array.from(keysPressed).filter(key => keyToNoteNumber.get(key) !== undefined).map(key => {
-            return keyToNoteNumber.get(key) ?? -1;
+        const notesPressed = Array.from(keysPressed).filter(key => keyToNoteNumber.get(key.toLocaleLowerCase()) !== undefined).map(key => {
+            return keyToNoteNumber.get(key.toLocaleLowerCase()) ?? -1;
         })
         setAreNotesEmphasized(notesPressed, true, true);
-        // setAreNotesActive(notesPressed, true, true);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [keysPressed])
+    
+    }, [keysPressed, setAreNotesEmphasized])
 }
 
 export default useKeypressPlayer;

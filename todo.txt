@@ -6,3 +6,4 @@ Add automatic chord analysis
 Add chord hoverables
 Add emphasized note info overlay
 Track playing notes separately
+Remove magic 12s

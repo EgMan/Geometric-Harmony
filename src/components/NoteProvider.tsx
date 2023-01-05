@@ -14,16 +14,25 @@ type Props = {
 
 function NoteProvider(props: Props) {
     const [activeNotes, setActiveNotes] = React.useState(new Set<number>(Array(12).keys()));
+    const activeNotesMod12 = new Set(Array.from(activeNotes)
+    .map(elem => {
+        let modelem = elem % 12;
+        if (modelem < 0) modelem += 12;
+        return modelem;
+    }));
 
     const setAreNotesActive = (nums: Array<number>, areActive: boolean, overwriteExisting: boolean = false) => {
-        const startingPoint = overwriteExisting ? new Set<number>() : activeNotes;
+        const startingPoint = overwriteExisting ? new Set<number>() : activeNotesMod12;
 
         if (areActive) {
             setActiveNotes(new Set(Array.from(startingPoint).concat(nums)))
         }
         else {
             const numsSet = new Set(nums);
-            setActiveNotes(new Set(Array.from(startingPoint).filter(elem => !numsSet.has(elem))));
+            console.log(Array.from(startingPoint));
+            setActiveNotes(new Set(Array.from(startingPoint).filter(
+                elem => !numsSet.has(elem)
+                )));
         }
     }
 
@@ -44,7 +53,7 @@ function NoteProvider(props: Props) {
     return (
         <EmphasizedNotesContext.Provider value={emphasizedNotes}>
             <EmphasizedNoteUpdateContext.Provider value={setAreNotesEmphasized}>
-                <ActiveNotesContext.Provider value={activeNotes}>
+                <ActiveNotesContext.Provider value={activeNotesMod12}>
                     <ActiveNoteUpdateContext.Provider value={setAreNotesActive}>
                         {props.children}
                     </ActiveNoteUpdateContext.Provider>
