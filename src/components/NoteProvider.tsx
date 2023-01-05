@@ -13,7 +13,10 @@ type Props = {
 }
 
 function NoteProvider(props: Props) {
-    const [activeNotes, setActiveNotes] = React.useState(new Set<number>(Array(12).keys()));
+    const [activeNotes, setActiveNotes] = React.useState(
+        new Set<number>([0, 2, 3, 5, 7, 9, 10])//Natural Mode Family
+    );
+
     const activeNotesMod12 = new Set(Array.from(activeNotes)
     .map(elem => {
         let modelem = elem % 12;
