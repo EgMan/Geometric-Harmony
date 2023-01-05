@@ -33,6 +33,12 @@ function useKeypressPlayer() {
     const handleKeyDowns = React.useCallback((key: string) => {
         switch (key)
         {
+            case "ArrowUp":
+                modulateActiveNotes(7);
+                break;
+            case "ArrowDown":
+                modulateActiveNotes(-7);
+                break;
             case "ArrowRight":
                 modulateActiveNotes(1);
                 break;
