@@ -1,6 +1,7 @@
 import React from 'react';
 import { Circle, Line } from 'react-konva';
 import { useActiveNotes, useSetAreNotesActive, useEmphasizedNotes, useSetAreNotesEmphasized } from './NoteProvider';
+import Widget from './Widget';
 type Props = {
     x: number
     y: number
@@ -64,20 +65,20 @@ function Wheel(props: Props) {
                 setAreNotesEmphasized([i], false);
             };
             if (activeNotes.has(i)) {
-                notesArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} fill="white" radius={10} />);
+                notesArr.push(<Circle x={noteLoc.x} y={noteLoc.y} fill="white" radius={10} />);
             }
             if (emphasizedNotes.has(i)) {
-                notesArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} fill="red" stroke="red" radius={20} />);
+                notesArr.push(<Circle x={noteLoc.x} y={noteLoc.y} fill="red" stroke="red" radius={20} />);
             }
-            notesHaloArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} stroke="grey" radius={20} />);
-            clickListenersArr.push(<Circle x={props.x + noteLoc.x} y={props.y + noteLoc.y} radius={20} onClick={toggleActive} onTap={toggleActive} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize} />);
+            notesHaloArr.push(<Circle x={noteLoc.x} y={noteLoc.y} stroke="grey" radius={20} />);
+            clickListenersArr.push(<Circle x={noteLoc.x} y={noteLoc.y} radius={20} onClick={toggleActive} onTap={toggleActive} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize} />);
         }
         return {
             values: notesArr,
             halos: notesHaloArr,
             clickListeners: clickListenersArr,
         }
-    }, [props.subdivisionCount, props.x, props.y, activeNotes, emphasizedNotes, getNoteLocation, setAreNotesEmphasized, setAreNotesActive]);
+    }, [props.subdivisionCount, activeNotes, emphasizedNotes, getNoteLocation, setAreNotesEmphasized, setAreNotesActive]);
 
     const intervals: JSX.Element[] = React.useMemo(() => {
         const getIntervalDistance = (loc1: number, loc2: number) => {
@@ -104,24 +105,24 @@ function Wheel(props: Props) {
                 };
                 const isIntervalEmphasized = emphasizedNotes.has(noteA) && emphasizedNotes.has(noteB);
                 const lineWidth = isIntervalEmphasized ? 3 : 1.5;
-                intervalLines.push(<Line x={props.x} y={props.y} stroke={discColor} strokeWidth={lineWidth} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />);
-                intervalLines.push(<Line x={props.x} y={props.y} stroke={'rgba(0,0,0,0)'} strokeWidth={5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize} />);
+                intervalLines.push(<Line stroke={discColor} strokeWidth={lineWidth} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />);
+                intervalLines.push(<Line stroke={'rgba(0,0,0,0)'} strokeWidth={5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize} />);
                 // intervalLines.push(<Line x={props.x} y={props.y} stroke={emphasisColor} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]}/>);
             }
         }
         return intervalLines;
-    }, [activeNotes, emphasizedNotes, getNoteLocation, props.subdivisionCount, props.x, props.y, setAreNotesEmphasized]);
+    }, [activeNotes, emphasizedNotes, getNoteLocation, props.subdivisionCount, setAreNotesEmphasized]);
 
-    const centerpoint = (<Circle x={props.x} y={props.y} radius={1} fill="grey"></Circle>);
+    const centerpoint = (<Circle radius={1} fill="grey"></Circle>);
 
     return (
-        <div>
+        <Widget x={props.x} y={props.y} contextMenuX={0} contextMenuY={-props.radius-50}>
             {notes.halos}
             {intervals}
             {notes.values}
             {notes.clickListeners}
             {centerpoint}
-        </div>
+        </Widget>
     );
 }
 export default Wheel;

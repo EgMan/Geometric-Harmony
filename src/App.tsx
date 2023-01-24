@@ -37,10 +37,10 @@ function App() {
               <Stage width={windowWidth} height={windowHeight}>
                 <Layer>
                   <BackPlate width={windowWidth} height={windowHeight} />
+                  <HarmonyAnalyzer subdivisionCount={12} x={0} y={10} width={windowWidth} />
                   <Wheel subdivisionCount={12} radius={wheelRadius} x={windowWidth / 4} y={windowHeight / 2} isCircleOfFifths={false} />
                   <Wheel subdivisionCount={12} radius={wheelRadius} x={3 * windowWidth / 4} y={windowHeight / 2} isCircleOfFifths={true} />
                   <Piano x={windowWidth / 2} y={windowHeight - 1} height={pianoHeight} width={pianoWidth} octaveCount={pianoOctaveCount} />
-                  <HarmonyAnalyzer subdivisionCount={12} x={0} y={10} width={windowWidth} />
                 </Layer>
               </Stage>
               <SoundEngine />

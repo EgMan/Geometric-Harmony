@@ -1,6 +1,7 @@
 import React from 'react';
 import { Circle, Rect } from 'react-konva';
 import { useActiveNotes, useEmphasizedNotes, useSetAreNotesActive, useSetAreNotesEmphasized } from './NoteProvider';
+import Widget from './Widget';
 
 const keyColor = "grey";
 
@@ -14,8 +15,8 @@ type Props = {
 
 function Piano(props: Props) {
     // offsets to make x, y in props dictate location of bottom center of full piano
-    const XglobalKeyOffset = props.x + (props.width * props.octaveCount / -2);
-    const YglobalKeyOffset = props.y - props.height;
+    const XglobalKeyOffset = (props.width * props.octaveCount / -2);
+    const YglobalKeyOffset = -props.height;
 
     const activeNotes = useActiveNotes();
     const setAreNotesActive = useSetAreNotesActive();
@@ -122,10 +123,10 @@ function Piano(props: Props) {
         return keys;
     }, [props.octaveCount, props.width, props.height, XglobalKeyOffset, YglobalKeyOffset, activeNotes, emphasizedNotes, setAreNotesActive, setAreNotesEmphasized]);
     return (
-        <div>
+        <Widget x={props.x} y={props.y} contextMenuX={0} contextMenuY={-props.height - 50}>
             {whiteKeys}
             {blackKeys}
-        </div>
+        </Widget>
     )
 }
 
