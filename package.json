@@ -4,6 +4,7 @@
   "private": true,
   "homepage": "https://EgMan.github.io/Geometric-Harmony",
   "dependencies": {
+    "@react-spring/konva": "^9.6.1",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
