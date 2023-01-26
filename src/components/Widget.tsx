@@ -28,6 +28,13 @@ function Widget(props: Props) {
     return (
         <div>
             <Group x={props.x} y={props.y}>
+                {mainGroupTransition(
+                    (transitionProps, item, t) =>
+                        /* @ts-ignore: https://github.com/pmndrs/react-spring/issues/1515 */
+                        <animated.Group x={draggedX} y={draggedY} {...transitionProps}>
+                            {props.children}
+                        </animated.Group>
+                )}
                 <Group draggable x={props.contextMenuX} y={props.contextMenuY} onDragMove={a => { setDraggedX(a.currentTarget.x() - props.contextMenuX); setDraggedY(a.currentTarget.y() - props.contextMenuY); console.log(a.currentTarget.getAbsolutePosition().x, props.y) }}>
                     {/* <Html divProps={{
                         style: {
@@ -41,13 +48,6 @@ function Widget(props: Props) {
                     <animated.Circle radius={15} {...contextMenuProps} fill={"black"}></animated.Circle>
                     <Circle radius={15} opacity={0} onMouseEnter={() => setContextMenuUpen(true)} onMouseLeave={() => setContextMenuUpen(false)} onClick={() => alert("show menu here")}></Circle>
                 </Group>
-                {mainGroupTransition(
-                    (transitionProps, item, t) =>
-                        /* @ts-ignore: https://github.com/pmndrs/react-spring/issues/1515 */
-                        <animated.Group x={draggedX} y={draggedY} {...transitionProps}>
-                            {props.children}
-                        </animated.Group>
-                )}
             </Group>
         </div>
     )

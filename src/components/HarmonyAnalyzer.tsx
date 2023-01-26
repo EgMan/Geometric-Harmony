@@ -3,6 +3,7 @@ import { useActiveNotes, useEmphasizedNotes } from "./NoteProvider";
 import { Text } from 'react-konva';
 import { HarmonicShape, knownShapes } from "./KnownHarmonicShapes";
 import { getNoteName } from "./SoundEngine";
+import Widget from "./Widget";
 
 
 type Props =
@@ -86,10 +87,10 @@ function HarmonyAnalyzer(props: Props) {
     });
 
     return (
-        <div>
+        <Widget x={0} y={0} contextMenuX={window.innerWidth / 2} contextMenuY={60}>
             <Text text={exactFitName} x={props.x} y={props.y} fontSize={30} fontFamily='Calibri' fill="white" align="center" width={props.width} />
             {emphasizedInfoTextElems}
-        </div>
+        </Widget>
     );
 }
 
