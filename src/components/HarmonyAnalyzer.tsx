@@ -67,12 +67,6 @@ function HarmonyAnalyzer(props: Props) {
     const exactFit = exactFits[0];
     const exactFitName = exactFit ? exactFit.shape.name : "";
 
-    React.useEffect(() => {
-        exactFits.forEach((shapeFit) => {
-            console.log(shapeFit.shape.name);
-        })
-    }, [activeNotes, exactFits])
-
     const emphasizedNoteInfo = Array.from(emphasizedNotes).map(note => {
         if (exactFit === null || exactFit === undefined) return getNoteName(note);
         let shapeIdx = (note + exactFit.noteToFirstNoteInShapeIdxOffset) % props.subdivisionCount;

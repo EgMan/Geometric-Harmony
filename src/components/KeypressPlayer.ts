@@ -31,8 +31,7 @@ function useKeypressPlayer() {
     const modulateActiveNotes = useModulateActiveNotes();
 
     const handleKeyDowns = React.useCallback((key: string) => {
-        switch (key)
-        {
+        switch (key) {
             case "ArrowUp":
                 modulateActiveNotes(7);
                 break;
@@ -56,27 +55,53 @@ function useKeypressPlayer() {
         }
 
         const onKeyUp = (event: KeyboardEvent) => {
+            if (event.key === "Meta") {
+                setKeysPressed(new Set());
+                return;
+            }
             keysPressed.delete(event.key);
             setKeysPressed(new Set(keysPressed));
         }
+
+        // Losing focus should clear the keys pressed
+        const onVisChange = (event: Event) => {
+            if (!document.hasFocus()) {
+                keysPressed.clear();
+                setAreNotesEmphasized([], false, true);
+            }
+        }
+
+        const onMouseLeave = (event: Event) => {
+            setAreNotesEmphasized([], false, true);
+        }
+
+        document.addEventListener("visibilitychange", onVisChange);
+        document.addEventListener("mouseleave", onMouseLeave);
+        window.addEventListener("blur", onVisChange);
         window.addEventListener("keydown", onKeyDown);
         window.addEventListener("keyup", onKeyUp);
 
         return () => {
+            document.removeEventListener("visibilitychange", onVisChange);
+            document.removeEventListener("mouseleave", onMouseLeave);
+            window.removeEventListener("blur", onVisChange);
             window.removeEventListener("keydown", onKeyDown);
             window.removeEventListener("keyup", onKeyUp);
         }
-    }, [handleKeyDowns, keysPressed, modulateActiveNotes]);
+    }, [handleKeyDowns, keysPressed, modulateActiveNotes, setAreNotesEmphasized]);
 
     React.useEffect(() => {
+        if (keysPressed.has("Meta")) {
+            return;
+        }
         const notesPressed = Array.from(keysPressed).filter(key => keyToNoteNumber.get(key.toLocaleLowerCase()) !== undefined).map(key => {
             return keyToNoteNumber.get(key.toLocaleLowerCase()) ?? -1;
         })
         setAreNotesEmphasized(notesPressed, true, true);
-    
-    // setAreNotesEmphasized can not trigger this effect otherwise "no keys pressed" will constantly
-    // Be overwriting emphasized notes when the keyboard is not being touched.  
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+        // setAreNotesEmphasized can not trigger this effect otherwise "no keys pressed" will constantly
+        // Be overwriting emphasized notes when the keyboard is not being touched.  
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [keysPressed])
 }
 

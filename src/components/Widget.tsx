@@ -61,10 +61,10 @@ function Widget(props: Props) {
                             {props.children}
                         </animated.Group>
                 )}
-                <Group draggable x={props.contextMenuX} y={props.contextMenuY} onDragMove={a => { setDraggedX(a.currentTarget.x() - props.contextMenuX); setDraggedY(a.currentTarget.y() - props.contextMenuY); console.log(a.currentTarget.getAbsolutePosition().x, props.y) }}>
+                <Group draggable x={props.contextMenuX} y={props.contextMenuY} onDragMove={a => { setDraggedX(a.currentTarget.x() - props.contextMenuX); setDraggedY(a.currentTarget.y() - props.contextMenuY); }}>
                     {/* @ts-ignore: https://github.com/pmndrs/react-spring/issues/1515 */}
                     <animated.Circle radius={15} {...contextMenuProps} fill={"black"}></animated.Circle>
-                    <Circle radius={15} opacity={0} onMouseEnter={() => setContextMenuUpen(true)} onMouseLeave={() => setContextMenuUpen(false)} onClick={() => setIsSettingsOverlayVisible(true)}></Circle>
+                    <Circle radius={15} opacity={0} onMouseEnter={() => setContextMenuUpen(true)} onMouseLeave={() => setContextMenuUpen(false)} onClick={() => setIsSettingsOverlayVisible(true)} onContextMenu={(e) => { setIsSettingsOverlayVisible(true); e.currentTarget.preventDefault() }}></Circle>
                 </Group>
             </Group>
         </div>

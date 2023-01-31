@@ -32,7 +32,6 @@ function NoteProvider(props: Props) {
         }
         else {
             const numsSet = new Set(nums);
-            console.log(Array.from(startingPoint));
             setActiveNotes(new Set(Array.from(startingPoint).filter(
                 elem => !numsSet.has(elem)
                 )));
