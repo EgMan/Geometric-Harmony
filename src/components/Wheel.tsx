@@ -2,6 +2,7 @@ import React from 'react';
 import { Circle, Line } from 'react-konva';
 import { useActiveNotes, useSetAreNotesActive, useEmphasizedNotes, useSetAreNotesEmphasized } from './NoteProvider';
 import Widget from './Widget';
+import { MenuItem, Select, Switch } from '@mui/material';
 type Props = {
     x: number
     y: number
@@ -17,8 +18,21 @@ function Wheel(props: Props) {
     const emphasizedNotes = useEmphasizedNotes();
     const setAreNotesEmphasized = useSetAreNotesEmphasized();
 
+    // Settings Storage
+
+    const [displayInterval, setDisplayIntervals] = React.useState([true, true, true, true, true, true]);
+    const setDisplayInterval = (index: number, value: boolean) => {
+        const newDisplayInterval = displayInterval.slice();
+        newDisplayInterval[index] = value;
+        setDisplayIntervals(newDisplayInterval);
+    }
+
+    const [isCircleOfFifths, setIsCircleOfFiths] = React.useState(props.isCircleOfFifths);
+
+    ///////////////////
+
     const getNoteLocation = React.useCallback((i: number) => {
-        if (props.isCircleOfFifths) {
+        if (isCircleOfFifths) {
             i = (i * 7) % props.subdivisionCount;
         }
         const radians = i * 2 * Math.PI / props.subdivisionCount;
@@ -26,7 +40,7 @@ function Wheel(props: Props) {
             x: Math.sin(radians) * props.radius,
             y: -Math.cos(radians) * props.radius,
         }
-    }, [props.isCircleOfFifths, props.radius, props.subdivisionCount])
+    }, [isCircleOfFifths, props.radius, props.subdivisionCount])
 
 
 
@@ -48,6 +62,54 @@ function Wheel(props: Props) {
                 return "white"
         }
     }
+
+    const settingsMenuItems = [
+        (<tr>
+            <td>Adjacent notes are</td>
+            <td />
+            {/* <td><FormControlLabel control={<Switch checked={isCircleOfFifths} onChange={e => setIsCircleOfFiths(e.target.checked)}/>} label={isCircleOfFifths ? "" : 1} /></td> */}
+            <td>  <Select
+                id="demo-simple-select"
+                value={isCircleOfFifths ? 1 : 0}
+                label="Note layout"
+                labelId="demo-simple-select-filled-label"
+                onChange={e => { setIsCircleOfFiths(e.target.value === 1) }}
+            >
+                <MenuItem value={1}>Fifths</MenuItem>
+                <MenuItem value={0}>Semitones</MenuItem>
+            </Select></td>
+        </tr>),
+        (<tr>
+            <td>Display Minor Seconds (Major Sevenths)</td>
+            <td style={{ color: getIntervalColor(1) }}>■</td>
+            <td><Switch checked={displayInterval[0]} onChange={e => setDisplayInterval(0, e.target.checked)} /></td>
+        </tr>),
+        (<tr>
+            <td>Display Major Seconds (Minor Sevenths)</td>
+            <td style={{ color: getIntervalColor(2) }}>■</td>
+            <td><Switch checked={displayInterval[1]} onChange={e => setDisplayInterval(1, e.target.checked)} /></td>
+        </tr>),
+        (<tr>
+            <td>Display Minor Thirds (Major Sixths)</td>
+            <td style={{ color: getIntervalColor(3) }}>■</td>
+            <td><Switch checked={displayInterval[2]} onChange={e => setDisplayInterval(2, e.target.checked)} /></td>
+        </tr>),
+        (<tr>
+            <td>Display Major Thirds (Minor Sixths)</td>
+            <td style={{ color: getIntervalColor(4) }}>■</td>
+            <td><Switch checked={displayInterval[3]} onChange={e => setDisplayInterval(3, e.target.checked)} /></td>
+        </tr>),
+        (<tr>
+            <td>Display Perfect Fourths (Perfect Fifths)</td>
+            <td style={{ color: getIntervalColor(5) }}>■</td>
+            <td><Switch checked={displayInterval[4]} onChange={e => setDisplayInterval(4, e.target.checked)} /></td>
+        </tr>),
+        (<tr>
+            <td>Display Tritones</td>
+            <td style={{ color: getIntervalColor(6) }}>■</td>
+            <td><Switch checked={displayInterval[5]} onChange={e => setDisplayInterval(5, e.target.checked)} /></td>
+        </tr>),
+    ];
 
     const notes = React.useMemo(() => {
         let notesArr: JSX.Element[] = [];
@@ -97,6 +159,9 @@ function Wheel(props: Props) {
                 const bLoc = getNoteLocation(noteB);
                 const dist = getIntervalDistance(noteA, noteB);
                 const discColor = getIntervalColor(dist);
+                if (!displayInterval[dist - 1]) {
+                    continue;
+                }
                 const emphasize = () => {
                     setAreNotesEmphasized([noteA, noteB], true)
                 };
@@ -111,12 +176,12 @@ function Wheel(props: Props) {
             }
         }
         return intervalLines;
-    }, [activeNotes, emphasizedNotes, getNoteLocation, props.subdivisionCount, setAreNotesEmphasized]);
+    }, [activeNotes, displayInterval, emphasizedNotes, getNoteLocation, props.subdivisionCount, setAreNotesEmphasized]);
 
     const centerpoint = (<Circle radius={1} fill="grey"></Circle>);
 
     return (
-        <Widget x={props.x} y={props.y} contextMenuX={0} contextMenuY={-props.radius-50}>
+        <Widget x={props.x} y={props.y} contextMenuX={0} contextMenuY={-props.radius - 50} settingsRows={settingsMenuItems}>
             {notes.halos}
             {intervals}
             {notes.values}

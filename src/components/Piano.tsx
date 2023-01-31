@@ -2,6 +2,7 @@ import React from 'react';
 import { Circle, Rect } from 'react-konva';
 import { useActiveNotes, useEmphasizedNotes, useSetAreNotesActive, useSetAreNotesEmphasized } from './NoteProvider';
 import Widget from './Widget';
+import { MenuItem, Select } from '@mui/material';
 
 const keyColor = "grey";
 
@@ -14,8 +15,31 @@ type Props = {
 }
 
 function Piano(props: Props) {
+
+    const [octaveCount, setOctaveCount] = React.useState(props.octaveCount);
+
+    const settingsMenuItems = [
+        (<tr>
+            <td>OctaveCount</td>
+            <td>  <Select
+                id="demo-simple-select"
+                value={octaveCount}
+                label="Octave Count"
+                labelId="demo-simple-select-filled-label"
+                onChange={e => { setOctaveCount(e.target.value as number) }}
+            >
+                <MenuItem value={1}>1</MenuItem>
+                <MenuItem value={2}>2</MenuItem>
+                <MenuItem value={3}>3</MenuItem>
+                <MenuItem value={4}>4</MenuItem>
+                <MenuItem value={5}>5</MenuItem>
+
+            </Select></td>
+        </tr>),
+    ];
+
     // offsets to make x, y in props dictate location of bottom center of full piano
-    const XglobalKeyOffset = (props.width * props.octaveCount / -2);
+    const XglobalKeyOffset = (props.width * octaveCount / -2);
     const YglobalKeyOffset = -props.height;
 
     const activeNotes = useActiveNotes();
@@ -26,7 +50,7 @@ function Piano(props: Props) {
 
     const blackKeys: JSX.Element[] = React.useMemo(() => {
         var keys: JSX.Element[] = [];
-        for (var i = 0; i < props.octaveCount; i++) {
+        for (var i = 0; i < octaveCount; i++) {
             const individualKeyOffset = XglobalKeyOffset + i * props.width - props.width / 24 + 1;
             const keyWidth = props.width / 14;
             const keyHeight = props.height * 2 / 3;
@@ -65,11 +89,11 @@ function Piano(props: Props) {
             keys.push(<Rect x={props.width * 6 / 7 + individualKeyOffset} y={YglobalKeyOffset} width={keyWidth} height={keyHeight} onClick={() => setAreNotesActive([10], !activeNotes.has(10))} onTap={() => setAreNotesActive([10], !activeNotes.has(10))} onMouseOver={() => setAreNotesEmphasized([10], true, true)} onMouseOut={() => setAreNotesEmphasized([10], false)}></Rect>)
         }
         return keys;
-    }, [props.octaveCount, props.width, props.height, XglobalKeyOffset, YglobalKeyOffset, activeNotes, emphasizedNotes, setAreNotesActive, setAreNotesEmphasized]);
+    }, [octaveCount, props.width, props.height, XglobalKeyOffset, YglobalKeyOffset, activeNotes, emphasizedNotes, setAreNotesActive, setAreNotesEmphasized]);
 
     const whiteKeys: JSX.Element[] = React.useMemo(() => {
         var keys: JSX.Element[] = [];
-        for (var i = 0; i < props.octaveCount; i++) {
+        for (var i = 0; i < octaveCount; i++) {
             const individualKeyOffset = XglobalKeyOffset + i * props.width;
             const keyWidth = props.width / 7;
             const keyHeight = props.height;
@@ -121,9 +145,10 @@ function Piano(props: Props) {
             keys.push(<Rect x={props.width * 6 / 7 + individualKeyOffset} y={YglobalKeyOffset} width={keyWidth} height={keyHeight} onClick={() => setAreNotesActive([11], !activeNotes.has(11))} onMouseOver={() => setAreNotesEmphasized([11], true, true)} onTap={() => setAreNotesActive([11], !activeNotes.has(11))} onMouseOut={() => setAreNotesEmphasized([11], false)}></Rect>)
         }
         return keys;
-    }, [props.octaveCount, props.width, props.height, XglobalKeyOffset, YglobalKeyOffset, activeNotes, emphasizedNotes, setAreNotesActive, setAreNotesEmphasized]);
+    }, [octaveCount, props.width, props.height, XglobalKeyOffset, YglobalKeyOffset, activeNotes, emphasizedNotes, setAreNotesActive, setAreNotesEmphasized]);
+
     return (
-        <Widget x={props.x} y={props.y} contextMenuX={0} contextMenuY={-props.height - 50}>
+        <Widget x={props.x} y={props.y} contextMenuX={0} contextMenuY={-props.height - 20} settingsRows={settingsMenuItems}>
             {whiteKeys}
             {blackKeys}
         </Widget>
