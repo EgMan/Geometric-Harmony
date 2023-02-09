@@ -22,7 +22,7 @@ function Piano(props: Props) {
         (<tr>
             <td>OctaveCount</td>
             <td>  <Select
-                id="demo-simple-select"
+                id="menu-dropdown"
                 value={octaveCount}
                 label="Octave Count"
                 labelId="demo-simple-select-filled-label"
