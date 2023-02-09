@@ -1,10 +1,11 @@
 import React from 'react';
-import { Circle, Group, Line } from 'react-konva';
+import { Circle, Group, Line, Text} from 'react-konva';
 import { useActiveNotes, useSetAreNotesActive, useEmphasizedNotes, useSetAreNotesEmphasized } from './NoteProvider';
 import Widget from './Widget';
 import { MenuItem, Select, Switch } from '@mui/material';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { useGetActiveNotesInCommonWithModulation, useModulateActiveNotes } from './HarmonicModulation';
+import { getNoteName } from './SoundEngine';
 type Props = {
     x: number
     y: number
@@ -35,6 +36,8 @@ function Wheel(props: Props) {
     }
 
     const [isCircleOfFifths, setIsCircleOfFiths] = React.useState(props.isCircleOfFifths);
+    
+    const [showNoteNames, setShowNoteNames] = React.useState(true);
 
     ///////////////////
 
@@ -116,6 +119,11 @@ function Wheel(props: Props) {
             <td style={{ color: getIntervalColor(6) }}>■</td>
             <td><Switch checked={displayInterval[5]} onChange={e => setDisplayInterval(5, e.target.checked)} /></td>
         </tr>),
+        (<tr>
+            <td>Show note names</td>
+            <td></td>
+            <td><Switch checked={showNoteNames} onChange={e => setShowNoteNames(e.target.checked)} /></td>
+        </tr>),
     ];
 
     const [isRotating, setIsRotating] = React.useState(false);
@@ -128,6 +136,7 @@ function Wheel(props: Props) {
         let clickListenersArr: JSX.Element[] = [];
         let emphasized: JSX.Element[] = [];
         let highlighted: JSX.Element[] = [];
+        let noteNames: JSX.Element[] = [];
 
         const onRotateDrag = (e: KonvaEventObject<DragEvent>) => {
             const startingLoc = getNoteLocation(rotatingStartingNote);
@@ -190,6 +199,9 @@ function Wheel(props: Props) {
             if (highlightedNotes.has(i)) {
                 highlighted.push(<Circle key={`highlighted${i}`} x={noteLoc.x} y={noteLoc.y} fill="white" radius={20} />);
             }
+            if (showNoteNames) {
+                noteNames.push(<Text key={`noteName${i}`} width={40} height={40} x={noteLoc.x-20} y={noteLoc.y-20} text={getNoteName(i)} fontSize={14} fontFamily='monospace' fill="black" align="center" verticalAlign="middle" />);
+            }
             notesHaloArr.push(<Circle key={`halo${i}`} x={noteLoc.x} y={noteLoc.y} stroke="grey" radius={20} />);
             clickListenersArr.push(<Circle key={`clickListen${i}`} draggable x={noteLoc.x} y={noteLoc.y} radius={20} onClick={toggleActive} onTap={toggleActive} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize} onDragMove={onRotateDrag} onDragStart={(e) => onRotateDragStart(e, i)} onDragEnd={onRotateDragEnd} />);
         }
@@ -199,8 +211,9 @@ function Wheel(props: Props) {
             emphasized: emphasized,
             highlighted: highlighted,
             clickListeners: clickListenersArr,
+            names: noteNames,
         }
-    }, [getNoteLocation, rotatingStartingNote, props.subdivisionCount, isCircleOfFifths, getNotesInCommon, setAreNotesEmphasized, modulateActiveNotes, activeNotes, emphasizedNotes, highlightedNotes, setAreNotesActive]);
+    }, [getNoteLocation, rotatingStartingNote, props.subdivisionCount, isCircleOfFifths, getNotesInCommon, setAreNotesEmphasized, modulateActiveNotes, activeNotes, emphasizedNotes, highlightedNotes, showNoteNames, setAreNotesActive]);
 
     const intervals = React.useMemo(() => {
         const getIntervalDistance = (loc1: number, loc2: number) => {
@@ -256,13 +269,12 @@ function Wheel(props: Props) {
 
     return (
         <Widget x={props.x} y={props.y} contextMenuX={0} contextMenuY={-props.radius - 50} settingsRows={settingsMenuItems}>
-            <Group opacity={isRotating ? 0.25 : 1} key={"realGroup"}>
+            <Group opacity={isRotating ? 0.125 : 1} key={"realGroup"}>
                 {notes.halos}
                 {intervals.emphasized}
                 {intervals.line}
                 {notes.values}
                 {notes.emphasized}
-                {notes.clickListeners}
                 {centerpoint}
             </Group>
             {isRotating && <Group rotation={rotation} key={"rotationalGroup"}>
@@ -271,9 +283,10 @@ function Wheel(props: Props) {
                 {intervals.highlighted}
                 {notes.values}
                 {notes.highlighted}
-                {notes.clickListeners}
                 {centerpoint}
             </Group>}
+                {notes.names}
+                {notes.clickListeners}
         </Widget>
     );
 }

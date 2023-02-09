@@ -4,9 +4,14 @@ import { useActiveNotes, useEmphasizedNotes } from './NoteProvider';
 import React from 'react';
 
 const numberToNote = ["C3", "C#3", "D3", "D#3", "E3", "F3", "F#3", "G3", "G#3", "A3", "A#3", "B3"];
+const numberToNoteName = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
+export function getNote(i: number) {
+    return numberToNote[i] ?? "unknown";
+}
 
 export function getNoteName(i: number) {
-    return numberToNote[i] ?? "unknown";
+    return numberToNoteName[i] ?? "?";
 }
 
 type Props =
@@ -23,7 +28,7 @@ function SoundEngine(props: Props) {
 
     const playNotes = playingNotes.map(note => {
         return {
-            name: getNoteName(note),
+            name: getNote(note),
             velocity: 0.8,
         }
     });
