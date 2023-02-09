@@ -250,8 +250,7 @@ function Wheel(props: Props) {
                 }
                 const isIntervalHighlighted = highlightedNotes.has(noteA) && highlightedNotes.has(noteB);
                 if (isIntervalHighlighted) {
-                    highlighted.push(<Line stroke={discColor} strokeWidth={3} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />);
-                    highlighted.push(<Line stroke={"white"} strokeWidth={1} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />);
+                    highlighted.push(<Line stroke={discColor} strokeWidth={5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />);
                 }
                 intervalLines.push(<Line stroke={discColor} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />);
                 intervalLines.push(<Line stroke={'rgba(0,0,0,0)'} strokeWidth={5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize} />);
