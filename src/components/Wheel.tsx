@@ -139,7 +139,7 @@ function Wheel(props: Props) {
                 noteDiff += props.subdivisionCount;
             }
             if (isCircleOfFifths) {
-                noteDiff *= 7;
+                noteDiff = (noteDiff * 7) % props.subdivisionCount;
             }
             // setAreNotesEmphasized(getNotesInCommon(noteDiff), true, true);
             setHighlightedNotes(new Set(Array.from(getNotesInCommon(noteDiff)).map((note) => (note + props.subdivisionCount - noteDiff) % props.subdivisionCount)));
