@@ -4,7 +4,7 @@ import { useActiveNotes, useSetAreNotesActive, useEmphasizedNotes, useSetAreNote
 import Widget from './Widget';
 import { MenuItem, Select, Switch } from '@mui/material';
 import { KonvaEventObject } from 'konva/lib/Node';
-import { useModulateActiveNotes } from './HarmonicModulation';
+import { useGetActiveNotesInCommonWithModulation, useModulateActiveNotes } from './HarmonicModulation';
 type Props = {
     x: number
     y: number
@@ -19,8 +19,11 @@ function Wheel(props: Props) {
 
     const emphasizedNotes = useEmphasizedNotes();
     const setAreNotesEmphasized = useSetAreNotesEmphasized();
-    
+    const getNotesInCommon = useGetActiveNotesInCommonWithModulation();
+
     const modulateActiveNotes = useModulateActiveNotes();
+
+    const [highlightedNotes, setHighlightedNotes] = React.useState(new Set<number>());
 
     // Settings Storage
 
@@ -123,23 +126,34 @@ function Wheel(props: Props) {
         let notesArr: JSX.Element[] = [];
         let notesHaloArr: JSX.Element[] = [];
         let clickListenersArr: JSX.Element[] = [];
+        let emphasized: JSX.Element[] = [];
+        let highlighted: JSX.Element[] = [];
 
         const onRotateDrag = (e: KonvaEventObject<DragEvent>) => {
             const startingLoc = getNoteLocation(rotatingStartingNote);
             const startingAngle = Math.atan2(startingLoc.y, startingLoc.x) * 180 / (Math.PI);
             const currentAngle = Math.atan2(e.currentTarget.y(), e.currentTarget.x()) * 180 / (Math.PI);
             const angle = currentAngle - startingAngle;
-
+            let noteDiff = Math.round(angle * props.subdivisionCount / 360);
+            if (noteDiff < 0) {
+                noteDiff += props.subdivisionCount;
+            }
+            if (isCircleOfFifths) {
+                noteDiff *= 7;
+            }
+            // setAreNotesEmphasized(getNotesInCommon(noteDiff), true, true);
+            setHighlightedNotes(new Set(Array.from(getNotesInCommon(noteDiff)).map((note) => (note + props.subdivisionCount - noteDiff) % props.subdivisionCount)));
             setRotation(angle);
         }
-        const onRotateDragStart  = (e: KonvaEventObject<DragEvent>, idx: number) => {
+
+        const onRotateDragStart = (e: KonvaEventObject<DragEvent>, idx: number) => {
             setIsRotating(true);
             setRotatingStartingNote(idx);
 
             setAreNotesEmphasized([], false, true);
         }
 
-        const onRotateDragEnd  = (e: KonvaEventObject<DragEvent>) => {
+        const onRotateDragEnd = (e: KonvaEventObject<DragEvent>) => {
             const startingLoc = getNoteLocation(rotatingStartingNote);
             const startingAngle = Math.atan2(startingLoc.y, startingLoc.x) * 180 / (Math.PI);
             const currentAngle = Math.atan2(e.currentTarget.y(), e.currentTarget.x()) * 180 / (Math.PI);
@@ -168,22 +182,27 @@ function Wheel(props: Props) {
                 setAreNotesEmphasized([i], false);
             };
             if (activeNotes.has(i)) {
-                notesArr.push(<Circle key={`active${i}`} x={noteLoc.x} y={noteLoc.y} fill="white" radius={10}/>);
+                notesArr.push(<Circle key={`active${i}`} x={noteLoc.x} y={noteLoc.y} fill="white" radius={10} />);
             }
             if (emphasizedNotes.has(i)) {
-                notesArr.push(<Circle key={`emphasize${i}`} x={noteLoc.x} y={noteLoc.y} fill="red" stroke="red" radius={20}/>);
+                emphasized.push(<Circle key={`emphasize${i}`} x={noteLoc.x} y={noteLoc.y} fill="red" stroke="red" radius={20} />);
             }
-            notesHaloArr.push(<Circle key={`halo${i}`} x={noteLoc.x} y={noteLoc.y} stroke="grey" radius={20}/>);
-            clickListenersArr.push(<Circle key={`clickListen${i}`} draggable x={noteLoc.x} y={noteLoc.y} radius={20} onClick={toggleActive} onTap={toggleActive} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize} onDragMove={onRotateDrag} onDragStart={(e) => onRotateDragStart(e, i)} onDragEnd={onRotateDragEnd}/>);
+            if (highlightedNotes.has(i)) {
+                highlighted.push(<Circle key={`highlighted${i}`} x={noteLoc.x} y={noteLoc.y} fill="white" radius={20} />);
+            }
+            notesHaloArr.push(<Circle key={`halo${i}`} x={noteLoc.x} y={noteLoc.y} stroke="grey" radius={20} />);
+            clickListenersArr.push(<Circle key={`clickListen${i}`} draggable x={noteLoc.x} y={noteLoc.y} radius={20} onClick={toggleActive} onTap={toggleActive} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize} onDragMove={onRotateDrag} onDragStart={(e) => onRotateDragStart(e, i)} onDragEnd={onRotateDragEnd} />);
         }
         return {
             values: notesArr,
             halos: notesHaloArr,
+            emphasized: emphasized,
+            highlighted: highlighted,
             clickListeners: clickListenersArr,
         }
-    }, [getNoteLocation, rotatingStartingNote, setAreNotesEmphasized, props.subdivisionCount, isCircleOfFifths, modulateActiveNotes, activeNotes, emphasizedNotes, setAreNotesActive]);
+    }, [getNoteLocation, rotatingStartingNote, props.subdivisionCount, isCircleOfFifths, getNotesInCommon, setAreNotesEmphasized, modulateActiveNotes, activeNotes, emphasizedNotes, highlightedNotes, setAreNotesActive]);
 
-    const intervals: JSX.Element[] = React.useMemo(() => {
+    const intervals = React.useMemo(() => {
         const getIntervalDistance = (loc1: number, loc2: number) => {
             const dist1 = Math.abs(loc1 - loc2);
             // const dist2 = (props.subdivisionCount-loc1 +loc2) % (Math.ceil(props.subdivisionCount/2));
@@ -191,6 +210,9 @@ function Wheel(props: Props) {
             return Math.min(dist1, dist2);
         }
         var intervalLines: JSX.Element[] = [];
+        var emphasized: JSX.Element[] = [];
+        var highlighted: JSX.Element[] = [];
+
         const activeNoteArr = Array.from(activeNotes);
         for (var a = 0; a < activeNoteArr.length; a++) {
             for (var b = a; b < activeNoteArr.length; b++) {
@@ -210,30 +232,45 @@ function Wheel(props: Props) {
                     setAreNotesEmphasized([noteA, noteB], false);
                 };
                 const isIntervalEmphasized = emphasizedNotes.has(noteA) && emphasizedNotes.has(noteB);
-                const lineWidth = isIntervalEmphasized ? 3 : 1.5;
-                intervalLines.push(<Line stroke={discColor} strokeWidth={lineWidth} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />);
+                if (isIntervalEmphasized) {
+                    emphasized.push(<Line stroke={discColor} strokeWidth={3} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />);
+                }
+                const isIntervalHighlighted = highlightedNotes.has(noteA) && highlightedNotes.has(noteB);
+                if (isIntervalHighlighted) {
+                    highlighted.push(<Line stroke={discColor} strokeWidth={3} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />);
+                    highlighted.push(<Line stroke={"white"} strokeWidth={1} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />);
+                }
+                intervalLines.push(<Line stroke={discColor} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />);
                 intervalLines.push(<Line stroke={'rgba(0,0,0,0)'} strokeWidth={5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize} />);
                 // intervalLines.push(<Line x={props.x} y={props.y} stroke={emphasisColor} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]}/>);
             }
         }
-        return intervalLines;
-    }, [activeNotes, displayInterval, emphasizedNotes, getNoteLocation, props.subdivisionCount, setAreNotesEmphasized]);
+        return {
+            line: intervalLines,
+            emphasized: emphasized,
+            highlighted: highlighted,
+        }
+    }, [activeNotes, displayInterval, emphasizedNotes, getNoteLocation, highlightedNotes, props.subdivisionCount, setAreNotesEmphasized]);
 
     const centerpoint = (<Circle radius={1} fill="grey"></Circle>);
 
     return (
         <Widget x={props.x} y={props.y} contextMenuX={0} contextMenuY={-props.radius - 50} settingsRows={settingsMenuItems}>
-            <Group opacity={isRotating ? 0.1 : 1} key={"realGroup"}>
+            <Group opacity={isRotating ? 0.25 : 1} key={"realGroup"}>
                 {notes.halos}
-                {intervals}
+                {intervals.emphasized}
+                {intervals.line}
                 {notes.values}
+                {notes.emphasized}
                 {notes.clickListeners}
                 {centerpoint}
             </Group>
             {isRotating && <Group rotation={rotation} key={"rotationalGroup"}>
                 {notes.halos}
-                {intervals}
+                {intervals.line}
+                {intervals.highlighted}
                 {notes.values}
+                {notes.highlighted}
                 {notes.clickListeners}
                 {centerpoint}
             </Group>}
