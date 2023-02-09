@@ -75,11 +75,45 @@ function Wheel(props: Props) {
 
     const settingsMenuItems = [
         (<tr>
+            <td>Show Minor Seconds (Major Sevenths)</td>
+            <td style={{ color: getIntervalColor(1) }}>■</td>
+            <td><Switch color={"primary"} checked={displayInterval[0]} onChange={e => setDisplayInterval(0, e.target.checked)} /></td>
+        </tr>),
+        (<tr>
+            <td>Show Major Seconds (Minor Sevenths)</td>
+            <td style={{ color: getIntervalColor(2) }}>■</td>
+            <td><Switch checked={displayInterval[1]} onChange={e => setDisplayInterval(1, e.target.checked)} /></td>
+        </tr>),
+        (<tr>
+            <td>Show Minor Thirds (Major Sixths)</td>
+            <td style={{ color: getIntervalColor(3) }}>■</td>
+            <td><Switch checked={displayInterval[2]} onChange={e => setDisplayInterval(2, e.target.checked)} /></td>
+        </tr>),
+        (<tr>
+            <td>Show Major Thirds (Minor Sixths)</td>
+            <td style={{ color: getIntervalColor(4) }}>■</td>
+            <td><Switch checked={displayInterval[3]} onChange={e => setDisplayInterval(3, e.target.checked)} /></td>
+        </tr>),
+        (<tr>
+            <td>Show Perfect Fourths (Perfect Fifths)</td>
+            <td style={{ color: getIntervalColor(5) }}>■</td>
+            <td><Switch checked={displayInterval[4]} onChange={e => setDisplayInterval(4, e.target.checked)} /></td>
+        </tr>),
+        (<tr>
+            <td>Show Tritones</td>
+            <td style={{ color: getIntervalColor(6) }}>■</td>
+            <td><Switch checked={displayInterval[5]} onChange={e => setDisplayInterval(5, e.target.checked)} /></td>
+        </tr>),
+        (<tr>
+            <td>Show note names</td>
+            <td>♯</td>
+            <td><Switch checked={showNoteNames} onChange={e => setShowNoteNames(e.target.checked)} /></td>
+        </tr>),
+        (<tr>
             <td>Adjacent notes are</td>
-            <td />
             {/* <td><FormControlLabel control={<Switch checked={isCircleOfFifths} onChange={e => setIsCircleOfFiths(e.target.checked)}/>} label={isCircleOfFifths ? "" : 1} /></td> */}
-            <td>  <Select
-                id="demo-simple-select"
+            <td colSpan={2}>  <Select
+                id="menu-dropdown"
                 value={isCircleOfFifths ? 1 : 0}
                 label="Note layout"
                 labelId="demo-simple-select-filled-label"
@@ -88,41 +122,6 @@ function Wheel(props: Props) {
                 <MenuItem value={1}>Fifths</MenuItem>
                 <MenuItem value={0}>Semitones</MenuItem>
             </Select></td>
-        </tr>),
-        (<tr>
-            <td>Display Minor Seconds (Major Sevenths)</td>
-            <td style={{ color: getIntervalColor(1) }}>■</td>
-            <td><Switch checked={displayInterval[0]} onChange={e => setDisplayInterval(0, e.target.checked)} /></td>
-        </tr>),
-        (<tr>
-            <td>Display Major Seconds (Minor Sevenths)</td>
-            <td style={{ color: getIntervalColor(2) }}>■</td>
-            <td><Switch checked={displayInterval[1]} onChange={e => setDisplayInterval(1, e.target.checked)} /></td>
-        </tr>),
-        (<tr>
-            <td>Display Minor Thirds (Major Sixths)</td>
-            <td style={{ color: getIntervalColor(3) }}>■</td>
-            <td><Switch checked={displayInterval[2]} onChange={e => setDisplayInterval(2, e.target.checked)} /></td>
-        </tr>),
-        (<tr>
-            <td>Display Major Thirds (Minor Sixths)</td>
-            <td style={{ color: getIntervalColor(4) }}>■</td>
-            <td><Switch checked={displayInterval[3]} onChange={e => setDisplayInterval(3, e.target.checked)} /></td>
-        </tr>),
-        (<tr>
-            <td>Display Perfect Fourths (Perfect Fifths)</td>
-            <td style={{ color: getIntervalColor(5) }}>■</td>
-            <td><Switch checked={displayInterval[4]} onChange={e => setDisplayInterval(4, e.target.checked)} /></td>
-        </tr>),
-        (<tr>
-            <td>Display Tritones</td>
-            <td style={{ color: getIntervalColor(6) }}>■</td>
-            <td><Switch checked={displayInterval[5]} onChange={e => setDisplayInterval(5, e.target.checked)} /></td>
-        </tr>),
-        (<tr>
-            <td>Show note names</td>
-            <td></td>
-            <td><Switch checked={showNoteNames} onChange={e => setShowNoteNames(e.target.checked)} /></td>
         </tr>),
     ];
 

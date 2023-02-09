@@ -2,6 +2,8 @@ import React from "react";
 import { Circle, Group, Layer, Stage } from "react-konva";
 import { animated, useSpring, useTransition } from '@react-spring/konva';
 import { Html } from "react-konva-utils";
+import { ThemeProvider, createTheme } from "@mui/material";
+import { green, grey, purple } from "@mui/material/colors";
 
 type Props = {
     children?: React.ReactNode
@@ -29,8 +31,15 @@ function Widget(props: Props) {
         config: { duration: 750 }
     });
 
-
-
+    const theme = createTheme({
+        palette: {
+          primary: {
+            main: green["A700"],
+            light: purple[300],
+            dark: purple[900],
+          },
+        }
+      });
 
     return (
         <div>
@@ -43,13 +52,15 @@ function Widget(props: Props) {
                             </Group>
                         </Layer>
                     </Stage>
-                    <div id="click-back-div" onClick={() => setIsSettingsOverlayVisible(false)}>
-                        <div id="overlay-content" onClick={(e) => e.stopPropagation()}>
-                            <table>
-                                {props.settingsRows}
-                            </table>
+                    <ThemeProvider theme={theme}>
+                        <div id="click-back-div" onClick={() => setIsSettingsOverlayVisible(false)}>
+                            <div id="overlay-content" onClick={(e) => e.stopPropagation()}>
+                                <table>
+                                    {props.settingsRows}
+                                </table>
+                            </div>
                         </div>
-                    </div>
+                    </ThemeProvider>
                 </Html>
             }
 
