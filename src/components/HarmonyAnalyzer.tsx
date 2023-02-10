@@ -77,12 +77,12 @@ function HarmonyAnalyzer(props: Props) {
 
     const textelemoffset = 35;
     const emphasizedInfoTextElems = emphasizedNoteInfo.map((infoText, idx) => {
-        return (<Text text={infoText} x={props.x} y={props.y + textelemoffset*(idx+1)} fontSize={30} fontFamily='Calibri' fill="red" align="center" width={props.width} />);
+        return (<Text text={infoText} x={props.x} y={props.y + textelemoffset*(idx+1)} fontSize={30} fontFamily='monospace' fill="red" align="center" width={props.width} />);
     });
 
     return (
         <Widget x={0} y={0} contextMenuX={window.innerWidth / 2} contextMenuY={60}>
-            <Text text={exactFitName} x={props.x} y={props.y} fontSize={30} fontFamily='Calibri' fill="white" align="center" width={props.width} />
+            <Text text={exactFitName} x={props.x} y={props.y} fontSize={30} fontFamily='monospace' fill="white" align="center" width={props.width} />
             {emphasizedInfoTextElems}
         </Widget>
     );
