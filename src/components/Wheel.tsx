@@ -199,7 +199,8 @@ function Wheel(props: Props) {
                 highlighted.push(<Circle key={`highlighted${i}`} x={noteLoc.x} y={noteLoc.y} fill="white" radius={20} />);
             }
             if (showNoteNames) {
-                noteNames.push(<Text key={`noteName${i}`} width={40} height={40} x={noteLoc.x-20} y={noteLoc.y-20} text={getNoteName(i)} fontSize={14} fontFamily='monospace' fill="black" align="center" verticalAlign="middle" />);
+                
+                noteNames.push(<Text key={`noteName${i}`} width={40} height={40} x={noteLoc.x-20} y={noteLoc.y-20} text={getNoteName(i)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(i) ? "black" : "grey"} align="center" verticalAlign="middle" />);
             }
             notesHaloArr.push(<Circle key={`halo${i}`} x={noteLoc.x} y={noteLoc.y} stroke="grey" radius={20} />);
             clickListenersArr.push(<Circle key={`clickListen${i}`} draggable x={noteLoc.x} y={noteLoc.y} radius={20} onClick={toggleActive} onTap={toggleActive} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize} onDragMove={onRotateDrag} onDragStart={(e) => onRotateDragStart(e, i)} onDragEnd={onRotateDragEnd} />);
