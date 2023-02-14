@@ -1,9 +1,10 @@
 import React from 'react';
-import { Circle, Rect, Shape } from 'react-konva';
+import { Circle, Rect, Shape, Text } from 'react-konva';
 import { useActiveNotes, useEmphasizedNotes, useSetAreNotesActive, useSetAreNotesEmphasized } from './NoteProvider';
 import Widget from './Widget';
 import { MenuItem, Select, Switch } from '@mui/material';
 import { getIntervalColor, getIntervalDistance } from './Utils';
+import { getNoteName } from './SoundEngine';
 
 const keyColor = "grey";
 const noteToXOffsetFactor = [0, 1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 6];
@@ -30,7 +31,7 @@ function Piano(props: Props) {
         setDisplayIntervals(newDisplayInterval);
     }
 
-    // const [showNoteNames, setShowNoteNames] = React.useState(true);
+    const [showNoteNames, setShowNoteNames] = React.useState(true);
 
     ///////////////////
 
@@ -82,11 +83,11 @@ function Piano(props: Props) {
             <td style={{ color: getIntervalColor(6), textAlign: "center"}}>■</td>
             <td><Switch checked={displayInterval[5]} onChange={e => setDisplayInterval(5, e.target.checked)} /></td>
         </tr>),
-        // (<tr>
-        //     <td>Show note names</td>
-        //     <td style={{textAlign: "center"}}>♯</td>
-        //     <td><Switch checked={showNoteNames} onChange={e => setShowNoteNames(e.target.checked)} /></td>
-        // </tr>),
+        (<tr>
+            <td>Show note names</td>
+            <td style={{textAlign: "center"}}>♯</td>
+            <td><Switch checked={showNoteNames} onChange={e => setShowNoteNames(e.target.checked)} /></td>
+        </tr>),
     ];
 
     // offsets to make x, y in props dictate location of bottom center of full piano
@@ -164,6 +165,7 @@ function Piano(props: Props) {
         let activeNoteIndicators: JSX.Element[] = [];
         let emphasized: JSX.Element[] = [];
         let clickListenersArr: JSX.Element[] = [];
+        let noteNames: JSX.Element[] = [];
         const keyNumsInOrder = [...whiteKeyNums, ...blackKeyNums];
         for (var i = 0; i < octaveCount; i++) {
             for (let note of keyNumsInOrder) {
@@ -172,15 +174,24 @@ function Piano(props: Props) {
                 if (activeNotes.has(note)) activeNoteIndicators.push(<Circle key={`activeInd${i}-${note}`} x={noteprops.xpos + noteprops.individualActiveIndicaterOffset} y={noteprops.activeIndicatorY} width={noteprops.activeIndicatorWidth} height={noteprops.activeIndicatorWidth} fill={"white"}></Circle>)
                 if (emphasizedNotes.has(note)) emphasized.push(<Circle key={`emphaInd${i}-${note}`} x={noteprops.xpos + noteprops.individualActiveIndicaterOffset} y={noteprops.activeIndicatorY} width={noteprops.activeIndicatorWidth} height={noteprops.activeIndicatorWidth} fill={"red"}></Circle>)
                 clickListenersArr.push(<Rect key={`keyHitbox${i}-${note}`} x={noteprops.xpos + noteprops.individualKeyOffset} y={YglobalKeyOffset} width={noteprops.keyWidth} height={noteprops.keyHeight} onClick={() => setAreNotesActive([note], !activeNotes.has(note))} onTap={() => setAreNotesActive([note], !activeNotes.has(note))} onMouseOver={() => setAreNotesEmphasized([note], true, true)} onMouseOut={() => setAreNotesEmphasized([note], false)}></Rect>)
+                if (showNoteNames) {
+                    
+                    // noteNames.push(<Text key={`noteName${i}`} width={40} height={40} x={noteLoc.x-20} y={noteLoc.y-20} text={getNoteName(i)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(i) ? "black" : "grey"} align="center" verticalAlign="middle" />);
+                    const nameColor = activeNotes.has(note) ? "black" : (blackKeyNums.includes(note) ? "rgb(37,37,37)" : "grey");
+                    noteNames.push(
+                        <Text key={`noteName${note}`} width={40} height={40} x={noteprops.xpos + noteprops.individualActiveIndicaterOffset-20} y={noteprops.activeIndicatorY-20} text={getNoteName(note)} fontSize={12} fontFamily='monospace' fill={nameColor} align="center" verticalAlign="middle" />
+                    )
+                }
             }
         }
         return {
             keys,
+            noteNames,
             activeNoteIndicators,
             emphasized,
             clickListenersArr,
         };
-    }, [YglobalKeyOffset, activeNotes, emphasizedNotes, getPropsForNote, octaveCount, setAreNotesActive, setAreNotesEmphasized]);
+    }, [YglobalKeyOffset, activeNotes, emphasizedNotes, getPropsForNote, octaveCount, setAreNotesActive, setAreNotesEmphasized, showNoteNames]);
 
     const intervals = React.useMemo(() => {
         var intervalLines: JSX.Element[] = [];
@@ -259,6 +270,7 @@ function Piano(props: Props) {
             {intervals.emphasized}
             {keys.activeNoteIndicators}
             {keys.emphasized}
+            {keys.noteNames}
             {keys.clickListenersArr}
         </Widget>
     )
