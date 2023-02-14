@@ -1,4 +1,3 @@
-Reactor Piano keys
 Add center hoverable to play/arpegiate all active notes
 Add rotation to wheels
 Fix notes cutting out when changing chords quickly
