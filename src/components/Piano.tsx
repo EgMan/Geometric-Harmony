@@ -1,8 +1,9 @@
 import React from 'react';
-import { Circle, Rect } from 'react-konva';
+import { Circle, Rect, Shape } from 'react-konva';
 import { useActiveNotes, useEmphasizedNotes, useSetAreNotesActive, useSetAreNotesEmphasized } from './NoteProvider';
 import Widget from './Widget';
-import { MenuItem, Select } from '@mui/material';
+import { MenuItem, Select, Switch } from '@mui/material';
+import { getIntervalColor, getIntervalDistance } from './Utils';
 
 const keyColor = "grey";
 const noteToXOffsetFactor = [0, 1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 6];
@@ -18,13 +19,25 @@ type Props = {
 }
 
 function Piano(props: Props) {
+    // Settings Storage
 
     const [octaveCount, setOctaveCount] = React.useState(props.octaveCount);
+
+    const [displayInterval, setDisplayIntervals] = React.useState([false, false, false, false, false, false]);
+    const setDisplayInterval = (index: number, value: boolean) => {
+        const newDisplayInterval = displayInterval.slice();
+        newDisplayInterval[index] = value;
+        setDisplayIntervals(newDisplayInterval);
+    }
+
+    // const [showNoteNames, setShowNoteNames] = React.useState(true);
+
+    ///////////////////
 
     const settingsMenuItems = [
         (<tr>
             <td>OctaveCount</td>
-            <td>  <Select
+            <td colSpan={2}>  <Select
                 id="menu-dropdown"
                 value={octaveCount}
                 label="Octave Count"
@@ -39,6 +52,41 @@ function Piano(props: Props) {
 
             </Select></td>
         </tr>),
+        (<tr>
+            <td>Show Minor Seconds (Major Sevenths)</td>
+            <td style={{ color: getIntervalColor(1), textAlign: "center" }}>■</td>
+            <td><Switch color={"primary"} checked={displayInterval[0]} onChange={e => setDisplayInterval(0, e.target.checked)} /></td>
+        </tr>),
+        (<tr>
+            <td>Show Major Seconds (Minor Sevenths)</td>
+            <td style={{ color: getIntervalColor(2), textAlign: "center" }}>■</td>
+            <td><Switch checked={displayInterval[1]} onChange={e => setDisplayInterval(1, e.target.checked)} /></td>
+        </tr>),
+        (<tr>
+            <td>Show Minor Thirds (Major Sixths)</td>
+            <td style={{ color: getIntervalColor(3), textAlign: "center" }}>■</td>
+            <td><Switch checked={displayInterval[2]} onChange={e => setDisplayInterval(2, e.target.checked)} /></td>
+        </tr>),
+        (<tr>
+            <td>Show Major Thirds (Minor Sixths)</td>
+            <td style={{ color: getIntervalColor(4), textAlign: "center" }}>■</td>
+            <td><Switch checked={displayInterval[3]} onChange={e => setDisplayInterval(3, e.target.checked)} /></td>
+        </tr>),
+        (<tr>
+            <td>Show Perfect Fourths (Perfect Fifths)</td>
+            <td style={{ color: getIntervalColor(5), textAlign: "center" }}>■</td>
+            <td><Switch checked={displayInterval[4]} onChange={e => setDisplayInterval(4, e.target.checked)} /></td>
+        </tr>),
+        (<tr>
+            <td>Show Tritones</td>
+            <td style={{ color: getIntervalColor(6), textAlign: "center"}}>■</td>
+            <td><Switch checked={displayInterval[5]} onChange={e => setDisplayInterval(5, e.target.checked)} /></td>
+        </tr>),
+        // (<tr>
+        //     <td>Show note names</td>
+        //     <td style={{textAlign: "center"}}>♯</td>
+        //     <td><Switch checked={showNoteNames} onChange={e => setShowNoteNames(e.target.checked)} /></td>
+        // </tr>),
     ];
 
     // offsets to make x, y in props dictate location of bottom center of full piano
@@ -70,7 +118,7 @@ function Piano(props: Props) {
         const activeIndicatorWidth = keyWidth / 3;
         const activeIndicatorY = YglobalKeyOffset + 5 * keyHeight / 6;
         const xpos = (noteToXOffsetFactor[note] * props.width / 7);
-        const extraProps = {stroke: keyColor, strokeWidth: 2}
+        const extraProps = { stroke: keyColor, strokeWidth: 2 }
         return {
             keyWidth,
             keyHeight,
@@ -91,7 +139,7 @@ function Piano(props: Props) {
         const activeIndicatorWidth = keyWidth * 2 / 3;
         const activeIndicatorY = YglobalKeyOffset + 3 * keyHeight / 4;
         const xpos = noteToXOffsetFactor[note] * props.width / 7;
-        const extraProps = {fill: keyColor}
+        const extraProps = { fill: keyColor }
         return {
             keyWidth,
             keyHeight,
@@ -111,24 +159,107 @@ function Piano(props: Props) {
         return getPropsForWhiteNote(note, octave);
     }, [getPropsForBlackNote, getPropsForWhiteNote]);
 
-    const keys: JSX.Element[] = React.useMemo(() => {
+    const keys = React.useMemo(() => {
         var keys: JSX.Element[] = [];
+        let activeNoteIndicators: JSX.Element[] = [];
+        let emphasized: JSX.Element[] = [];
+        let clickListenersArr: JSX.Element[] = [];
         const keyNumsInOrder = [...whiteKeyNums, ...blackKeyNums];
         for (var i = 0; i < octaveCount; i++) {
             for (let note of keyNumsInOrder) {
                 const noteprops = getPropsForNote(note, i);
                 keys.push(<Rect key={`key${i}-${note}`} x={noteprops.xpos + noteprops.individualKeyOffset} y={YglobalKeyOffset} width={noteprops.keyWidth} height={noteprops.keyHeight} {...noteprops.extraProps}></Rect>)
-                if (activeNotes.has(note)) keys.push(<Circle key={`activeInd${i}-${note}`} x={noteprops.xpos + noteprops.individualActiveIndicaterOffset} y={noteprops.activeIndicatorY} width={noteprops.activeIndicatorWidth} height={noteprops.activeIndicatorWidth} fill={"white"}></Circle>)
-                if (emphasizedNotes.has(note)) keys.push(<Circle key={`emphaInd${i}-${note}`} x={noteprops.xpos + noteprops.individualActiveIndicaterOffset} y={noteprops.activeIndicatorY} width={noteprops.activeIndicatorWidth} height={noteprops.activeIndicatorWidth} fill={"red"}></Circle>)
-                keys.push(<Rect key={`keyHitbox${i}-${note}`} x={noteprops.xpos + noteprops.individualKeyOffset} y={YglobalKeyOffset} width={noteprops.keyWidth} height={noteprops.keyHeight} onClick={() => setAreNotesActive([note], !activeNotes.has(note))} onTap={() => setAreNotesActive([note], !activeNotes.has(note))} onMouseOver={() => setAreNotesEmphasized([note], true, true)} onMouseOut={() => setAreNotesEmphasized([note], false)}></Rect>)
+                if (activeNotes.has(note)) activeNoteIndicators.push(<Circle key={`activeInd${i}-${note}`} x={noteprops.xpos + noteprops.individualActiveIndicaterOffset} y={noteprops.activeIndicatorY} width={noteprops.activeIndicatorWidth} height={noteprops.activeIndicatorWidth} fill={"white"}></Circle>)
+                if (emphasizedNotes.has(note)) emphasized.push(<Circle key={`emphaInd${i}-${note}`} x={noteprops.xpos + noteprops.individualActiveIndicaterOffset} y={noteprops.activeIndicatorY} width={noteprops.activeIndicatorWidth} height={noteprops.activeIndicatorWidth} fill={"red"}></Circle>)
+                clickListenersArr.push(<Rect key={`keyHitbox${i}-${note}`} x={noteprops.xpos + noteprops.individualKeyOffset} y={YglobalKeyOffset} width={noteprops.keyWidth} height={noteprops.keyHeight} onClick={() => setAreNotesActive([note], !activeNotes.has(note))} onTap={() => setAreNotesActive([note], !activeNotes.has(note))} onMouseOver={() => setAreNotesEmphasized([note], true, true)} onMouseOut={() => setAreNotesEmphasized([note], false)}></Rect>)
             }
         }
-        return keys;
+        return {
+            keys,
+            activeNoteIndicators,
+            emphasized,
+            clickListenersArr,
+        };
     }, [YglobalKeyOffset, activeNotes, emphasizedNotes, getPropsForNote, octaveCount, setAreNotesActive, setAreNotesEmphasized]);
 
+    const intervals = React.useMemo(() => {
+        var intervalLines: JSX.Element[] = [];
+        var emphasized: JSX.Element[] = [];
+        const activeNoteArr = Array.from(activeNotes);
+                for (let octaveA = 0; octaveA < octaveCount; octaveA++) {
+                for (let octaveB = octaveA; octaveB <= Math.min(octaveA+1, octaveCount-1); octaveB++) {
+        for (let a = 0; a < activeNoteArr.length; a++) {
+            for (let b = 0; b < activeNoteArr.length; b++) {
+                const noteA = activeNoteArr[a];
+                const noteB = activeNoteArr[b];
+
+                const propsA = getPropsForNote(noteA, octaveA);
+                const propsB = getPropsForNote(noteB, octaveB);
+
+                const aLoc = { x: propsA.xpos + propsA.individualActiveIndicaterOffset, y: propsA.activeIndicatorY };
+                const bLoc = { x: propsB.xpos + propsB.individualActiveIndicaterOffset, y: propsB.activeIndicatorY };
+
+
+                const dist = getIntervalDistance(noteA, noteB, 12);
+                const discColor = getIntervalColor(dist);
+                const absoluteDist = Math.abs((noteA + (12*octaveA)) - (noteB + (12*octaveB)));
+
+                if (!displayInterval[dist - 1]) {
+                    continue;
+                }
+
+                if (absoluteDist > dist) {
+                    continue;
+                }
+
+                const emphasize = () => {
+                    setAreNotesEmphasized([noteA, noteB], true)
+                };
+                const deemphasize = () => {
+                    setAreNotesEmphasized([noteA, noteB], false);
+                };
+                const isIntervalEmphasized = emphasizedNotes.has(noteA) && emphasizedNotes.has(noteB);
+
+                intervalLines.push(
+                    <Shape
+                        sceneFunc={(context, shape) => {
+                            context.beginPath();
+                            context.moveTo(aLoc.x, aLoc.y);
+                            context.bezierCurveTo(
+                                aLoc.x,
+                                aLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
+                                bLoc.x,
+                                bLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
+                                bLoc.x,
+                                bLoc.y
+                            );
+                            context.strokeShape(shape);
+                        }}
+                        stroke={discColor}
+                        strokeWidth={isIntervalEmphasized ? 3 : 1.5}
+                        onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize}
+                    />
+                );
+
+                }
+            }
+                }
+        }
+        return {
+            line: intervalLines,
+            emphasized: emphasized,
+        }
+    }, [activeNotes, displayInterval, emphasizedNotes, getPropsForNote, octaveCount, props.height, setAreNotesEmphasized]);
+
+    // todo bring interval click listeners in front of key click listeners
     return (
         <Widget x={props.x} y={props.y} contextMenuX={0} contextMenuY={-props.height - 20} settingsRows={settingsMenuItems}>
-            {keys}
+            {keys.keys}
+            {intervals.line}
+            {intervals.emphasized}
+            {keys.activeNoteIndicators}
+            {keys.emphasized}
+            {keys.clickListenersArr}
         </Widget>
     )
 }

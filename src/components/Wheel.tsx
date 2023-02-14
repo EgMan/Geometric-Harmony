@@ -6,6 +6,7 @@ import { MenuItem, Select, Switch } from '@mui/material';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { useGetActiveNotesInCommonWithModulation, useModulateActiveNotes } from './HarmonicModulation';
 import { getNoteName } from './SoundEngine';
+import { getIntervalColor, getIntervalDistance } from './Utils';
 type Props = {
     x: number
     y: number
@@ -51,27 +52,6 @@ function Wheel(props: Props) {
             y: -Math.cos(radians) * props.radius,
         }
     }, [isCircleOfFifths, props.radius, props.subdivisionCount])
-
-
-
-    const getIntervalColor = (distance: number) => {
-        switch (distance) {
-            case 1:
-                return "violet"
-            case 2:
-                return "rgb(112, 0, 195)"
-            case 3:
-                return "blue"
-            case 4:
-                return "green"
-            case 5:
-                return "orange"
-            case 6:
-                return "red"
-            default:
-                return "white"
-        }
-    }
 
     const settingsMenuItems = [
         (<tr>
@@ -216,12 +196,6 @@ function Wheel(props: Props) {
     }, [getNoteLocation, rotatingStartingNote, props.subdivisionCount, isCircleOfFifths, getNotesInCommon, setAreNotesEmphasized, modulateActiveNotes, activeNotes, emphasizedNotes, highlightedNotes, showNoteNames, setAreNotesActive]);
 
     const intervals = React.useMemo(() => {
-        const getIntervalDistance = (loc1: number, loc2: number) => {
-            const dist1 = Math.abs(loc1 - loc2);
-            // const dist2 = (props.subdivisionCount-loc1 +loc2) % (Math.ceil(props.subdivisionCount/2));
-            const dist2 = (props.subdivisionCount - Math.max(loc1, loc2) + Math.min(loc1, loc2));
-            return Math.min(dist1, dist2);
-        }
         var intervalLines: JSX.Element[] = [];
         var emphasized: JSX.Element[] = [];
         var highlighted: JSX.Element[] = [];
@@ -233,7 +207,7 @@ function Wheel(props: Props) {
                 const noteB = activeNoteArr[b];
                 const aLoc = getNoteLocation(noteA);
                 const bLoc = getNoteLocation(noteB);
-                const dist = getIntervalDistance(noteA, noteB);
+                const dist = getIntervalDistance(noteA, noteB, props.subdivisionCount);
                 const discColor = getIntervalColor(dist);
                 if (!displayInterval[dist - 1]) {
                     continue;

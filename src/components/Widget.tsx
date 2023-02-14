@@ -3,7 +3,7 @@ import { Circle, Group, Layer, Stage } from "react-konva";
 import { animated, useSpring, useTransition } from '@react-spring/konva';
 import { Html } from "react-konva-utils";
 import { ThemeProvider, createTheme } from "@mui/material";
-import { green, grey, purple } from "@mui/material/colors";
+import { green, purple } from "@mui/material/colors";
 
 type Props = {
     children?: React.ReactNode
