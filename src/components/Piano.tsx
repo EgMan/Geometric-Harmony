@@ -24,7 +24,7 @@ function Piano(props: Props) {
 
     const [octaveCount, setOctaveCount] = React.useState(props.octaveCount);
 
-    const [displayInterval, setDisplayIntervals] = React.useState([false, false, false, false, false, false]);
+    const [displayInterval, setDisplayIntervals] = React.useState([true, true, true, true, true, true]);
     const setDisplayInterval = (index: number, value: boolean) => {
         const newDisplayInterval = displayInterval.slice();
         newDisplayInterval[index] = value;
@@ -32,6 +32,8 @@ function Piano(props: Props) {
     }
 
     const [showNoteNames, setShowNoteNames] = React.useState(true);
+
+    const [onlyShowIntervalsOnHover, setOnlyShowIntervalsOnHover] = React.useState(true);
 
     ///////////////////
 
@@ -82,6 +84,11 @@ function Piano(props: Props) {
             <td>Show Tritones</td>
             <td style={{ color: getIntervalColor(6), textAlign: "center"}}>■</td>
             <td><Switch checked={displayInterval[5]} onChange={e => setDisplayInterval(5, e.target.checked)} /></td>
+        </tr>),
+        (<tr>
+            <td>Only show intervals on <span style={{ color: "red"}}>emmphasized</span> notes</td>
+            <td style={{textAlign: "center"}}></td>
+            <td><Switch checked={onlyShowIntervalsOnHover} onChange={e => setOnlyShowIntervalsOnHover(e.target.checked)} /></td>
         </tr>),
         (<tr>
             <td>Show note names</td>
@@ -197,6 +204,7 @@ function Piano(props: Props) {
         var intervalLines: JSX.Element[] = [];
         var emphasized: JSX.Element[] = [];
         const activeNoteArr = Array.from(activeNotes);
+
                 for (let octaveA = 0; octaveA < octaveCount; octaveA++) {
                 for (let octaveB = octaveA; octaveB <= Math.min(octaveA+1, octaveCount-1); octaveB++) {
         for (let a = 0; a < activeNoteArr.length; a++) {
@@ -221,6 +229,19 @@ function Piano(props: Props) {
 
                 if (absoluteDist > dist) {
                     continue;
+                }
+
+                if (onlyShowIntervalsOnHover)
+                {
+                    if (emphasizedNotes.size === 0)
+                        continue;
+                    if (emphasizedNotes.size === 1)
+                        continue;
+                    // Too instead show all intervals between the single emphasized note
+                    // if (emphasizedNotes.size === 1 && !emphasizedNotes.has(noteA) && !emphasizedNotes.has(noteB))
+                    //     continue;
+                    if (emphasizedNotes.size >= 2 && (!emphasizedNotes.has(noteA) || !emphasizedNotes.has(noteB)))
+                        continue;
                 }
 
                 const emphasize = () => {
@@ -260,7 +281,7 @@ function Piano(props: Props) {
             line: intervalLines,
             emphasized: emphasized,
         }
-    }, [activeNotes, displayInterval, emphasizedNotes, getPropsForNote, octaveCount, props.height, setAreNotesEmphasized]);
+    }, [activeNotes, displayInterval, emphasizedNotes, getPropsForNote, octaveCount, onlyShowIntervalsOnHover, props.height, setAreNotesEmphasized]);
 
     // todo bring interval click listeners in front of key click listeners
     return (
