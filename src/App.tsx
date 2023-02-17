@@ -7,6 +7,7 @@ import SoundEngine from './components/SoundEngine';
 import NoteProvider from './components/NoteProvider';
 import HarmonyAnalyzer from './components/HarmonyAnalyzer';
 import BackPlate from './components/BackPlate';
+import StringInstrument from './components/StringInstrument';
 function App() {
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth)
   const [windowHeight, setWindowHeight] = React.useState(window.innerHeight)
@@ -23,7 +24,7 @@ function App() {
 
   const limitingAxisIsHeight = windowWidth > windowHeight;
   const limitingAxisSize = limitingAxisIsHeight ? windowHeight : windowWidth;
-  const padding = limitingAxisSize / 6;
+  const padding = limitingAxisSize / 5;
   const wheelRadius = limitingAxisSize / 2 - padding;
   const pianoOctaveCount = limitingAxisIsHeight ? 4 : 2;
   const pianoHeight = ((windowHeight / 2) - wheelRadius) * 2 / 3;
@@ -39,8 +40,9 @@ function App() {
                   <BackPlate width={windowWidth} height={windowHeight} />
                   <HarmonyAnalyzer subdivisionCount={12} x={0} y={10} width={windowWidth} />
                   <Wheel subdivisionCount={12} radius={wheelRadius} x={windowWidth / 4} y={windowHeight / 2} isCircleOfFifths={false} />
-                  <Wheel subdivisionCount={12} radius={wheelRadius} x={3 * windowWidth / 4} y={windowHeight / 2} isCircleOfFifths={true} />
+                  {/* <Wheel subdivisionCount={12} radius={wheelRadius} x={3 * windowWidth / 4} y={windowHeight / 2} isCircleOfFifths={true} /> */}
                   <Piano x={windowWidth / 2} y={windowHeight - 1} height={pianoHeight} width={pianoWidth} octaveCount={pianoOctaveCount} />
+                  <StringInstrument  x={3 * windowWidth / 4} y={windowHeight / 8} height={windowHeight -  200} width={pianoWidth/2} fretCount={13} tuning={[4, 9, 2, 7, 11, 16]} />
                 </Layer>
               </Stage>
               <SoundEngine />
