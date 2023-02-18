@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/Geometric-Harmony/static/css/main.99ca6ebc.css",
-    "main.js": "/Geometric-Harmony/static/js/main.8b26b3b1.js",
+    "main.css": "/Geometric-Harmony/static/css/main.41cda48d.css",
+    "main.js": "/Geometric-Harmony/static/js/main.d8de304c.js",
     "static/js/787.244e6189.chunk.js": "/Geometric-Harmony/static/js/787.244e6189.chunk.js",
     "index.html": "/Geometric-Harmony/index.html",
-    "main.99ca6ebc.css.map": "/Geometric-Harmony/static/css/main.99ca6ebc.css.map",
-    "main.8b26b3b1.js.map": "/Geometric-Harmony/static/js/main.8b26b3b1.js.map",
+    "main.41cda48d.css.map": "/Geometric-Harmony/static/css/main.41cda48d.css.map",
+    "main.d8de304c.js.map": "/Geometric-Harmony/static/js/main.d8de304c.js.map",
     "787.244e6189.chunk.js.map": "/Geometric-Harmony/static/js/787.244e6189.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.99ca6ebc.css",
-    "static/js/main.8b26b3b1.js"
+    "static/css/main.41cda48d.css",
+    "static/js/main.d8de304c.js"
   ]
 }
