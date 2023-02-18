@@ -1,9 +1,9 @@
 import React from 'react';
 import { Circle, Rect, Shape, Text } from 'react-konva';
-import { useActiveNotes, useEmphasizedNotes, useSetAreNotesActive, useSetAreNotesEmphasized } from './NoteProvider';
 import Widget from './Widget';
 import { MenuItem, Select, Switch } from '@mui/material';
 import { getIntervalColor, getIntervalDistance, getNoteName } from './Utils';
+import { NoteSet, useNoteSet, useUpdateNoteSet } from './NoteProvider';
 
 const keyColor = "grey";
 const noteToXOffsetFactor = [0, 1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 6];
@@ -107,11 +107,9 @@ function Piano(props: Props) {
     const XglobalKeyOffset = (props.width * octaveCount / -2);
     const YglobalKeyOffset = -props.height;
 
-    const activeNotes = useActiveNotes();
-    const setAreNotesActive = useSetAreNotesActive();
-
-    const emphasizedNotes = useEmphasizedNotes();
-    const setAreNotesEmphasized = useSetAreNotesEmphasized();
+    const activeNotes = useNoteSet()(NoteSet.Active);
+    const emphasizedNotes = useNoteSet()(NoteSet.Emphasized);
+    const updateNotes = useUpdateNoteSet();
 
     type NoteProps = {
         keyWidth: number
@@ -186,7 +184,7 @@ function Piano(props: Props) {
                 keys.push(<Rect key={`key${i}-${note}`} x={noteprops.xpos + noteprops.individualKeyOffset} y={YglobalKeyOffset} width={noteprops.keyWidth} height={noteprops.keyHeight} {...noteprops.extraProps}></Rect>)
                 if (activeNotes.has(note)) activeNoteIndicators.push(<Circle key={`activeInd${i}-${note}`} x={noteprops.xpos + noteprops.individualActiveIndicaterOffset} y={noteprops.activeIndicatorY} width={noteprops.activeIndicatorWidth} height={noteprops.activeIndicatorWidth} fill={"white"}></Circle>)
                 if (emphasizedNotes.has(note)) emphasized.push(<Circle key={`emphaInd${i}-${note}`} x={noteprops.xpos + noteprops.individualActiveIndicaterOffset} y={noteprops.activeIndicatorY} width={noteprops.activeIndicatorWidth} height={noteprops.activeIndicatorWidth} fill={"red"}></Circle>)
-                clickListenersArr.push(<Rect key={`keyHitbox${i}-${note}`} x={noteprops.xpos + noteprops.individualKeyOffset} y={YglobalKeyOffset} width={noteprops.keyWidth} height={noteprops.keyHeight} onClick={() => setAreNotesActive([note], !activeNotes.has(note))} onTap={() => setAreNotesActive([note], !activeNotes.has(note))} onMouseOver={() => setAreNotesEmphasized([note], true, true)} onMouseOut={() => setAreNotesEmphasized([note], false)}></Rect>)
+                clickListenersArr.push(<Rect key={`keyHitbox${i}-${note}`} x={noteprops.xpos + noteprops.individualKeyOffset} y={YglobalKeyOffset} width={noteprops.keyWidth} height={noteprops.keyHeight} onClick={() => updateNotes(NoteSet.Active, [note], !activeNotes.has(note))} onTap={() => updateNotes(NoteSet.Active, [note], !activeNotes.has(note))} onMouseOver={() => updateNotes(NoteSet.Emphasized, [note], true, true)} onMouseOut={() => updateNotes(NoteSet.Emphasized, [note], false)}></Rect>)
                 if (showNoteNames) {
 
                     // noteNames.push(<Text key={`noteName${i}`} width={40} height={40} x={noteLoc.x-20} y={noteLoc.y-20} text={getNoteName(i)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(i) ? "black" : "grey"} align="center" verticalAlign="middle" />);
@@ -204,7 +202,7 @@ function Piano(props: Props) {
             emphasized,
             clickListenersArr,
         };
-    }, [YglobalKeyOffset, activeNotes, emphasizedNotes, getPropsForNote, octaveCount, setAreNotesActive, setAreNotesEmphasized, showNoteNames]);
+    }, [YglobalKeyOffset, activeNotes, emphasizedNotes, getPropsForNote, octaveCount, showNoteNames, updateNotes]);
 
     const intervals = React.useMemo(() => {
         var intervalLines: JSX.Element[] = [];
@@ -253,10 +251,10 @@ function Piano(props: Props) {
                         }
 
                         const emphasize = () => {
-                            setAreNotesEmphasized([noteA, noteB], true)
+                            updateNotes(NoteSet.Emphasized, [noteA, noteB], true)
                         };
                         const deemphasize = () => {
-                            setAreNotesEmphasized([noteA, noteB], false);
+                            updateNotes(NoteSet.Emphasized, [noteA, noteB], false);
                         };
                         const isIntervalEmphasized = emphasizedNotes.has(noteA) && emphasizedNotes.has(noteB);
 
@@ -289,7 +287,7 @@ function Piano(props: Props) {
             line: intervalLines,
             emphasized: emphasized,
         }
-    }, [activeNotes, displayInterval, emphasizedNotes, getPropsForNote, octaveCount, onlyShowIntervalsOnHover, props.height, setAreNotesEmphasized, showInverseIntervals]);
+    }, [activeNotes, displayInterval, emphasizedNotes, getPropsForNote, octaveCount, onlyShowIntervalsOnHover, props.height, showInverseIntervals, updateNotes]);
 
     // todo bring interval click listeners in front of key click listeners
     return (

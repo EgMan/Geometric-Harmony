@@ -1,6 +1,6 @@
 import React from "react";
-import { useSetAreNotesEmphasized } from "./NoteProvider";
 import { useModulateActiveNotes } from "./HarmonicModulation";
+import { NoteSet, useUpdateNoteSet } from "./NoteProvider";
 
 const keyToNoteNumber = new Map<string, number>(
     [
@@ -27,7 +27,7 @@ const keyToNoteNumber = new Map<string, number>(
 
 function useKeypressPlayer() {
     const [keysPressed, setKeysPressed] = React.useState(new Set<string>());
-    const setAreNotesEmphasized = useSetAreNotesEmphasized();
+    const updateNotes = useUpdateNoteSet();
     const modulateActiveNotes = useModulateActiveNotes();
 
     const handleKeyDowns = React.useCallback((key: string) => {
@@ -67,12 +67,12 @@ function useKeypressPlayer() {
         const onVisChange = (event: Event) => {
             if (!document.hasFocus()) {
                 keysPressed.clear();
-                setAreNotesEmphasized([], false, true);
+                updateNotes(NoteSet.Emphasized, [], false, true);
             }
         }
 
         const onMouseLeave = (event: Event) => {
-            setAreNotesEmphasized([], false, true);
+            updateNotes(NoteSet.Emphasized, [], false, true);
         }
 
         document.addEventListener("visibilitychange", onVisChange);
@@ -88,7 +88,7 @@ function useKeypressPlayer() {
             window.removeEventListener("keydown", onKeyDown);
             window.removeEventListener("keyup", onKeyUp);
         }
-    }, [handleKeyDowns, keysPressed, modulateActiveNotes, setAreNotesEmphasized]);
+    }, [handleKeyDowns, keysPressed, modulateActiveNotes, updateNotes]);
 
     React.useEffect(() => {
         if (keysPressed.has("Meta")) {
@@ -97,7 +97,7 @@ function useKeypressPlayer() {
         const notesPressed = Array.from(keysPressed).filter(key => keyToNoteNumber.get(key.toLocaleLowerCase()) !== undefined).map(key => {
             return keyToNoteNumber.get(key.toLocaleLowerCase()) ?? -1;
         })
-        setAreNotesEmphasized(notesPressed, true, true);
+        updateNotes(NoteSet.Emphasized, notesPressed, true, true);
 
         // setAreNotesEmphasized can not trigger this effect otherwise "no keys pressed" will constantly
         // Be overwriting emphasized notes when the keyboard is not being touched.  

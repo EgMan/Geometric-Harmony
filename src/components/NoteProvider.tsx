@@ -1,84 +1,64 @@
 import React from "react";
 
-// const ActiveNoteContext = React.createContext((i: number) => new Boolean());
-const ActiveNotesContext = React.createContext(new Set<number>());
-const ActiveNoteUpdateContext = React.createContext((nums: Array<number>, areActive: boolean, overwriteExisting: boolean = false) => { });
-
-// const EmphasizedNoteContext = React.createContext((i: number) => new Boolean());
-const EmphasizedNotesContext = React.createContext(new Set<number>());
-const EmphasizedNoteUpdateContext = React.createContext((nums: Array<number>, areActive: boolean, overwriteExisting: boolean = false) => { });
+const noteSetContext = React.createContext((noteSet: NoteSet) => { return new Set<number>() });
+const updateNoteSetContext = React.createContext((noteSet: NoteSet, nums: Array<number>, areEnabled: boolean, overwriteExisting: boolean = false) => { });
 
 type Props = {
     children: JSX.Element
 }
 
+export enum NoteSet {
+    Active,
+    Emphasized,
+    Highlighted,
+}
+
 function NoteProvider(props: Props) {
-    const [activeNotes, setActiveNotes] = React.useState(
-        new Set<number>([0, 2, 3, 5, 7, 9, 10])//Natural Mode Family
-    );
+    const [noteSets, setNoteSets] = React.useState({
+        [NoteSet.Active]: new Set<number>([0, 2, 3, 5, 7, 9, 10]),
+        [NoteSet.Emphasized]: new Set<number>(),
+        [NoteSet.Highlighted]: new Set<number>(),
+    });
+    const getNoteSet = React.useCallback((noteSet: NoteSet) => {
+        return noteSets[noteSet];
+    }, [noteSets]);
+    const setNoteSet = React.useCallback((noteSet: NoteSet, nums: Array<number>, areEnabled: boolean, overwriteExisting: boolean = false) => {
+        const startingPoint = overwriteExisting ? new Set<number>() : noteSets[noteSet];
 
-    const activeNotesMod12 = new Set(Array.from(activeNotes)
-    .map(elem => {
-        let modelem = elem % 12;
-        if (modelem < 0) modelem += 12;
-        return modelem;
-    }));
+        nums = nums.map(elem => {
+            return ((12 * 12) + elem) % 12;
+        });
 
-    const setAreNotesActive = (nums: Array<number>, areActive: boolean, overwriteExisting: boolean = false) => {
-        const startingPoint = overwriteExisting ? new Set<number>() : activeNotesMod12;
-
-        if (areActive) {
-            setActiveNotes(new Set(Array.from(startingPoint).concat(nums)))
+        if (areEnabled) {
+            setNoteSets({
+                ...noteSets,
+                [noteSet]: new Set(Array.from(startingPoint).concat(nums))
+            });
         }
         else {
             const numsSet = new Set(nums);
-            setActiveNotes(new Set(Array.from(startingPoint).filter(
-                elem => !numsSet.has(elem)
-                )));
+            setNoteSets({
+                ...noteSets,
+                [noteSet]: new Set(Array.from(startingPoint).filter(elem => !numsSet.has(elem)))
+            });
         }
-    }
-
-    const [emphasizedNotes, setEmphasizedNotes] = React.useState(new Set<number>());
-
-    const setAreNotesEmphasized = (nums: Array<number>, areActive: boolean, overwriteExisting: boolean = false) => {
-        const startingPoint = overwriteExisting ? new Set<number>() : emphasizedNotes;
-
-        if (areActive) {
-            setEmphasizedNotes(new Set(Array.from(startingPoint).concat(nums)))
-        }
-        else {
-            const numsSet = new Set(nums);
-            setEmphasizedNotes(new Set(Array.from(startingPoint).filter(elem => !numsSet.has(elem))));
-        }
-    }
+    }, [noteSets]);
 
     return (
-        <EmphasizedNotesContext.Provider value={emphasizedNotes}>
-            <EmphasizedNoteUpdateContext.Provider value={setAreNotesEmphasized}>
-                <ActiveNotesContext.Provider value={activeNotesMod12}>
-                    <ActiveNoteUpdateContext.Provider value={setAreNotesActive}>
-                        {props.children}
-                    </ActiveNoteUpdateContext.Provider>
-                </ActiveNotesContext.Provider>
-            </EmphasizedNoteUpdateContext.Provider>
-        </EmphasizedNotesContext.Provider>
+        <noteSetContext.Provider value={getNoteSet}>
+            <updateNoteSetContext.Provider value={setNoteSet}>
+                {props.children}
+            </updateNoteSetContext.Provider>
+        </noteSetContext.Provider>
     );
 }
 
-export function useActiveNotes() {
-    return React.useContext(ActiveNotesContext);
+export function useNoteSet() {
+    return React.useContext(noteSetContext);
 }
 
-export function useSetAreNotesActive() {
-    return React.useContext(ActiveNoteUpdateContext);
-}
-
-export function useEmphasizedNotes() {
-    return React.useContext(EmphasizedNotesContext);
-}
-
-export function useSetAreNotesEmphasized() {
-    return React.useContext(EmphasizedNoteUpdateContext);
+export function useUpdateNoteSet() {
+    return React.useContext(updateNoteSetContext);
 }
 
 export default NoteProvider;

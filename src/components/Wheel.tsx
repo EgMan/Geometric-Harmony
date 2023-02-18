@@ -1,11 +1,11 @@
 import React from 'react';
 import { Circle, Group, Line, Text } from 'react-konva';
-import { useActiveNotes, useSetAreNotesActive, useEmphasizedNotes, useSetAreNotesEmphasized } from './NoteProvider';
 import Widget from './Widget';
 import { MenuItem, Select, Switch } from '@mui/material';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { useGetActiveNotesInCommonWithModulation, useModulateActiveNotes } from './HarmonicModulation';
 import { getIntervalColor, getIntervalDistance, getNoteName } from './Utils';
+import { NoteSet, useNoteSet, useUpdateNoteSet } from './NoteProvider';
 type Props = {
     x: number
     y: number
@@ -15,11 +15,9 @@ type Props = {
 }
 
 function Wheel(props: Props) {
-    const activeNotes = useActiveNotes();
-    const setAreNotesActive = useSetAreNotesActive();
-
-    const emphasizedNotes = useEmphasizedNotes();
-    const setAreNotesEmphasized = useSetAreNotesEmphasized();
+    const activeNotes = useNoteSet()(NoteSet.Active);
+    const emphasizedNotes = useNoteSet()(NoteSet.Emphasized);
+    const updateNotes = useUpdateNoteSet();
     const getNotesInCommon = useGetActiveNotesInCommonWithModulation();
 
     const modulateActiveNotes = useModulateActiveNotes();
@@ -128,7 +126,7 @@ function Wheel(props: Props) {
             if (isCircleOfFifths) {
                 noteDiff = (noteDiff * 7) % props.subdivisionCount;
             }
-            // setAreNotesEmphasized(getNotesInCommon(noteDiff), true, true);
+            // updateNotes(NoteSet.Emphasized, getNotesInCommon(noteDiff), true, true);
             setHighlightedNotes(new Set(Array.from(getNotesInCommon(noteDiff)).map((note) => (note + props.subdivisionCount - noteDiff) % props.subdivisionCount)));
             setRotation(angle);
         }
@@ -137,7 +135,7 @@ function Wheel(props: Props) {
             setIsRotating(true);
             setRotatingStartingNote(idx);
 
-            setAreNotesEmphasized([], false, true);
+            updateNotes(NoteSet.Emphasized, [], false, true);
         }
 
         const onRotateDragEnd = (e: KonvaEventObject<DragEvent>) => {
@@ -160,13 +158,13 @@ function Wheel(props: Props) {
         for (let i = 0; i < props.subdivisionCount; i++) {
             const noteLoc = getNoteLocation(i);
             const toggleActive = () => {
-                setAreNotesActive([i], !activeNotes.has(i));
+                updateNotes(NoteSet.Active, [i], !activeNotes.has(i));
             };
             const emphasize = () => {
-                setAreNotesEmphasized([i], true, true);
+                updateNotes(NoteSet.Emphasized, [i], true, true);
             };
             const deemphasize = () => {
-                setAreNotesEmphasized([i], false);
+                updateNotes(NoteSet.Emphasized, [i], false);
             };
             if (activeNotes.has(i)) {
                 notesArr.push(<Circle key={`active${i}`} x={noteLoc.x} y={noteLoc.y} fill="white" radius={10} />);
@@ -192,7 +190,7 @@ function Wheel(props: Props) {
             clickListeners: clickListenersArr,
             names: noteNames,
         }
-    }, [getNoteLocation, rotatingStartingNote, props.subdivisionCount, isCircleOfFifths, getNotesInCommon, setAreNotesEmphasized, modulateActiveNotes, activeNotes, emphasizedNotes, highlightedNotes, showNoteNames, setAreNotesActive]);
+    }, [getNoteLocation, rotatingStartingNote, props.subdivisionCount, isCircleOfFifths, getNotesInCommon, updateNotes, modulateActiveNotes, activeNotes, emphasizedNotes, highlightedNotes, showNoteNames]);
 
     const intervals = React.useMemo(() => {
         var intervalLines: JSX.Element[] = [];
@@ -212,10 +210,10 @@ function Wheel(props: Props) {
                     continue;
                 }
                 const emphasize = () => {
-                    setAreNotesEmphasized([noteA, noteB], true)
+                    updateNotes(NoteSet.Emphasized, [noteA, noteB], true)
                 };
                 const deemphasize = () => {
-                    setAreNotesEmphasized([noteA, noteB], false);
+                    updateNotes(NoteSet.Emphasized, [noteA, noteB], false);
                 };
                 const isIntervalEmphasized = emphasizedNotes.has(noteA) && emphasizedNotes.has(noteB);
                 if (isIntervalEmphasized) {
@@ -235,7 +233,7 @@ function Wheel(props: Props) {
             emphasized: emphasized,
             highlighted: highlighted,
         }
-    }, [activeNotes, displayInterval, emphasizedNotes, getNoteLocation, highlightedNotes, props.subdivisionCount, setAreNotesEmphasized]);
+    }, [activeNotes, displayInterval, emphasizedNotes, getNoteLocation, highlightedNotes, props.subdivisionCount, updateNotes]);
 
     const centerpoint = (<Circle radius={1} fill="grey"></Circle>);
 

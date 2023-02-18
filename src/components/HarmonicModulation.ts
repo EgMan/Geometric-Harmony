@@ -1,21 +1,21 @@
 import React from "react";
-import { useActiveNotes, useSetAreNotesActive } from "./NoteProvider";
 import { HarmonicShape } from "./KnownHarmonicShapes";
+import { NoteSet, useNoteSet, useUpdateNoteSet } from "./NoteProvider";
 
 function getModulatedNotes(activeNotes: Set<number>, semitones: number) {
     return Array.from(activeNotes).map(note => (note + semitones) % 12);//Do I want to do the modulus here?
 }
 
 export function useModulateActiveNotes() {
-    const activeNotes = useActiveNotes();
-    const setAreNotesActive = useSetAreNotesActive();
+    const activeNotes = useNoteSet()(NoteSet.Active);
+    const updateNotes = useUpdateNoteSet();
     return React.useCallback((semitones: number) => {
-        setAreNotesActive(getModulatedNotes(activeNotes, semitones), true, true);
-    }, [activeNotes, setAreNotesActive])
+        updateNotes(NoteSet.Active, getModulatedNotes(activeNotes, semitones), true, true);
+    }, [activeNotes, updateNotes])
 }
 
 export function useGetActiveNotesInCommonWithModulation() {
-    const activeNotes = useActiveNotes();
+    const activeNotes = useNoteSet()(NoteSet.Active);
     return React.useCallback((semitones: number) => {
         const newActiveNotes = getModulatedNotes(activeNotes, semitones);
         // let notesInCommon: number[] = [];
@@ -29,13 +29,13 @@ export function useGetActiveNotesInCommonWithModulation() {
 }
 
 export function useSetActiveShape() {
-    const setAreNotesActive = useSetAreNotesActive();
+    const updateNotes = useUpdateNoteSet();
     return React.useCallback((shape: HarmonicShape, startingWhere: number) => {
         let newActiveNotes: number[] = [];
         shape.notes.forEach((note, i) => {
             if (note[0]) newActiveNotes.push(i + startingWhere)//Do I want to do the modulus here?
         });
-        setAreNotesActive(newActiveNotes, true, true);
+        updateNotes(NoteSet.Active, newActiveNotes, true, true);
         return newActiveNotes;
-    }, [setAreNotesActive]);
+    }, [updateNotes]);
 }

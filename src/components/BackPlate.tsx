@@ -1,6 +1,6 @@
 import React from "react";
 import { Rect } from "react-konva";
-import { useSetAreNotesEmphasized } from "./NoteProvider";
+import { NoteSet, useUpdateNoteSet } from "./NoteProvider";
 
 type Props =
     {
@@ -9,8 +9,8 @@ type Props =
     }
 
 function BackPlate(props: Props): JSX.Element {
-    const setEmphasizedNotes = useSetAreNotesEmphasized();
-    const resetEmphasizedNotes = () => {setEmphasizedNotes([], false, true)}
+    const updateNotes = useUpdateNoteSet();
+    const resetEmphasizedNotes = () => {updateNotes(NoteSet.Emphasized, [], false, true)}
     return (<Rect x={0} y={0} width={props.width} height={props.height} fill="rgba(0,0,0,0)" onMouseEnter={resetEmphasizedNotes}/>);
 }
 

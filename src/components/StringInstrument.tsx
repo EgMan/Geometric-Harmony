@@ -1,9 +1,9 @@
 import React from 'react';
 import { Circle, Rect, Line, Text } from 'react-konva';
-import { useActiveNotes, useEmphasizedNotes, useSetAreNotesActive, useSetAreNotesEmphasized } from './NoteProvider';
 import Widget from './Widget';
 import { MenuItem, Select, Switch } from '@mui/material';
 import { getNoteName } from './Utils';
+import { NoteSet, useNoteSet, useUpdateNoteSet } from './NoteProvider';
 
 type Props = {
     x: number
@@ -20,11 +20,9 @@ function StringInstrument(props: Props) {
     const fretElemYOffset = -fretSpacing / 2;
     const circleElemRadius = stringSpacing / 5;
 
-    const activeNotes = useActiveNotes();
-    const setAreNotesActive = useSetAreNotesActive();
-
-    const emphasizedNotes = useEmphasizedNotes();
-    const setAreNotesEmphasized = useSetAreNotesEmphasized();
+    const activeNotes = useNoteSet()(NoteSet.Active);
+    const emphasizedNotes = useNoteSet()(NoteSet.Emphasized);
+    const updateNotes = useUpdateNoteSet();
 
     enum NoteLabling {
         None = 1,
@@ -106,7 +104,7 @@ function StringInstrument(props: Props) {
                     )
                 }
 
-                clickListeners.push(<Rect key={`keyHitbox${fretNum}-${stringNum}`} x={posX - (stringSpacing / 2)} y={posY + fretElemYOffset - (fretSpacing / 2)} width={stringSpacing} height={fretSpacing} onClick={() => setAreNotesActive([note], !activeNotes.has(note))} onTap={() => setAreNotesActive([note], !activeNotes.has(note))} onMouseOver={() => setAreNotesEmphasized([note], true, true)} onMouseOut={() => setAreNotesEmphasized([note], false)}></Rect>)
+                clickListeners.push(<Rect key={`keyHitbox${fretNum}-${stringNum}`} x={posX - (stringSpacing / 2)} y={posY + fretElemYOffset - (fretSpacing / 2)} width={stringSpacing} height={fretSpacing} onClick={() => updateNotes(NoteSet.Active, [note], !activeNotes.has(note))} onTap={() => updateNotes(NoteSet.Active, [note], !activeNotes.has(note))} onMouseOver={() => updateNotes(NoteSet.Emphasized, [note], true, true)} onMouseOut={() => updateNotes(NoteSet.Emphasized, [note], false)}></Rect>)
             });
         }
         return {
@@ -117,7 +115,7 @@ function StringInstrument(props: Props) {
             emphasized,
             clickListeners,
         }
-    }, [NoteLabling.ActiveNoteNames, NoteLabling.NoteNames, activeNotes, circleElemRadius, emphasizedNotes, fretElemYOffset, fretSpacing, noteLabeling, props.fretCount, props.tuning, props.width, setAreNotesActive, setAreNotesEmphasized, stringSpacing]);
+    }, [NoteLabling.ActiveNoteNames, NoteLabling.NoteNames, activeNotes, circleElemRadius, emphasizedNotes, fretElemYOffset, fretSpacing, noteLabeling, props.fretCount, props.tuning, props.width, stringSpacing, updateNotes]);
 
     return (
         <Widget x={props.x - (props.width / 2)} y={props.y} contextMenuX={props.width / 2} contextMenuY={-fretSpacing} settingsRows={settingsMenuItems}>

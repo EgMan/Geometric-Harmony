@@ -1,16 +1,16 @@
 import { Song, Track, Instrument } from 'reactronica';
 import useKeypressPlayer from './KeypressPlayer';
-import { useActiveNotes, useEmphasizedNotes } from './NoteProvider';
 import React from 'react';
 import { getNote } from './Utils';
+import { NoteSet, useNoteSet } from './NoteProvider';
 
 type Props = {}
 
 function SoundEngine(props: Props) {
     useKeypressPlayer();
 
-    const emphasizedNotes = useEmphasizedNotes();
-    const activeNotes = useActiveNotes();
+    const activeNotes = useNoteSet()(NoteSet.Active);
+    const emphasizedNotes = useNoteSet()(NoteSet.Emphasized);
     const playingNotes = Array.from(emphasizedNotes).filter(note => activeNotes.has(note));
     const [forceCutoff, setForceCutoff] = React.useState(false);
 

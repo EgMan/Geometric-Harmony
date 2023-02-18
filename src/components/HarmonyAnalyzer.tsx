@@ -1,9 +1,9 @@
 import React from "react";
-import { useActiveNotes, useEmphasizedNotes } from "./NoteProvider";
 import { Text } from 'react-konva';
 import { HarmonicShape, knownShapes } from "./KnownHarmonicShapes";
 import Widget from "./Widget";
 import { getNoteName } from "./Utils";
+import { NoteSet, useNoteSet } from "./NoteProvider";
 
 
 type Props =
@@ -14,10 +14,9 @@ type Props =
         subdivisionCount: number
     }
 
-
 function HarmonyAnalyzer(props: Props) {
-    const activeNotes = useActiveNotes();
-    const emphasizedNotes = useEmphasizedNotes();
+    const activeNotes = useNoteSet()(NoteSet.Active);
+    const emphasizedNotes = useNoteSet()(NoteSet.Emphasized);
 
     const tryToFitShape = React.useCallback((shape: HarmonicShape, notes: Set<number>) => {
         const noteArr = Array.from(notes);
