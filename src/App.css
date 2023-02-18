@@ -92,4 +92,7 @@ tr, td {
 #menu-dropdown {
   background-color: rgba(255, 255, 255, 0.309);
   color: white; 
+  padding: 8px;
+  padding-right: 32px;
+  border-radius: 9px;
 }
