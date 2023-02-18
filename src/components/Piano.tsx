@@ -3,8 +3,7 @@ import { Circle, Rect, Shape, Text } from 'react-konva';
 import { useActiveNotes, useEmphasizedNotes, useSetAreNotesActive, useSetAreNotesEmphasized } from './NoteProvider';
 import Widget from './Widget';
 import { MenuItem, Select, Switch } from '@mui/material';
-import { getIntervalColor, getIntervalDistance } from './Utils';
-import { getNoteName } from './SoundEngine';
+import { getIntervalColor, getIntervalDistance, getNoteName } from './Utils';
 
 const keyColor = "grey";
 const noteToXOffsetFactor = [0, 1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 6];
@@ -193,7 +192,7 @@ function Piano(props: Props) {
                     // noteNames.push(<Text key={`noteName${i}`} width={40} height={40} x={noteLoc.x-20} y={noteLoc.y-20} text={getNoteName(i)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(i) ? "black" : "grey"} align="center" verticalAlign="middle" />);
                     const nameColor = activeNotes.has(note) ? "black" : (blackKeyNums.includes(note) ? "rgb(37,37,37)" : "grey");
                     noteNames.push(
-                        <Text key={`noteName${note}`} width={40} height={40} x={noteprops.xpos + noteprops.individualActiveIndicaterOffset - 20} y={noteprops.activeIndicatorY - 20} text={getNoteName(note)} fontSize={12} fontFamily='monospace' fill={nameColor} align="center" verticalAlign="middle" />
+                        <Text key={`noteName${note}`} width={40} height={40} x={noteprops.xpos + noteprops.individualActiveIndicaterOffset - 20} y={noteprops.activeIndicatorY - 20} text={getNoteName(note, activeNotes)} fontSize={12} fontFamily='monospace' fill={nameColor} align="center" verticalAlign="middle" />
                     )
                 }
             }

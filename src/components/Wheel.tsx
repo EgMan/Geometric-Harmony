@@ -1,12 +1,11 @@
 import React from 'react';
-import { Circle, Group, Line, Text} from 'react-konva';
+import { Circle, Group, Line, Text } from 'react-konva';
 import { useActiveNotes, useSetAreNotesActive, useEmphasizedNotes, useSetAreNotesEmphasized } from './NoteProvider';
 import Widget from './Widget';
 import { MenuItem, Select, Switch } from '@mui/material';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { useGetActiveNotesInCommonWithModulation, useModulateActiveNotes } from './HarmonicModulation';
-import { getNoteName } from './SoundEngine';
-import { getIntervalColor, getIntervalDistance } from './Utils';
+import { getIntervalColor, getIntervalDistance, getNoteName } from './Utils';
 type Props = {
     x: number
     y: number
@@ -37,7 +36,7 @@ function Wheel(props: Props) {
     }
 
     const [isCircleOfFifths, setIsCircleOfFiths] = React.useState(props.isCircleOfFifths);
-    
+
     const [showNoteNames, setShowNoteNames] = React.useState(true);
 
     ///////////////////
@@ -81,12 +80,12 @@ function Wheel(props: Props) {
         </tr>),
         (<tr>
             <td>Show Tritones</td>
-            <td style={{ color: getIntervalColor(6), textAlign: "center"}}>■</td>
+            <td style={{ color: getIntervalColor(6), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[5]} onChange={e => setDisplayInterval(5, e.target.checked)} /></td>
         </tr>),
         (<tr>
             <td>Show note names</td>
-            <td style={{textAlign: "center"}}>♯</td>
+            <td style={{ textAlign: "center" }}>♯</td>
             <td><Switch checked={showNoteNames} onChange={e => setShowNoteNames(e.target.checked)} /></td>
         </tr>),
         (<tr>
@@ -179,8 +178,8 @@ function Wheel(props: Props) {
                 highlighted.push(<Circle key={`highlighted${i}`} x={noteLoc.x} y={noteLoc.y} fill="white" radius={20} />);
             }
             if (showNoteNames) {
-                
-                noteNames.push(<Text key={`noteName${i}`} width={40} height={40} x={noteLoc.x-20} y={noteLoc.y-20} text={getNoteName(i)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(i) ? "rgb(37,37,37)" : "grey"} align="center" verticalAlign="middle" />);
+
+                noteNames.push(<Text key={`noteName${i}`} width={40} height={40} x={noteLoc.x - 20} y={noteLoc.y - 20} text={getNoteName(i, activeNotes)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(i) ? "rgb(37,37,37)" : "grey"} align="center" verticalAlign="middle" />);
             }
             notesHaloArr.push(<Circle key={`halo${i}`} x={noteLoc.x} y={noteLoc.y} stroke="grey" radius={20} />);
             clickListenersArr.push(<Circle key={`clickListen${i}`} draggable x={noteLoc.x} y={noteLoc.y} radius={20} onClick={toggleActive} onTap={toggleActive} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize} onDragMove={onRotateDrag} onDragStart={(e) => onRotateDragStart(e, i)} onDragEnd={onRotateDragEnd} />);
@@ -258,8 +257,8 @@ function Wheel(props: Props) {
                 {notes.highlighted}
                 {centerpoint}
             </Group>}
-                {notes.names}
-                {notes.clickListeners}
+            {notes.names}
+            {notes.clickListeners}
         </Widget>
     );
 }

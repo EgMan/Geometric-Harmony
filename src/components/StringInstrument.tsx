@@ -1,14 +1,9 @@
 import React from 'react';
 import { Circle, Rect, Line, Text } from 'react-konva';
 import { useActiveNotes, useEmphasizedNotes, useSetAreNotesActive, useSetAreNotesEmphasized } from './NoteProvider';
-import { prototype } from 'events';
-// import { Line } from 'konva/lib/shapes/Line';
 import Widget from './Widget';
-import { getNoteName } from './SoundEngine';
 import { Switch } from '@mui/material';
-
-const keyColor = "grey";
-const ratio = Math.pow(2, 1 / 12);
+import { getNoteName } from './Utils';
 
 type Props = {
     x: number
@@ -26,6 +21,10 @@ function StringInstrument(props: Props) {
     const circleElemRadius = stringSpacing / 5;
 
     const activeNotes = useActiveNotes();
+    const setAreNotesActive = useSetAreNotesActive();
+
+    const emphasizedNotes = useEmphasizedNotes();
+    const setAreNotesEmphasized = useSetAreNotesEmphasized();
 
     const [showNoteNames, setShowNoteNames] = React.useState(true);
 
@@ -41,6 +40,8 @@ function StringInstrument(props: Props) {
         let fretElements: JSX.Element[] = [];
         let noteNames: JSX.Element[] = [];
         let activeNoteIndicators: JSX.Element[] = [];
+        let emphasized: JSX.Element[] = [];
+        let clickListeners: JSX.Element[] = [];
 
         for (let fretNum = 0; fretNum < props.fretCount; fretNum++) {
             const posY = (fretSpacing * fretNum);
@@ -71,19 +72,27 @@ function StringInstrument(props: Props) {
                     );
 
                 }
-                if (activeNotes.has(note)) {
+                if (emphasizedNotes.has(note)) {
+                    emphasized.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={"red"}></Circle>)
+                    noteNames.push(
+                        <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note, activeNotes)} fontSize={12} fontFamily='monospace' fill={"black"} align="center" verticalAlign="middle" />
+                    )
+                }
+                else if (activeNotes.has(note)) {
                     activeNoteIndicators.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={"white"}></Circle>)
                     if (showNoteNames) {
                         noteNames.push(
-                            <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note)} fontSize={12} fontFamily='monospace' fill={"grey"} align="center" verticalAlign="middle" />
+                            <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note, activeNotes)} fontSize={12} fontFamily='monospace' fill={"black"} align="center" verticalAlign="middle" />
                         )
                     }
                 } else if (showNoteNames) {
                     activeNoteIndicators.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={"rgb(55,55,55)"}></Circle>)
                     noteNames.push(
-                        <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note)} fontSize={12} fontFamily='monospace' fill={"grey"} align="center" verticalAlign="middle" />
+                        <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note, activeNotes)} fontSize={12} fontFamily='monospace' fill={"grey"} align="center" verticalAlign="middle" />
                     )
                 }
+
+                clickListeners.push(<Rect key={`keyHitbox${fretNum}-${stringNum}`} x={posX - (stringSpacing / 2)} y={posY + fretElemYOffset - (fretSpacing / 2)} width={stringSpacing} height={fretSpacing} onClick={() => setAreNotesActive([note], !activeNotes.has(note))} onTap={() => setAreNotesActive([note], !activeNotes.has(note))} onMouseOver={() => setAreNotesEmphasized([note], true, true)} onMouseOut={() => setAreNotesEmphasized([note], false)}></Rect>)
             });
         }
         return {
@@ -91,16 +100,20 @@ function StringInstrument(props: Props) {
             frets: fretElements,
             noteNames: noteNames,
             noteIndicators: activeNoteIndicators,
+            emphasized,
+            clickListeners,
         }
-    }, [activeNotes, circleElemRadius, fretElemYOffset, fretSpacing, props.fretCount, props.tuning, props.width, showNoteNames, stringSpacing]);
+    }, [activeNotes, circleElemRadius, emphasizedNotes, fretElemYOffset, fretSpacing, props.fretCount, props.tuning, props.width, setAreNotesActive, setAreNotesEmphasized, showNoteNames, stringSpacing]);
 
     return (
-        <Widget x={props.x - (props.width/2)} y={props.y} contextMenuX={props.width/2} contextMenuY={-fretSpacing} settingsRows={settingsMenuItems}>
+        <Widget x={props.x - (props.width / 2)} y={props.y} contextMenuX={props.width / 2} contextMenuY={-fretSpacing} settingsRows={settingsMenuItems}>
             {/* <Circle radius={100} fill={"green"} /> */}
             {elems.frets}
             {elems.strings}
             {elems.noteIndicators}
+            {elems.emphasized}
             {elems.noteNames}
+            {elems.clickListeners}
         </Widget>
     );
 }

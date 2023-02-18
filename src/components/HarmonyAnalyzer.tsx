@@ -2,8 +2,8 @@ import React from "react";
 import { useActiveNotes, useEmphasizedNotes } from "./NoteProvider";
 import { Text } from 'react-konva';
 import { HarmonicShape, knownShapes } from "./KnownHarmonicShapes";
-import { getNoteName } from "./SoundEngine";
 import Widget from "./Widget";
+import { getNoteName } from "./Utils";
 
 
 type Props =
@@ -68,16 +68,16 @@ function HarmonyAnalyzer(props: Props) {
     const exactFitName = exactFit ? exactFit.shape.name : "";
 
     const emphasizedNoteInfo = Array.from(emphasizedNotes).map(note => {
-        if (exactFit === null || exactFit === undefined) return getNoteName(note);
+        if (exactFit === null || exactFit === undefined) return getNoteName(note, activeNotes);
         let shapeIdx = (note + exactFit.noteToFirstNoteInShapeIdxOffset) % props.subdivisionCount;
         if (shapeIdx < 0) shapeIdx += props.subdivisionCount;
-        if (shapeIdx >= exactFit.shape.notes.length || shapeIdx < 0) return getNoteName(note);
-        return `${getNoteName(note)} ${exactFit.shape.notes[shapeIdx][1] ? ' - ' + exactFit.shape.notes[shapeIdx][1] : ''}`
+        if (shapeIdx >= exactFit.shape.notes.length || shapeIdx < 0) return getNoteName(note, activeNotes);
+        return `${getNoteName(note, activeNotes)} ${exactFit.shape.notes[shapeIdx][1] ? ' - ' + exactFit.shape.notes[shapeIdx][1] : ''}`
     }).filter(info => info !== '');
 
     const textelemoffset = 35;
     const emphasizedInfoTextElems = emphasizedNoteInfo.map((infoText, idx) => {
-        return (<Text text={infoText} x={props.x} y={props.y + textelemoffset*(idx+1)} fontSize={30} fontFamily='monospace' fill="red" align="center" width={props.width} />);
+        return (<Text text={infoText} x={props.x} y={props.y + textelemoffset * (idx + 1)} fontSize={30} fontFamily='monospace' fill="red" align="center" width={props.width} />);
     });
 
     return (
