@@ -2,22 +2,9 @@ import { Song, Track, Instrument } from 'reactronica';
 import useKeypressPlayer from './KeypressPlayer';
 import { useActiveNotes, useEmphasizedNotes } from './NoteProvider';
 import React from 'react';
+import { getNote } from './Utils';
 
-const numberToNote = ["C3", "C#3", "D3", "D#3", "E3", "F3", "F#3", "G3", "G#3", "A3", "A#3", "B3"];
-const numberToNoteName = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-
-export function getNote(i: number) {
-    return numberToNote[i] ?? "unknown";
-}
-
-export function getNoteName(i: number) {
-    return numberToNoteName[i] ?? "?";
-}
-
-type Props =
-    {
-
-    }
+type Props = {}
 
 function SoundEngine(props: Props) {
     useKeypressPlayer();
@@ -25,6 +12,7 @@ function SoundEngine(props: Props) {
     const emphasizedNotes = useEmphasizedNotes();
     const activeNotes = useActiveNotes();
     const playingNotes = Array.from(emphasizedNotes).filter(note => activeNotes.has(note));
+    const [forceCutoff, setForceCutoff] = React.useState(false);
 
     const playNotes = playingNotes.map(note => {
         return {
@@ -33,11 +21,31 @@ function SoundEngine(props: Props) {
         }
     });
 
+    React.useEffect(() => {
+        const onMouseUp = (event: MouseEvent) => {
+            if (playNotes.length === 0) {
+                setForceCutoff(true);
+            }
+        }
+        window.addEventListener("mouseup", onMouseUp);
+
+        return () => {
+            window.removeEventListener("mouseup", onMouseUp);
+        }
+    }, [playNotes.length]);
+
+    if (forceCutoff && playNotes.length > 0) {
+        setForceCutoff(false);
+    }
+    else if (forceCutoff) {
+        return <Song key="song" isPlaying={false} />;
+    }
+
     return (
-        <Song isPlaying={true}>
-            <Track>
+        <Song key="song" isPlaying={playNotes.length > 0}>
+            <Track key="track">
                 <Instrument
-                    key={"synth"}
+                    key="synth"
                     type="amSynth"
                     notes={playNotes}
                     envelope={{
