@@ -2,7 +2,7 @@ import React from 'react';
 import { Circle, Rect, Line, Text } from 'react-konva';
 import { useActiveNotes, useEmphasizedNotes, useSetAreNotesActive, useSetAreNotesEmphasized } from './NoteProvider';
 import Widget from './Widget';
-import { Switch } from '@mui/material';
+import { MenuItem, Select, Switch } from '@mui/material';
 import { getNoteName } from './Utils';
 
 type Props = {
@@ -26,13 +26,27 @@ function StringInstrument(props: Props) {
     const emphasizedNotes = useEmphasizedNotes();
     const setAreNotesEmphasized = useSetAreNotesEmphasized();
 
-    const [showNoteNames, setShowNoteNames] = React.useState(true);
+    enum NoteLabling {
+        None = 1,
+        NoteNames,
+        ActiveNoteNames,
+      }
+    const [noteLabeling, setNoteLabeling] = React.useState(NoteLabling.ActiveNoteNames);
 
     const settingsMenuItems = [
         (<tr>
-            <td>Show note names</td>
-            <td style={{ textAlign: "center" }}>♯</td>
-            <td><Switch checked={showNoteNames} onChange={e => setShowNoteNames(e.target.checked)} /></td>
+            <td>Note labeling</td>
+            {/* <td><FormControlLabel control={<Switch checked={isCircleOfFifths} onChange={e => setIsCircleOfFiths(e.target.checked)}/>} label={isCircleOfFifths ? "" : 1} /></td> */}
+            <td colSpan={2}>  <Select
+                id="menu-dropdown"
+                value={noteLabeling}
+                label="Note labeling"
+                onChange={e => { setNoteLabeling(e.target.value as NoteLabling) }}
+            >
+                <MenuItem value={NoteLabling.None}>None</MenuItem>
+                <MenuItem value={NoteLabling.NoteNames}>Note Names (all notes)</MenuItem>
+                <MenuItem value={NoteLabling.ActiveNoteNames}>Note Names (only active notes)</MenuItem>
+            </Select></td>
         </tr>),
     ];
     const elems = React.useMemo(() => {
@@ -80,12 +94,12 @@ function StringInstrument(props: Props) {
                 }
                 else if (activeNotes.has(note)) {
                     activeNoteIndicators.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={"white"}></Circle>)
-                    if (showNoteNames) {
+                    if ([NoteLabling.ActiveNoteNames, NoteLabling.NoteNames].includes(noteLabeling)) {
                         noteNames.push(
                             <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note, activeNotes)} fontSize={12} fontFamily='monospace' fill={"black"} align="center" verticalAlign="middle" />
                         )
                     }
-                } else if (showNoteNames) {
+                } else if (noteLabeling === NoteLabling.NoteNames) {
                     activeNoteIndicators.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={"rgb(55,55,55)"}></Circle>)
                     noteNames.push(
                         <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note, activeNotes)} fontSize={12} fontFamily='monospace' fill={"grey"} align="center" verticalAlign="middle" />
@@ -103,7 +117,7 @@ function StringInstrument(props: Props) {
             emphasized,
             clickListeners,
         }
-    }, [activeNotes, circleElemRadius, emphasizedNotes, fretElemYOffset, fretSpacing, props.fretCount, props.tuning, props.width, setAreNotesActive, setAreNotesEmphasized, showNoteNames, stringSpacing]);
+    }, [NoteLabling.ActiveNoteNames, NoteLabling.NoteNames, activeNotes, circleElemRadius, emphasizedNotes, fretElemYOffset, fretSpacing, noteLabeling, props.fretCount, props.tuning, props.width, setAreNotesActive, setAreNotesEmphasized, stringSpacing]);
 
     return (
         <Widget x={props.x - (props.width / 2)} y={props.y} contextMenuX={props.width / 2} contextMenuY={-fretSpacing} settingsRows={settingsMenuItems}>
