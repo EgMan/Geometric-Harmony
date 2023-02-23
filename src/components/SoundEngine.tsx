@@ -2,7 +2,7 @@ import { Song, Track, Instrument } from 'reactronica';
 import useKeypressPlayer from './KeypressPlayer';
 import React from 'react';
 import { getNote } from './Utils';
-import { NoteSet, useNoteSet } from './NoteProvider';
+import { NoteSet, normalizeToSingleOctave, useNoteSet } from './NoteProvider';
 
 type Props = {}
 
@@ -11,15 +11,19 @@ function SoundEngine(props: Props) {
 
     const activeNotes = useNoteSet()(NoteSet.Active);
     const emphasizedNotes = useNoteSet()(NoteSet.Emphasized);
-    const playingNotes = Array.from(emphasizedNotes).filter(note => activeNotes.has(note));
+    const emphasizedNotesOctaveGnostic = useNoteSet()(NoteSet.Emphasized_OctaveGnostic);
+    const playingNotes = Array.from(emphasizedNotes).concat(Array.from(emphasizedNotesOctaveGnostic)).filter(note => activeNotes.has(normalizeToSingleOctave(note)));
+
     const [forceCutoff, setForceCutoff] = React.useState(false);
 
-    const playNotes = playingNotes.map(note => {
-        return {
-            name: getNote(note),
-            velocity: 0.8,
-        }
-    });
+    const playNotes = React.useMemo(() => {
+        return playingNotes.map(note => {
+            return {
+                name: getNote(note),
+                velocity: 0.8,
+            }
+        });
+    }, [playingNotes]);
 
     React.useEffect(() => {
         const onMouseUp = (event: MouseEvent) => {

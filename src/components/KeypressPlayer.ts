@@ -16,12 +16,12 @@ const keyToNoteNumber = new Map<string, number>(
         ['h', 9],
         ['u', 10],
         ['j', 11],
-        ['k', 0],
-        ['o', 1],
-        ['l', 2],
-        ['p', 3],
-        [';', 4],
-        ['\'', 5],
+        ['k', 12],
+        ['o', 13],
+        ['l', 14],
+        ['p', 15],
+        [';', 16],
+        ['\'', 17],
     ]
 );
 
@@ -67,12 +67,12 @@ function useKeypressPlayer() {
         const onVisChange = (event: Event) => {
             if (!document.hasFocus()) {
                 keysPressed.clear();
-                updateNotes(NoteSet.Emphasized, [], false, true);
+                updateNotes([NoteSet.Emphasized, NoteSet.Emphasized_OctaveGnostic], [], false, true);
             }
         }
 
         const onMouseLeave = (event: Event) => {
-            updateNotes(NoteSet.Emphasized, [], false, true);
+                updateNotes([NoteSet.Emphasized, NoteSet.Emphasized_OctaveGnostic], [], false, true);
         }
 
         document.addEventListener("visibilitychange", onVisChange);
@@ -97,7 +97,7 @@ function useKeypressPlayer() {
         const notesPressed = Array.from(keysPressed).filter(key => keyToNoteNumber.get(key.toLocaleLowerCase()) !== undefined).map(key => {
             return keyToNoteNumber.get(key.toLocaleLowerCase()) ?? -1;
         })
-        updateNotes(NoteSet.Emphasized, notesPressed, true, true);
+        updateNotes(NoteSet.Emphasized_OctaveGnostic, notesPressed, true, true);
 
         // setAreNotesEmphasized can not trigger this effect otherwise "no keys pressed" will constantly
         // Be overwriting emphasized notes when the keyboard is not being touched.  

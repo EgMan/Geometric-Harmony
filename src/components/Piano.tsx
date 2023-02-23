@@ -3,7 +3,7 @@ import { Circle, Rect, Shape, Text } from 'react-konva';
 import Widget from './Widget';
 import { MenuItem, Select, Switch } from '@mui/material';
 import { getIntervalColor, getIntervalDistance, getNoteName } from './Utils';
-import { NoteSet, useNoteSet, useUpdateNoteSet } from './NoteProvider';
+import { NoteSet, useCheckNoteEmphasis, useGetCombinedModdedEmphasis, useNoteSet, useUpdateNoteSet } from './NoteProvider';
 
 const keyColor = "grey";
 const noteToXOffsetFactor = [0, 1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 6];
@@ -108,7 +108,10 @@ function Piano(props: Props) {
     const YglobalKeyOffset = -props.height;
 
     const activeNotes = useNoteSet()(NoteSet.Active);
-    const emphasizedNotes = useNoteSet()(NoteSet.Emphasized);
+    const combinedEmphasis = useGetCombinedModdedEmphasis()();
+    const emphasizedNotesOctaveGnostic = useNoteSet()(NoteSet.Emphasized_OctaveGnostic);
+    const checkEmphasis = useCheckNoteEmphasis();
+
     const updateNotes = useUpdateNoteSet();
 
     type NoteProps = {
@@ -171,6 +174,10 @@ function Piano(props: Props) {
         return getPropsForWhiteNote(note, octave);
     }, [getPropsForBlackNote, getPropsForWhiteNote]);
 
+    const getAbsoluteNoteNum = React.useCallback((note: number, octave: number) => {
+        return note + (octave * 12);
+    }, []);
+
     const keys = React.useMemo(() => {
         var keys: JSX.Element[] = [];
         let activeNoteIndicators: JSX.Element[] = [];
@@ -178,20 +185,68 @@ function Piano(props: Props) {
         let clickListenersArr: JSX.Element[] = [];
         let noteNames: JSX.Element[] = [];
         const keyNumsInOrder = [...whiteKeyNums, ...blackKeyNums];
-        for (var i = 0; i < octaveCount; i++) {
+        for (let i = 0; i < octaveCount; i++) {
             for (let note of keyNumsInOrder) {
                 const noteprops = getPropsForNote(note, i);
-                keys.push(<Rect key={`key${i}-${note}`} x={noteprops.xpos + noteprops.individualKeyOffset} y={YglobalKeyOffset} width={noteprops.keyWidth} height={noteprops.keyHeight} {...noteprops.extraProps}></Rect>)
-                if (activeNotes.has(note)) activeNoteIndicators.push(<Circle key={`activeInd${i}-${note}`} x={noteprops.xpos + noteprops.individualActiveIndicaterOffset} y={noteprops.activeIndicatorY} width={noteprops.activeIndicatorWidth} height={noteprops.activeIndicatorWidth} fill={"white"}></Circle>)
-                if (emphasizedNotes.has(note)) emphasized.push(<Circle key={`emphaInd${i}-${note}`} x={noteprops.xpos + noteprops.individualActiveIndicaterOffset} y={noteprops.activeIndicatorY} width={noteprops.activeIndicatorWidth} height={noteprops.activeIndicatorWidth} fill={"red"}></Circle>)
-                clickListenersArr.push(<Rect key={`keyHitbox${i}-${note}`} x={noteprops.xpos + noteprops.individualKeyOffset} y={YglobalKeyOffset} width={noteprops.keyWidth} height={noteprops.keyHeight} onClick={() => updateNotes(NoteSet.Active, [note], !activeNotes.has(note))} onTap={() => updateNotes(NoteSet.Active, [note], !activeNotes.has(note))} onMouseOver={() => updateNotes(NoteSet.Emphasized, [note], true, true)} onMouseOut={() => updateNotes(NoteSet.Emphasized, [note], false)}></Rect>)
+                const absoluteNoteNum = getAbsoluteNoteNum(note, i);
+                console.log("octave", i);
+                keys.push(
+                    <Rect
+                        key={`key${i}-${note}`}
+                        x={noteprops.xpos + noteprops.individualKeyOffset}
+                        y={YglobalKeyOffset}
+                        width={noteprops.keyWidth}
+                        height={noteprops.keyHeight}
+                        {...noteprops.extraProps} />
+                );
+                if (activeNotes.has(note))
+                    activeNoteIndicators.push(
+                        <Circle
+                            key={`activeInd${i}-${note}`}
+                            x={noteprops.xpos + noteprops.individualActiveIndicaterOffset}
+                            y={noteprops.activeIndicatorY}
+                            width={noteprops.activeIndicatorWidth}
+                            height={noteprops.activeIndicatorWidth}
+                            fill={"white"} />
+                    );
+                if (checkEmphasis(absoluteNoteNum, true))
+                    emphasized.push(
+                        <Circle
+                            key={`emphaInd${i}-${note}`}
+                            x={noteprops.xpos + noteprops.individualActiveIndicaterOffset}
+                            y={noteprops.activeIndicatorY}
+                            width={noteprops.activeIndicatorWidth}
+                            height={noteprops.activeIndicatorWidth}
+                            fill={"red"} />);
+                clickListenersArr.push(
+                    <Rect
+                        key={`keyHitbox${i}-${note}`}
+                        x={noteprops.xpos + noteprops.individualKeyOffset}
+                        y={YglobalKeyOffset}
+                        width={noteprops.keyWidth}
+                        height={noteprops.keyHeight}
+                        onClick={() => updateNotes(NoteSet.Active, [note], !activeNotes.has(note))}
+                        onTap={() => updateNotes(NoteSet.Active, [note], !activeNotes.has(note))}
+                        onMouseOver={() => updateNotes([NoteSet.Emphasized_OctaveGnostic], [absoluteNoteNum], true, true)}
+                        onMouseOut={() => updateNotes(NoteSet.Emphasized_OctaveGnostic, [absoluteNoteNum], false)} />);
                 if (showNoteNames) {
 
                     // noteNames.push(<Text key={`noteName${i}`} width={40} height={40} x={noteLoc.x-20} y={noteLoc.y-20} text={getNoteName(i)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(i) ? "black" : "grey"} align="center" verticalAlign="middle" />);
                     const nameColor = activeNotes.has(note) ? "black" : (blackKeyNums.includes(note) ? "rgb(37,37,37)" : "grey");
                     noteNames.push(
-                        <Text key={`noteName${note}`} width={40} height={40} x={noteprops.xpos + noteprops.individualActiveIndicaterOffset - 20} y={noteprops.activeIndicatorY - 20} text={getNoteName(note, activeNotes)} fontSize={12} fontFamily='monospace' fill={nameColor} align="center" verticalAlign="middle" />
-                    )
+                        <Text
+                            key={`noteName${note}${i}`}
+                            width={40}
+                            height={40}
+                            x={noteprops.xpos + noteprops.individualActiveIndicaterOffset - 20}
+                            y={noteprops.activeIndicatorY - 20}
+                            text={getNoteName(note, activeNotes)}
+                            fontSize={12}
+                            fontFamily='monospace'
+                            fill={nameColor}
+                            align="center"
+                            verticalAlign="middle" />
+                    );
                 }
             }
         }
@@ -202,11 +257,12 @@ function Piano(props: Props) {
             emphasized,
             clickListenersArr,
         };
-    }, [YglobalKeyOffset, activeNotes, emphasizedNotes, getPropsForNote, octaveCount, showNoteNames, updateNotes]);
+    }, [YglobalKeyOffset, activeNotes, checkEmphasis, getAbsoluteNoteNum, getPropsForNote, octaveCount, showNoteNames, updateNotes]);
 
     const intervals = React.useMemo(() => {
         var intervalLines: JSX.Element[] = [];
         var emphasized: JSX.Element[] = [];
+        var touchListeners: JSX.Element[] = [];
         const activeNoteArr = Array.from(activeNotes);
 
         for (let octaveA = 0; octaveA < octaveCount; octaveA++) {
@@ -215,6 +271,10 @@ function Piano(props: Props) {
                     for (let b = 0; b < activeNoteArr.length; b++) {
                         const noteA = activeNoteArr[a];
                         const noteB = activeNoteArr[b];
+
+                        const absoluteNoteA = getAbsoluteNoteNum(noteA, octaveA);
+                        const absoluteNoteB = getAbsoluteNoteNum(noteB, octaveB);
+                        const absoluteInverval = [absoluteNoteA, absoluteNoteB];
 
                         const propsA = getPropsForNote(noteA, octaveA);
                         const propsB = getPropsForNote(noteB, octaveB);
@@ -228,14 +288,14 @@ function Piano(props: Props) {
                         const absoluteDist = Math.abs((noteA + (12 * octaveA)) - (noteB + (12 * octaveB)));
 
                         if (onlyShowIntervalsOnHover) {
-                            if (emphasizedNotes.size === 0)
+                            if (combinedEmphasis.size === 0)
                                 continue;
-                            if (emphasizedNotes.size === 1)
+                            if (combinedEmphasis.size === 1)
                                 continue;
-                            // Too instead show all intervals between the single emphasized note
+                            // To instead show all intervals between the single emphasized note
                             // if (emphasizedNotes.size === 1 && !emphasizedNotes.has(noteA) && !emphasizedNotes.has(noteB))
                             //     continue;
-                            if (emphasizedNotes.size >= 2 && (!emphasizedNotes.has(noteA) || !emphasizedNotes.has(noteB)))
+                            if (combinedEmphasis.size >= 2 && (!combinedEmphasis.has(noteA) || !combinedEmphasis.has(noteB)))
                                 continue;
                         }
 
@@ -251,12 +311,12 @@ function Piano(props: Props) {
                         }
 
                         const emphasize = () => {
-                            updateNotes(NoteSet.Emphasized, [noteA, noteB], true)
+                            updateNotes([NoteSet.Emphasized_OctaveGnostic], absoluteInverval, true, true);
                         };
                         const deemphasize = () => {
-                            updateNotes(NoteSet.Emphasized, [noteA, noteB], false);
+                            updateNotes([NoteSet.Emphasized_OctaveGnostic], absoluteInverval, false);
                         };
-                        const isIntervalEmphasized = emphasizedNotes.has(noteA) && emphasizedNotes.has(noteB);
+                        const isIntervalEmphasized = emphasizedNotesOctaveGnostic.size > 0 ? emphasizedNotesOctaveGnostic.has(absoluteNoteA) && emphasizedNotesOctaveGnostic.has(absoluteNoteB) : combinedEmphasis.has(noteA) && combinedEmphasis.has(noteB);
 
                         intervalLines.push(
                             <Shape
@@ -275,10 +335,28 @@ function Piano(props: Props) {
                                 }}
                                 stroke={discColor}
                                 strokeWidth={isIntervalEmphasized ? 3 : 1.5}
+                            />
+                        );
+                        touchListeners.push(
+                            <Shape
+                                sceneFunc={(context, shape) => {
+                                    context.beginPath();
+                                    context.moveTo(aLoc.x, aLoc.y);
+                                    context.bezierCurveTo(
+                                        aLoc.x,
+                                        aLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
+                                        bLoc.x,
+                                        bLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
+                                        bLoc.x,
+                                        bLoc.y
+                                    );
+                                    context.strokeShape(shape);
+                                }}
+                                stroke={'rgba(0,0,0,0)'}
+                                strokeWidth={3}
                                 onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize}
                             />
                         );
-
                     }
                 }
             }
@@ -286,10 +364,10 @@ function Piano(props: Props) {
         return {
             line: intervalLines,
             emphasized: emphasized,
+            listeners: touchListeners,
         }
-    }, [activeNotes, displayInterval, emphasizedNotes, getPropsForNote, octaveCount, onlyShowIntervalsOnHover, props.height, showInverseIntervals, updateNotes]);
+    }, [activeNotes, combinedEmphasis, displayInterval, emphasizedNotesOctaveGnostic, getAbsoluteNoteNum, getPropsForNote, octaveCount, onlyShowIntervalsOnHover, props.height, showInverseIntervals, updateNotes]);
 
-    // todo bring interval click listeners in front of key click listeners
     return (
         <Widget x={props.x} y={props.y} contextMenuX={0} contextMenuY={-props.height - 20} settingsRows={settingsMenuItems}>
             {keys.keys}
@@ -299,6 +377,7 @@ function Piano(props: Props) {
             {keys.emphasized}
             {keys.noteNames}
             {keys.clickListenersArr}
+            {intervals.listeners}
         </Widget>
     )
 }

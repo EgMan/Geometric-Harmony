@@ -5,7 +5,7 @@ import { MenuItem, Select, Switch } from '@mui/material';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { useGetActiveNotesInCommonWithModulation, useModulateActiveNotes } from './HarmonicModulation';
 import { getIntervalColor, getIntervalDistance, getNoteName } from './Utils';
-import { NoteSet, useNoteSet, useUpdateNoteSet } from './NoteProvider';
+import { NoteSet, useGetCombinedModdedEmphasis, useNoteSet, useUpdateNoteSet } from './NoteProvider';
 type Props = {
     x: number
     y: number
@@ -16,7 +16,8 @@ type Props = {
 
 function Wheel(props: Props) {
     const activeNotes = useNoteSet()(NoteSet.Active);
-    const emphasizedNotes = useNoteSet()(NoteSet.Emphasized);
+
+    const emphasizedNotes = useGetCombinedModdedEmphasis()();;
     const updateNotes = useUpdateNoteSet();
     const getNotesInCommon = useGetActiveNotesInCommonWithModulation();
 

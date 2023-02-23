@@ -3,7 +3,7 @@ import { Text } from 'react-konva';
 import { HarmonicShape, knownShapes } from "./KnownHarmonicShapes";
 import Widget from "./Widget";
 import { getNoteName } from "./Utils";
-import { NoteSet, useNoteSet } from "./NoteProvider";
+import { NoteSet, useGetCombinedModdedEmphasis, useNoteSet } from "./NoteProvider";
 
 
 type Props =
@@ -16,7 +16,7 @@ type Props =
 
 function HarmonyAnalyzer(props: Props) {
     const activeNotes = useNoteSet()(NoteSet.Active);
-    const emphasizedNotes = useNoteSet()(NoteSet.Emphasized);
+    const emphasizedNotes = useGetCombinedModdedEmphasis()();
 
     const tryToFitShape = React.useCallback((shape: HarmonicShape, notes: Set<number>) => {
         const noteArr = Array.from(notes);
@@ -80,8 +80,20 @@ function HarmonyAnalyzer(props: Props) {
     });
 
     return (
-        <Widget x={0} y={0} contextMenuX={window.innerWidth / 2} contextMenuY={60}>
-            <Text text={exactFitName} x={props.x} y={props.y} fontSize={30} fontFamily='monospace' fill="white" align="center" width={props.width} />
+        <Widget
+            x={0}
+            y={0}
+            contextMenuX={window.innerWidth / 2}
+            contextMenuY={60}>
+            <Text
+                text={exactFitName}
+                x={props.x}
+                y={props.y}
+                fontSize={30}
+                fontFamily='monospace'
+                fill="white"
+                align="center"
+                width={props.width} />
             {emphasizedInfoTextElems}
         </Widget>
     );

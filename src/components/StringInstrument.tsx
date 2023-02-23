@@ -3,7 +3,7 @@ import { Circle, Rect, Line, Text } from 'react-konva';
 import Widget from './Widget';
 import { MenuItem, Select, Switch } from '@mui/material';
 import { getNoteName } from './Utils';
-import { NoteSet, useNoteSet, useUpdateNoteSet } from './NoteProvider';
+import { NoteSet, useCheckNoteEmphasis, useNoteSet, useUpdateNoteSet } from './NoteProvider';
 
 type Props = {
     x: number
@@ -21,14 +21,15 @@ function StringInstrument(props: Props) {
     const circleElemRadius = stringSpacing / 5;
 
     const activeNotes = useNoteSet()(NoteSet.Active);
-    const emphasizedNotes = useNoteSet()(NoteSet.Emphasized);
+    const checkEmphasis = useCheckNoteEmphasis();
+    // const emphasizedNotes = useGetCombinedModdedEmphasis()();
     const updateNotes = useUpdateNoteSet();
 
     enum NoteLabling {
         None = 1,
         NoteNames,
         ActiveNoteNames,
-      }
+    }
     const [noteLabeling, setNoteLabeling] = React.useState(NoteLabling.ActiveNoteNames);
 
     const settingsMenuItems = [
@@ -75,7 +76,8 @@ function StringInstrument(props: Props) {
             }
             props.tuning.forEach((openNote, stringNum) => {
                 const posX = (stringSpacing * stringNum);
-                const note = (openNote + fretNum) % 12;
+                const absoluteNote = (openNote + fretNum);
+                const note = absoluteNote % 12;
                 // <Line x={props.x} y={props.y} stroke={discColor} strokeWidth={lineWidth} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />
 
                 if (fretNum !== props.fretCount - 1) {
@@ -84,7 +86,7 @@ function StringInstrument(props: Props) {
                     );
 
                 }
-                if (emphasizedNotes.has(note)) {
+                if (checkEmphasis(absoluteNote, true)) {
                     emphasized.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={"red"}></Circle>)
                     noteNames.push(
                         <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note, activeNotes)} fontSize={12} fontFamily='monospace' fill={"black"} align="center" verticalAlign="middle" />
@@ -104,7 +106,7 @@ function StringInstrument(props: Props) {
                     )
                 }
 
-                clickListeners.push(<Rect key={`keyHitbox${fretNum}-${stringNum}`} x={posX - (stringSpacing / 2)} y={posY + fretElemYOffset - (fretSpacing / 2)} width={stringSpacing} height={fretSpacing} onClick={() => updateNotes(NoteSet.Active, [note], !activeNotes.has(note))} onTap={() => updateNotes(NoteSet.Active, [note], !activeNotes.has(note))} onMouseOver={() => updateNotes(NoteSet.Emphasized, [note], true, true)} onMouseOut={() => updateNotes(NoteSet.Emphasized, [note], false)}></Rect>)
+                clickListeners.push(<Rect key={`keyHitbox${fretNum}-${stringNum}`} x={posX - (stringSpacing / 2)} y={posY + fretElemYOffset - (fretSpacing / 2)} width={stringSpacing} height={fretSpacing} onClick={() => updateNotes(NoteSet.Active, [note], !activeNotes.has(note))} onTap={() => updateNotes(NoteSet.Active, [note], !activeNotes.has(note))} onMouseOver={() => updateNotes(NoteSet.Emphasized_OctaveGnostic, [absoluteNote], true, true)} onMouseOut={() => updateNotes(NoteSet.Emphasized_OctaveGnostic, [absoluteNote], false)}></Rect>)
             });
         }
         return {
@@ -115,7 +117,7 @@ function StringInstrument(props: Props) {
             emphasized,
             clickListeners,
         }
-    }, [NoteLabling.ActiveNoteNames, NoteLabling.NoteNames, activeNotes, circleElemRadius, emphasizedNotes, fretElemYOffset, fretSpacing, noteLabeling, props.fretCount, props.tuning, props.width, stringSpacing, updateNotes]);
+    }, [NoteLabling.ActiveNoteNames, NoteLabling.NoteNames, activeNotes, checkEmphasis, circleElemRadius, fretElemYOffset, fretSpacing, noteLabeling, props.fretCount, props.tuning, props.width, stringSpacing, updateNotes]);
 
     return (
         <Widget x={props.x - (props.width / 2)} y={props.y} contextMenuX={props.width / 2} contextMenuY={-fretSpacing} settingsRows={settingsMenuItems}>
