@@ -56,7 +56,6 @@ function NoteProvider(props: Props) {
             }
         };
         if (noteSetsToUpdate instanceof Array) {
-            console.log("noteSetsToUpdate is an array", noteSetsToUpdate);
             noteSetsToUpdate.forEach(writeToNoteSet);
         }
         else {

@@ -33,13 +33,13 @@ function Widget(props: Props) {
 
     const theme = createTheme({
         palette: {
-          primary: {
-            main: green["A700"],
-            light: purple[300],
-            dark: purple[900],
-          },
+            primary: {
+                main: green["A700"],
+                light: purple[300],
+                dark: purple[900],
+            },
         }
-      });
+    });
 
     return (
         <div>

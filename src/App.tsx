@@ -38,11 +38,11 @@ function App() {
             <Stage width={windowWidth} height={windowHeight}>
               <Layer>
                 <BackPlate width={windowWidth} height={windowHeight} />
-                <HarmonyAnalyzer subdivisionCount={12} x={0} y={10} width={windowWidth} />
-                <Wheel subdivisionCount={12} radius={wheelRadius} x={windowWidth / 4} y={windowHeight / 2} isCircleOfFifths={false} />
+                <HarmonyAnalyzer subdivisionCount={12} x={windowWidth / 2} y={10} width={windowWidth} />
+                <Wheel subdivisionCount={12} radius={wheelRadius} x={windowWidth / 5} y={windowHeight / 2} isCircleOfFifths={false} />
                 {/* <Wheel subdivisionCount={12} radius={wheelRadius} x={3 * windowWidth / 4} y={windowHeight / 2} isCircleOfFifths={true} /> */}
                 <Piano x={windowWidth / 2} y={windowHeight - 1} height={pianoHeight} width={pianoWidth} octaveCount={pianoOctaveCount} />
-                <StringInstrument x={3 * windowWidth / 4} y={windowHeight / 8} height={windowHeight - 200} width={pianoWidth / 2} fretCount={13} tuning={[4, 9, 14, 19, 23, 28]} />
+                <StringInstrument x={4 * windowWidth / 5} y={windowHeight / 8} height={windowHeight - 200} width={wheelRadius} fretCount={13} tuning={[4, 9, 14, 19, 23, 28]} />
               </Layer>
             </Stage>
             <SoundEngine />

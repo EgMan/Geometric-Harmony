@@ -32,6 +32,7 @@ export function useSetActiveShape() {
     const updateNotes = useUpdateNoteSet();
     return React.useCallback((shape: HarmonicShape, startingWhere: number) => {
         let newActiveNotes: number[] = [];
+        console.log("shapename", shape.name);
         shape.notes.forEach((note, i) => {
             if (note[0]) newActiveNotes.push(i + startingWhere)//Do I want to do the modulus here?
         });

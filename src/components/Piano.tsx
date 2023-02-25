@@ -189,7 +189,6 @@ function Piano(props: Props) {
             for (let note of keyNumsInOrder) {
                 const noteprops = getPropsForNote(note, i);
                 const absoluteNoteNum = getAbsoluteNoteNum(note, i);
-                console.log("octave", i);
                 keys.push(
                     <Rect
                         key={`key${i}-${note}`}

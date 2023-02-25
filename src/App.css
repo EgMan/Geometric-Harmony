@@ -96,3 +96,28 @@ tr, td {
   padding-right: 32px;
   border-radius: 9px;
 }
+
+#explorer-dropdown {
+  /* background-color: 'white'; */
+  /* background-color: rgb(255, 255, 255); */
+  /* background-color: grey; */
+  color: white; 
+  padding: 8px;
+  padding-right: 32px;
+  border-radius: 9px 0 0 9px;
+  border-color: transparent;
+}
+
+.nomargin {
+  margin: 0;
+}
+
+.monospace {
+  font-family: monospace;
+}
+
+.MuiAutocomplete-root:hover .MuiOutlinedInput-notchedOutline {
+  /* borderRadius: '0px', */
+  background-color: 'rgb(255,255,255,0.1)';
+  border: '1px solid transparent';
+}
