@@ -87,7 +87,20 @@ export const knownShapes: HarmonicShape[][] = [
     ],
 
     // Pentatonics
-    [],
+    [
+        {
+            name: "Natural Pentatonic Family",
+            notes: [[true, "Minor Pentatonic"], [false], [false], [true, "Major Pentatonic"], [false], [true], [false], [true], [false], [false], [true]]
+        },
+        {
+            name: "Kumoi Pentatonic Family",
+            notes: [[true, "Kumoi Pentatonic"], [false], [true], [true], [false], [false], [false], [true], [false], [true]]
+        },
+        {
+            name: "Hirojoshi Pentatonic Family",
+            notes: [[true, "Hirojoshi Pentatonic"], [false], [true], [true], [false], [false], [false], [true], [true]]
+        },
+    ], 
 
     // Hexatonics
     [],
@@ -100,7 +113,7 @@ export const knownShapes: HarmonicShape[][] = [
         },
         {
             name: "Melodic Mode Family",
-            notes: [[true, "Melodic Minor"], [false], [true, "Phrygidorian (Phrygian ♯6, Dorian ♭2)"], [true, "Lydian Augmented (Lydian #5)"], [false], [true, "Lydian dominant"], [false], [true, "Melodic Major (Mixolydian ♭6)"], [false], [true, "Half-Diminished (Locrian ♯2)"], [false], [true, "Super Locrian"]],
+            notes: [[true, "Melodic Minor"], [false], [true, "Phrygidorian (Phrygian ♯6, Dorian ♭2)"], [true, "Lydian Augmented (Lydian #5)"], [false], [true, "Lydian dominant"], [false], [true, "Melodic Major (Mixolydian ♭6, Hindu)"], [false], [true, "Half-Diminished (Locrian ♯2)"], [false], [true, "Super Locrian"]],
         },
         {
             name: "Harmonic Mode Family",
@@ -109,7 +122,19 @@ export const knownShapes: HarmonicShape[][] = [
         {
             name: "Double Harmonic Mode Family",
             notes: [[true, "Ionian ♯2 ♯5"], [false], [false], [true, "Locrian ♭♭3 ♭♭7"], [true, "Double Harmonic Major"], [true, "Lydian ♯2 ♯6"], [false], [false], [true, "Ultraphrygian"], [true, "Hungarian/Gypsy Minor"], [false], [true, "Oriental"]],
-        }
+        },
+        {
+            name: "Neopolitan Minor Mode Family",
+            notes: [[true, "Neopolitan Minor"], [true, "Lydian ♯6"], [false], [true, "Dominant Augmented"], [false], [true, "Hungarian Gypsy"], [false], [true, "Locrian ♮3"], [true, "Ionian ♯2"], [false], [false], [true, "Alt ♭♭3 ♭♭7"]],
+        },
+        {
+            name: "Neopolitan Major Mode Family",
+            notes: [[true, "Neopolitan Major"], [true, "Lydian Augmented ♯6"], [false], [true, "Lydian Dominant Augmented"], [false], [true, "Lydian Minor"], [false], [true, "Major Locrian (Arabic)"], [false], [true, "Alt ♮2"], [false], [true, "Alt ♭♭3"]],
+        },
+        {
+            name: "Persian Mode Family",
+            notes: [[true, "Persian"], [true], [false], [false], [true], [true], [true], [false], [true], [false], [false], [true]],
+        },
     ],
 
     // octatonics
