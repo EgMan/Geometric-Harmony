@@ -1,7 +1,7 @@
 import React from 'react';
 import { Circle, Rect, Line, Text } from 'react-konva';
 import Widget from './Widget';
-import { MenuItem, Select, Switch } from '@mui/material';
+import { MenuItem, Select } from '@mui/material';
 import { getNoteName } from './Utils';
 import { NoteSet, useCheckNoteEmphasis, useNoteSet, useUpdateNoteSet } from './NoteProvider';
 

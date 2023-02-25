@@ -232,14 +232,19 @@ function HarmonyAnalyzer(props: Props) {
                                     borderRadius: '9px',
                                     backgroundColor: 'rgb(255,255,255,0.1)',
                                 },
+                                "&.Mui-disabled": {
+                                    background: 'transparent',
+                                    color: "grey"
+                                }
                             }}
+                            disabled={selectedShape == null || selectedHomeNote === -1}
                             onClick={() => {
                                 console.log("set active shape");
                                 if (selectedShape != null && selectedHomeNote !== -1) {
                                     setActiveShape(selectedShape.shape, selectedHomeNote - selectedShape.startingNoteNum);
                                     resetSelectedShapeExplorerItems();
                                 }
-                            }}>⇨</Button>
+                            }}>➔</Button>
                     </FormGroup>
                 </form>
             </Html>
