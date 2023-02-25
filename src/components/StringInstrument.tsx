@@ -30,7 +30,7 @@ function StringInstrument(props: Props) {
         NoteNames,
         ActiveNoteNames,
     }
-    const [noteLabeling, setNoteLabeling] = React.useState(NoteLabling.ActiveNoteNames);
+    const [noteLabeling, setNoteLabeling] = React.useState(NoteLabling.NoteNames);
 
     const settingsMenuItems = [
         (<tr>
