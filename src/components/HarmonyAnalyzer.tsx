@@ -126,9 +126,9 @@ function HarmonyAnalyzer(props: Props) {
 
         // Convert infos to text elements
         var idx = 0;
-        const textelemoffset = 35;
+        const textelemoffset = 28;
         const infosYOffset = 50;
-        const infosFontSize = 30;
+        const infosFontSize = 20;
         return infos.filter(info => info.text !== "").map((info) => {
             console.log(idx);
             console.log("info: " + info);
