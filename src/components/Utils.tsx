@@ -9,6 +9,9 @@ export function getNote(i: number) {
 }
 
 export function getNoteName(i: number, activeNotes: Set<number>) {
+    // TODO fix this properly
+    return numberToNoteNameSharp[i % 12];
+
     if (!activeNotes.has(i)) {
         return numberToNoteNameSharp[i] ?? "?";
     }

@@ -8,7 +8,8 @@ export type HarmonicShape =
     }
 
 export const knownShapes: HarmonicShape[][] = [
-    [], [],
+    [], 
+    [],
 
     // Intervals
     [
@@ -107,7 +108,12 @@ export const knownShapes: HarmonicShape[][] = [
     ], 
 
     // Hexatonics
-    [],
+    [
+        {
+            name: "Whole Tone Scale",
+            notes: [[true, "Whole tone"], [false], [true], [false], [true], [false], [true], [false], [true], [false], [true], [false]],
+        },
+    ],
 
     // septatonics
     [
@@ -142,5 +148,27 @@ export const knownShapes: HarmonicShape[][] = [
     ],
 
     // octatonics
+    [
+        {
+            name: "Diminished Mode Family",
+            notes: [[true, "Diminished Scale 1"], [true, "Diminished scale 2"], [false], [true], [true], [false], [true], [true], [false], [true], [true], [false]],
+        },
+    ],
+
+    // nonatonics
     [],
+
+    // decatonics
+    [],
+
+    // undecatonics
+    [],
+
+    // dodecatonics
+    [
+        {
+            name: "Chromatic Scale",
+            notes: [[true, "Chromatic Scale"], [true], [true], [true], [true], [true], [true], [true], [true], [true], [true], [true]],
+        },
+    ],
 ];
