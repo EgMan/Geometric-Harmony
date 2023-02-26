@@ -80,15 +80,16 @@ function NoteProvider(props: Props) {
         }
     }, [noteSets]);
 
-    React.useEffect(() => {
-        const activeNotes = getNoteSet(NoteSet.Active);
-        var str = "";
-        Array.from(Array(12).keys()).forEach(elem => {
-            str += `[${activeNotes.has(elem) ? "true" : "false"}], `
-        });
-        // console.log(`${activeNotes.size} active notes: `, Array.from(Array(12).keys()).map(elem => activeNotes.has(elem)));
-        console.log(`[${str.slice(0, -2)}]`);
-    }, [getNoteSet, noteSets]);
+    // For adding new shapes
+    // React.useEffect(() => {
+    //     const activeNotes = getNoteSet(NoteSet.Active);
+    //     var str = "";
+    //     Array.from(Array(12).keys()).forEach(elem => {
+    //         str += `[${activeNotes.has(elem) ? "true" : "false"}], `
+    //     });
+    //     // console.log(`${activeNotes.size} active notes: `, Array.from(Array(12).keys()).map(elem => activeNotes.has(elem)));
+    //     console.log(`[${str.slice(0, -2)}]`);
+    // }, [getNoteSet, noteSets]);
 
 
     return (

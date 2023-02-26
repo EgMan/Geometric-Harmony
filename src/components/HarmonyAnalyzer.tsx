@@ -75,28 +75,66 @@ function HarmonyAnalyzer(props: Props) {
         };
     }, [props.subdivisionCount])
 
-    const getAllExactFits = React.useCallback(() => {
-        const shapesOfCorrectSize = knownShapes[activeNotes.size] ?? [];
+    const getAllExactFits = React.useCallback((notes: Set<number>) => {
+        const shapesOfCorrectSize = knownShapes[notes.size] ?? [];
 
-        return shapesOfCorrectSize.map(shape => tryToFitShape(shape, activeNotes)).filter(shapeFit => shapeFit.doesFit);
-    }, [activeNotes, tryToFitShape])
+        return shapesOfCorrectSize.map(shape => tryToFitShape(shape, notes)).filter(shapeFit => shapeFit.doesFit);
+    }, [tryToFitShape])
 
-    const exactFits = getAllExactFits();
+    const exactFits = getAllExactFits(activeNotes);
     const exactFit = exactFits[0];
     const exactFitName = exactFit ? exactFit.shape.name : "";
 
-    const emphasizedNoteInfo = Array.from(emphasizedNotes).map(note => {
+    const getNoteNameInExactFitShape = React.useCallback((note: number) => {
         if (exactFit === null || exactFit === undefined) return getNoteName(note, activeNotes);
         let shapeIdx = (note + exactFit.noteToFirstNoteInShapeIdxOffset) % props.subdivisionCount;
         if (shapeIdx < 0) shapeIdx += props.subdivisionCount;
         if (shapeIdx >= exactFit.shape.notes.length || shapeIdx < 0) return getNoteName(note, activeNotes);
-        return `${getNoteName(note, activeNotes)} ${exactFit.shape.notes[shapeIdx][1] ? ' - ' + exactFit.shape.notes[shapeIdx][1] : ''}`
-    }).filter(info => info !== '');
+        return `${getNoteName(note, activeNotes)} ${exactFit.shape.notes[shapeIdx][1] ? exactFit.shape.notes[shapeIdx][1] : (exactFit.shape.notes[0][1] ? `${exactFit.shape.notes[0][1]} mode` : "")}`;
+    }, [activeNotes, exactFit, props.subdivisionCount]);
 
-    const textelemoffset = 85;
-    const emphasizedInfoTextElems = emphasizedNoteInfo.map((infoText, idx) => {
-        return (<Text text={infoText} x={0} y={textelemoffset * (idx + 1)} fontSize={30} fontFamily='monospace' fill="red" align="center" width={explorerWidth} />);
-    });
+
+    const infoTextElems = React.useMemo(() => {
+        const emphasizedNoteInfo = Array.from(emphasizedNotes).map(note => {
+            return getNoteNameInExactFitShape(note) ?? '?';
+        }).filter(info => info !== '');
+        console.log("empha note info", emphasizedNoteInfo);
+
+        // Populate infos that display under the shape explorer
+        type Info = {
+            text: string;
+            color: string;
+        }
+        var infos: Info[] = [];
+        infos.push({
+            text: exactFitName,
+            color: "white",
+        });
+        if (homeNote !== null) {
+            infos.push({
+                text: getNoteNameInExactFitShape(homeNote),
+                color: "yellow",
+            });
+        }
+        emphasizedNoteInfo.forEach((infoText) => {
+            console.log("infoText: " + infoText + "");
+            infos.push({
+                text: infoText,
+                color: "red",
+            });
+        });
+
+        // Convert infos to text elements
+        var idx = 0;
+        const textelemoffset = 35;
+        const infosYOffset = 50;
+        const infosFontSize = 30;
+        return infos.filter(info => info.text !== "").map((info) => {
+            console.log(idx);
+            console.log("info: " + info);
+            return (<Text key={`info${info.text}${idx++}`} text={info.text} x={0} y={textelemoffset * (idx) + infosYOffset} fontSize={infosFontSize} fontFamily='monospace' fill={info.color} align="center" width={explorerWidth} />);
+        });
+    }, [emphasizedNotes, exactFitName, getNoteNameInExactFitShape, homeNote]);
 
     type AutocompleteOptionType = {
         label: string;
@@ -147,15 +185,7 @@ function HarmonyAnalyzer(props: Props) {
             // contextMenuY={60}>
             contextMenuX={-20}
             contextMenuY={20}>
-            <Text
-                text={exactFitName}
-                fontSize={30}
-                y={50}
-                fontFamily='monospace'
-                fill="white"
-                align="center"
-                width={explorerWidth} />
-            {emphasizedInfoTextElems}
+            {infoTextElems}
             <Html transform={true} divProps={{ id: "shape-tool-div" }}>
                 <form onSubmit={evt => { evt.preventDefault(); console.log("submit", evt) }}>
                     <FormGroup row sx={{ backgroundColor: 'rgb(255,255,255,0.1)', borderRadius: '9px' }}>
@@ -198,7 +228,7 @@ function HarmonyAnalyzer(props: Props) {
                             inputMode="text"
                             groupBy={(option) => option.shapeName}
                             value={selectedShape}
-                            onChange={(event, value, reason) => { if (selectedHomeNote === -1) { setSelectedHomeNote(0) } setSelectedShape(value); console.log("input change", value) }}
+                            onChange={(event, value, reason) => { if (selectedHomeNote === -1) { setSelectedHomeNote(0) } setSelectedShape(value); }}
                             options={explorerElements}
                             sx={{
                                 width: autocompleteExplorerWidth, display: 'inline-block', bgcolor: 'transparent', color: 'red',
@@ -241,7 +271,6 @@ function HarmonyAnalyzer(props: Props) {
                             }}
                             disabled={selectedShape == null || selectedHomeNote === -1}
                             onClick={() => {
-                                console.log("set active shape");
                                 if (selectedShape != null && selectedHomeNote !== -1) {
                                     setActiveShape(selectedShape.shape, selectedHomeNote - selectedShape.startingNoteNum);
                                     resetSelectedShapeExplorerItems();
