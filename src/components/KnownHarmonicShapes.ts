@@ -90,7 +90,7 @@ export const knownShapes: HarmonicShape[][] = [
     [
         {
             name: "Natural Pentatonic Family",
-            notes: [[true, "Minor Pentatonic"], [false], [false], [true, "Major Pentatonic"], [false], [true], [false], [true], [false], [false], [true]]
+            notes: [[true, "Minor Pentatonic"], [false], [false], [true, "Major Pentatonic"], [false], [true], [false], [true], [false], [false], [true, "Yo Scale"]]
         },
         {
             name: "Kumoi Pentatonic Family",
@@ -99,6 +99,10 @@ export const knownShapes: HarmonicShape[][] = [
         {
             name: "Hirojoshi Pentatonic Family",
             notes: [[true, "Hirojoshi Pentatonic"], [false], [true], [true], [false], [false], [false], [true], [true]]
+        },
+        {
+            name: "This shit is mine",
+            notes: [[true, "Antonio pentatonic"], [false], [true], [false], [false], [false], [true], [true], [false], [true], [false], [false]],
         },
     ], 
 
