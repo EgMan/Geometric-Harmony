@@ -3,7 +3,8 @@ import { Circle, Rect, Shape, Text } from 'react-konva';
 import Widget from './Widget';
 import { MenuItem, Select, Switch } from '@mui/material';
 import { getIntervalColor, getIntervalDistance, getNoteName } from './Utils';
-import { NoteSet, useCheckNoteEmphasis, useGetCombinedModdedEmphasis, useNoteSet, useUpdateNoteSet } from './NoteProvider';
+import { NoteSet, useCheckNoteEmphasis, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from './NoteProvider';
+import { KonvaEventObject } from 'konva/lib/Node';
 
 const keyColor = "grey";
 const noteToXOffsetFactor = [0, 1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 6];
@@ -111,8 +112,10 @@ function Piano(props: Props) {
     const combinedEmphasis = useGetCombinedModdedEmphasis()();
     const emphasizedNotesOctaveGnostic = useNoteSet()(NoteSet.Emphasized_OctaveGnostic);
     const checkEmphasis = useCheckNoteEmphasis();
-
     const updateNotes = useUpdateNoteSet();
+
+    const homeNote = useHomeNote();
+    const setHomeNote = useSetHomeNote();
 
     type NoteProps = {
         keyWidth: number
@@ -189,6 +192,16 @@ function Piano(props: Props) {
             for (let note of keyNumsInOrder) {
                 const noteprops = getPropsForNote(note, i);
                 const absoluteNoteNum = getAbsoluteNoteNum(note, i);
+
+                // TODO unify this across components
+                const toggleActive = (evt: KonvaEventObject<MouseEvent>) => {
+                    if (evt.evt.button === 2) {
+                        setHomeNote((note === homeNote) ? null : note);
+                    }
+                    else {
+                        updateNotes(NoteSet.Active, [note], !activeNotes.has(note));
+                    }
+                };
                 keys.push(
                     <Rect
                         key={`key${i}-${note}`}
@@ -198,7 +211,8 @@ function Piano(props: Props) {
                         height={noteprops.keyHeight}
                         {...noteprops.extraProps} />
                 );
-                if (activeNotes.has(note))
+                if (activeNotes.has(note)) {
+                    const noteColor = note === homeNote ? "yellow" : "white";
                     activeNoteIndicators.push(
                         <Circle
                             key={`activeInd${i}-${note}`}
@@ -206,8 +220,9 @@ function Piano(props: Props) {
                             y={noteprops.activeIndicatorY}
                             width={noteprops.activeIndicatorWidth}
                             height={noteprops.activeIndicatorWidth}
-                            fill={"white"} />
+                            fill={noteColor} />
                     );
+                }
                 if (checkEmphasis(absoluteNoteNum, true))
                     emphasized.push(
                         <Circle
@@ -224,8 +239,8 @@ function Piano(props: Props) {
                         y={YglobalKeyOffset}
                         width={noteprops.keyWidth}
                         height={noteprops.keyHeight}
-                        onClick={() => updateNotes(NoteSet.Active, [note], !activeNotes.has(note))}
-                        onTap={() => updateNotes(NoteSet.Active, [note], !activeNotes.has(note))}
+                        onClick={toggleActive}
+                        onTap={toggleActive}
                         onMouseOver={() => updateNotes([NoteSet.Emphasized_OctaveGnostic], [absoluteNoteNum], true, true)}
                         onMouseOut={() => updateNotes(NoteSet.Emphasized_OctaveGnostic, [absoluteNoteNum], false)} />);
                 if (showNoteNames) {
@@ -256,7 +271,7 @@ function Piano(props: Props) {
             emphasized,
             clickListenersArr,
         };
-    }, [YglobalKeyOffset, activeNotes, checkEmphasis, getAbsoluteNoteNum, getPropsForNote, octaveCount, showNoteNames, updateNotes]);
+    }, [YglobalKeyOffset, activeNotes, checkEmphasis, getAbsoluteNoteNum, getPropsForNote, homeNote, octaveCount, setHomeNote, showNoteNames, updateNotes]);
 
     const intervals = React.useMemo(() => {
         var intervalLines: JSX.Element[] = [];

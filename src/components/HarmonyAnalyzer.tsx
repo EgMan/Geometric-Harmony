@@ -3,7 +3,7 @@ import { Text } from 'react-konva';
 import { HarmonicShape, knownShapes } from "./KnownHarmonicShapes";
 import Widget from "./Widget";
 import { getNoteName } from "./Utils";
-import { NoteSet, useGetCombinedModdedEmphasis, useNoteSet } from "./NoteProvider";
+import { NoteSet, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote } from "./NoteProvider";
 import { Html } from "react-konva-utils";
 import { MenuItem, FormGroup, Select, Button, Autocomplete, TextField, } from "@mui/material";
 import { useSetActiveShape } from "./HarmonicModulation";
@@ -26,6 +26,8 @@ function HarmonyAnalyzer(props: Props) {
     const activeNotes = useNoteSet()(NoteSet.Active);
     const emphasizedNotes = useGetCombinedModdedEmphasis()();
     const setActiveShape = useSetActiveShape();
+    const homeNote = useHomeNote();
+    const setHomeNote = useSetHomeNote();
 
     const [selectedShape, setSelectedShape] = React.useState<AutocompleteOptionType | null>(null);
     const [selectedHomeNote, setSelectedHomeNote] = React.useState<number>(-1);
@@ -243,6 +245,7 @@ function HarmonyAnalyzer(props: Props) {
                                 if (selectedShape != null && selectedHomeNote !== -1) {
                                     setActiveShape(selectedShape.shape, selectedHomeNote - selectedShape.startingNoteNum);
                                     resetSelectedShapeExplorerItems();
+                                    setHomeNote(selectedHomeNote);
                                 }
                             }}>➔</Button>
                     </FormGroup>

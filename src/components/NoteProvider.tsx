@@ -1,5 +1,7 @@
 import React from "react";
 
+const homeNoteContext = React.createContext<number | null>(null);
+const setHomeNoteContext = React.createContext((note: number | null) => { });
 const noteSetContext = React.createContext((noteSet: NoteSet) => { return new Set<number>() });
 const updateNoteSetContext = React.createContext((noteSet: NoteSet[] | NoteSet, nums: Array<number>, areEnabled: boolean, overwriteExisting: boolean = false) => { });
 
@@ -23,6 +25,21 @@ function NoteProvider(props: Props) {
         [NoteSet.Highlighted]: new Set<number>(),
         [NoteSet.Emphasized_OctaveGnostic]: new Set<number>(),
     });
+    const [homeNoteRaw, setHomeNoteRaw] = React.useState<number | null>(10);
+    const homeNote = homeNoteRaw !== null && noteSets[NoteSet.Active].has(homeNoteRaw) ? homeNoteRaw : null;
+    const setHomeNote = React.useCallback((note: number | null) => {
+        // if (noteSets[NoteSet.Active].has(note)) {
+        setHomeNoteRaw(note === null ? null : normalizeToSingleOctave(note));
+        // }
+    }, []);
+
+    // Clear home note if no longer active
+    React.useEffect(() => {
+        if (homeNoteRaw !== null && !noteSets[NoteSet.Active].has(homeNoteRaw)) {
+            setHomeNoteRaw(null);
+        }
+    }, [homeNote, homeNoteRaw, noteSets]);
+
     const getNoteSet = React.useCallback((noteSet: NoteSet) => {
         return noteSets[noteSet];
         // return new Set(Array.from(noteSets[noteSet]).map(elem => {
@@ -77,7 +94,11 @@ function NoteProvider(props: Props) {
     return (
         <noteSetContext.Provider value={getNoteSet}>
             <updateNoteSetContext.Provider value={setNoteSet}>
-                {props.children}
+                <homeNoteContext.Provider value={homeNote}>
+                    <setHomeNoteContext.Provider value={setHomeNote}>
+                        {props.children}
+                    </setHomeNoteContext.Provider>
+                </homeNoteContext.Provider>
             </updateNoteSetContext.Provider>
         </noteSetContext.Provider>
     );
@@ -89,6 +110,14 @@ export function useNoteSet() {
 
 export function useUpdateNoteSet() {
     return React.useContext(updateNoteSetContext);
+}
+
+export function useHomeNote() {
+    return React.useContext(homeNoteContext);
+}
+
+export function useSetHomeNote() {
+    return React.useContext(setHomeNoteContext);
 }
 
 export function normalizeToSingleOctave(i: number) {
@@ -117,10 +146,6 @@ export function useCheckNoteEmphasis() {
         const emphasized = getNoteSet(NoteSet.Emphasized);
         var emphasizedOctaveGnostic = getNoteSet(NoteSet.Emphasized_OctaveGnostic);
 
-        const normalizeToSingleOctave = (i: number) => {
-            return ((12 * 12) + i) % 12;
-        }
-
         if (!octaveGnostic) {
             emphasizedOctaveGnostic = new Set(Array.from(emphasizedOctaveGnostic).map(elem => {
                 return normalizeToSingleOctave(elem);
@@ -133,3 +158,7 @@ export function useCheckNoteEmphasis() {
 }
 
 export default NoteProvider;
+
+function getToggleActiveNoteHandler(note: any, number: any) {
+    throw new Error("Function not implemented.");
+}

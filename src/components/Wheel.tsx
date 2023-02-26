@@ -5,7 +5,7 @@ import { MenuItem, Select, Switch } from '@mui/material';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { useGetActiveNotesInCommonWithModulation, useModulateActiveNotes } from './HarmonicModulation';
 import { getIntervalColor, getIntervalDistance, getNoteName } from './Utils';
-import { NoteSet, useGetCombinedModdedEmphasis, useNoteSet, useUpdateNoteSet } from './NoteProvider';
+import { NoteSet, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from './NoteProvider';
 type Props = {
     x: number
     y: number
@@ -20,6 +20,9 @@ function Wheel(props: Props) {
     const emphasizedNotes = useGetCombinedModdedEmphasis()();;
     const updateNotes = useUpdateNoteSet();
     const getNotesInCommon = useGetActiveNotesInCommonWithModulation();
+    const homeNote = useHomeNote();
+    const setHomeNote = useSetHomeNote();
+
 
     const modulateActiveNotes = useModulateActiveNotes();
 
@@ -158,8 +161,13 @@ function Wheel(props: Props) {
 
         for (let i = 0; i < props.subdivisionCount; i++) {
             const noteLoc = getNoteLocation(i);
-            const toggleActive = () => {
-                updateNotes(NoteSet.Active, [i], !activeNotes.has(i));
+            const toggleActive = (evt: KonvaEventObject<MouseEvent>) => {
+                if (evt.evt.button === 2) {
+                    setHomeNote((i === homeNote) ? null : i);
+                }
+                else {
+                    updateNotes(NoteSet.Active, [i], !activeNotes.has(i));
+                }
             };
             const emphasize = () => {
                 updateNotes(NoteSet.Emphasized, [i], true, true);
@@ -168,7 +176,8 @@ function Wheel(props: Props) {
                 updateNotes(NoteSet.Emphasized, [i], false);
             };
             if (activeNotes.has(i)) {
-                notesArr.push(<Circle key={`active${i}`} x={noteLoc.x} y={noteLoc.y} fill="white" radius={10} />);
+                const noteColor = homeNote === i ? "yellow" : "white";
+                notesArr.push(<Circle key={`active${i}`} x={noteLoc.x} y={noteLoc.y} fill={noteColor} radius={10} />);
             }
             if (emphasizedNotes.has(i)) {
                 emphasized.push(<Circle key={`emphasize${i}`} x={noteLoc.x} y={noteLoc.y} fill="red" stroke="red" radius={20} />);
@@ -191,7 +200,7 @@ function Wheel(props: Props) {
             clickListeners: clickListenersArr,
             names: noteNames,
         }
-    }, [getNoteLocation, rotatingStartingNote, props.subdivisionCount, isCircleOfFifths, getNotesInCommon, updateNotes, modulateActiveNotes, activeNotes, emphasizedNotes, highlightedNotes, showNoteNames]);
+    }, [getNoteLocation, rotatingStartingNote, props.subdivisionCount, isCircleOfFifths, getNotesInCommon, updateNotes, modulateActiveNotes, activeNotes, emphasizedNotes, highlightedNotes, showNoteNames, homeNote, setHomeNote]);
 
     const intervals = React.useMemo(() => {
         var intervalLines: JSX.Element[] = [];

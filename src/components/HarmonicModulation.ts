@@ -1,6 +1,6 @@
 import React from "react";
 import { HarmonicShape } from "./KnownHarmonicShapes";
-import { NoteSet, useNoteSet, useUpdateNoteSet } from "./NoteProvider";
+import { NoteSet, normalizeToSingleOctave, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from "./NoteProvider";
 
 function getModulatedNotes(activeNotes: Set<number>, semitones: number) {
     return Array.from(activeNotes).map(note => (note + semitones) % 12);//Do I want to do the modulus here?
@@ -9,9 +9,15 @@ function getModulatedNotes(activeNotes: Set<number>, semitones: number) {
 export function useModulateActiveNotes() {
     const activeNotes = useNoteSet()(NoteSet.Active);
     const updateNotes = useUpdateNoteSet();
+    const homeNote = useHomeNote();
+    const setHomeNote = useSetHomeNote();
+    
     return React.useCallback((semitones: number) => {
+        if (homeNote !== undefined && homeNote !== null) {
+            setHomeNote(normalizeToSingleOctave(homeNote + semitones));
+        }
         updateNotes(NoteSet.Active, getModulatedNotes(activeNotes, semitones), true, true);
-    }, [activeNotes, updateNotes])
+    }, [activeNotes, homeNote, setHomeNote, updateNotes])
 }
 
 export function useGetActiveNotesInCommonWithModulation() {
@@ -23,7 +29,6 @@ export function useGetActiveNotesInCommonWithModulation() {
         newActiveNotes.forEach((note, i) => {
             if (activeNotes.has(note)) notesInCommon.add(note);
         });
-        console.log(semitones, activeNotes, newActiveNotes, notesInCommon);
         return notesInCommon;
     }, [activeNotes]);
 }

@@ -35,7 +35,9 @@ function App() {
       <header className="App-header">
         <NoteProvider>
           <div>
-            <Stage width={windowWidth} height={windowHeight}>
+            <Stage width={windowWidth} height={windowHeight}
+              onContextMenu={(e) => { e.evt.preventDefault() }}
+            >
               <Layer>
                 <BackPlate width={windowWidth} height={windowHeight} />
                 <HarmonyAnalyzer subdivisionCount={12} x={windowWidth / 2} y={10} width={windowWidth} />

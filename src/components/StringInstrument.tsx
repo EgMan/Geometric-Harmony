@@ -3,7 +3,8 @@ import { Circle, Rect, Line, Text } from 'react-konva';
 import Widget from './Widget';
 import { MenuItem, Select } from '@mui/material';
 import { getNoteName } from './Utils';
-import { NoteSet, useCheckNoteEmphasis, useNoteSet, useUpdateNoteSet } from './NoteProvider';
+import { NoteSet, useCheckNoteEmphasis, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from './NoteProvider';
+import { KonvaEventObject } from 'konva/lib/Node';
 
 type Props = {
     x: number
@@ -24,6 +25,9 @@ function StringInstrument(props: Props) {
     const checkEmphasis = useCheckNoteEmphasis();
     // const emphasizedNotes = useGetCombinedModdedEmphasis()();
     const updateNotes = useUpdateNoteSet();
+
+    const homeNote = useHomeNote();
+    const setHomeNote = useSetHomeNote();
 
     enum NoteLabling {
         None = 1,
@@ -80,6 +84,14 @@ function StringInstrument(props: Props) {
                 const note = absoluteNote % 12;
                 // <Line x={props.x} y={props.y} stroke={discColor} strokeWidth={lineWidth} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />
 
+                const toggleActive = (evt: KonvaEventObject<MouseEvent>) => {
+                    if (evt.evt.button === 2) {
+                        setHomeNote((note === homeNote) ? null : note);
+                    }
+                    else {
+                        updateNotes(NoteSet.Active, [note], !activeNotes.has(note));
+                    }
+                };
                 if (fretNum !== props.fretCount - 1) {
                     stringElements.push(
                         <Line stroke={"grey"} strokeWidth={1} points={[posX, posY, posX, posY + fretSpacing]} />
@@ -93,7 +105,8 @@ function StringInstrument(props: Props) {
                     )
                 }
                 else if (activeNotes.has(note)) {
-                    activeNoteIndicators.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={"white"}></Circle>)
+                    const noteColor = (note === homeNote) ? "yellow" : "white";
+                    activeNoteIndicators.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={noteColor}></Circle>)
                     if ([NoteLabling.ActiveNoteNames, NoteLabling.NoteNames].includes(noteLabeling) || fretNum === 0) {
                         noteNames.push(
                             <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note, activeNotes)} fontSize={12} fontFamily='monospace' fill={"black"} align="center" verticalAlign="middle" />
@@ -106,7 +119,7 @@ function StringInstrument(props: Props) {
                     )
                 }
 
-                clickListeners.push(<Rect key={`keyHitbox${fretNum}-${stringNum}`} x={posX - (stringSpacing / 2)} y={posY + fretElemYOffset - (fretSpacing / 2)} width={stringSpacing} height={fretSpacing} onClick={() => updateNotes(NoteSet.Active, [note], !activeNotes.has(note))} onTap={() => updateNotes(NoteSet.Active, [note], !activeNotes.has(note))} onMouseOver={() => updateNotes(NoteSet.Emphasized_OctaveGnostic, [absoluteNote], true, true)} onMouseOut={() => updateNotes(NoteSet.Emphasized_OctaveGnostic, [absoluteNote], false)}></Rect>)
+                clickListeners.push(<Rect key={`keyHitbox${fretNum}-${stringNum}`} x={posX - (stringSpacing / 2)} y={posY + fretElemYOffset - (fretSpacing / 2)} width={stringSpacing} height={fretSpacing} onClick={toggleActive} onTap={toggleActive} onMouseOver={() => updateNotes(NoteSet.Emphasized_OctaveGnostic, [absoluteNote], true, true)} onMouseOut={() => updateNotes(NoteSet.Emphasized_OctaveGnostic, [absoluteNote], false)}></Rect>)
             });
         }
         return {
@@ -117,7 +130,7 @@ function StringInstrument(props: Props) {
             emphasized,
             clickListeners,
         }
-    }, [NoteLabling.ActiveNoteNames, NoteLabling.NoteNames, activeNotes, checkEmphasis, circleElemRadius, fretElemYOffset, fretSpacing, noteLabeling, props.fretCount, props.tuning, props.width, stringSpacing, updateNotes]);
+    }, [NoteLabling.ActiveNoteNames, NoteLabling.NoteNames, activeNotes, checkEmphasis, circleElemRadius, fretElemYOffset, fretSpacing, homeNote, noteLabeling, props.fretCount, props.tuning, props.width, setHomeNote, stringSpacing, updateNotes]);
 
     return (
         <Widget x={props.x - (props.width / 2)} y={props.y} contextMenuX={props.width / 2} contextMenuY={-fretSpacing} settingsRows={settingsMenuItems}>
