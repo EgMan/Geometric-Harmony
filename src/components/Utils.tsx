@@ -1,11 +1,11 @@
 // const numberToNote = ["C-1", "C#3", "D3", "D#3", "E3", "F3", "F#3", "G3", "G#3", "A3", "A#3", "B3"];
-const numberToNote = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const numberToPlayableNote = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const numberToNoteNameSharp = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const numberToNoteNameFlat = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
 
 export function getNote(i: number) {
     const octaveNum = Math.floor(i / 12) + 3;
-    return `${numberToNote[i % 12]}${octaveNum}`;
+    return `${numberToPlayableNote[i % 12]}${octaveNum}`;
 }
 
 export function getNoteName(i: number, activeNotes: Set<number>) {
@@ -21,6 +21,16 @@ export function getNoteName(i: number, activeNotes: Set<number>) {
         return numberToNoteNameFlat[i] ?? "?";
     }
     return numberToNoteNameSharp[i] ?? "?";
+}
+
+export function getNoteNum(noteName: string) {
+    const sanitizedNoteName = noteName.replace(/(.)b/g, "$1♭").replace(/♯/g, "#").toUpperCase();
+    console.log("sanitizedNoteName", sanitizedNoteName);
+    var noteNum = numberToNoteNameSharp.indexOf(sanitizedNoteName);
+    if (noteNum === -1) {
+        noteNum = numberToNoteNameFlat.indexOf(sanitizedNoteName);
+    }
+    return noteNum;
 }
 
 export const getIntervalColor = (distance: number) => {

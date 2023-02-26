@@ -2,7 +2,7 @@ import React from "react";
 import { Text } from 'react-konva';
 import { HarmonicShape, knownShapes } from "./KnownHarmonicShapes";
 import Widget from "./Widget";
-import { getNoteName } from "./Utils";
+import { getNoteName, getNoteNum } from "./Utils";
 import { NoteSet, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote } from "./NoteProvider";
 import { Html } from "react-konva-utils";
 import { MenuItem, FormGroup, Select, Button, Autocomplete, TextField, } from "@mui/material";
@@ -13,6 +13,8 @@ const keySelectorExplorerWidth = 70;
 const autocompleteExplorerWidth = 400;
 const submitButtonExplorerWidth = 70;
 const explorerWidth = keySelectorExplorerWidth + autocompleteExplorerWidth + submitButtonExplorerWidth;
+
+const inputBoxNoteNameRegex = /^([aAbBcCdDeEfFgG][b#♭♯]?)\s/
 
 type Props =
     {
@@ -98,7 +100,6 @@ function HarmonyAnalyzer(props: Props) {
         const emphasizedNoteInfo = Array.from(emphasizedNotes).map(note => {
             return getNoteNameInExactFitShape(note) ?? '?';
         }).filter(info => info !== '');
-        console.log("empha note info", emphasizedNoteInfo);
 
         // Populate infos that display under the shape explorer
         type Info = {
@@ -117,7 +118,6 @@ function HarmonyAnalyzer(props: Props) {
             });
         }
         emphasizedNoteInfo.forEach((infoText) => {
-            console.log("infoText: " + infoText + "");
             infos.push({
                 text: infoText,
                 color: "red",
@@ -130,8 +130,6 @@ function HarmonyAnalyzer(props: Props) {
         const infosYOffset = 50;
         const infosFontSize = 20;
         return infos.filter(info => info.text !== "").map((info) => {
-            console.log(idx);
-            console.log("info: " + info);
             return (<Text key={`info${info.text}${idx++}`} text={info.text} x={0} y={textelemoffset * (idx) + infosYOffset} fontSize={infosFontSize} fontFamily='monospace' fill={info.color} align="center" width={explorerWidth} />);
         });
     }, [emphasizedNotes, exactFitName, getNoteNameInExactFitShape, homeNote]);
@@ -231,8 +229,28 @@ function HarmonyAnalyzer(props: Props) {
                             inputMode="text"
                             groupBy={(option) => option.shapeName}
                             value={selectedShape}
+                            autoHighlight={true}
                             onChange={(event, value, reason) => { if (selectedHomeNote === -1) { setSelectedHomeNote(homeNote ?? 0) } setSelectedShape(value); }}
                             options={explorerElements}
+                            onInputChange={(event, value, reason) => {
+                                var leadingNoteName = value.match(inputBoxNoteNameRegex);
+                                console.log("leadingNoteName: " + leadingNoteName);
+                                if (leadingNoteName !== null) {
+                                    var noteNum = getNoteNum(leadingNoteName[1]);
+                                    if (noteNum !== -1) {
+                                        setSelectedHomeNote(noteNum);
+                                    }
+                                }
+                            }}
+                            filterOptions={(options, state) => {
+                                var filteredOptions: AutocompleteOptionType[] = [];
+                                const inputVal = state.inputValue.replace(inputBoxNoteNameRegex, "").toUpperCase().replace(/^(.)#/g, "$1").replace(/^(.)b/g, "$1");
+                                options.forEach((option) => {
+                                    if (option.label.toUpperCase().includes(inputVal)) filteredOptions.push(option);
+                                    else if (option.shapeName.toUpperCase().includes(inputVal)) filteredOptions.push(option);
+                                });
+                                return filteredOptions;
+                            }}
                             sx={{
                                 width: autocompleteExplorerWidth, display: 'inline-block', bgcolor: 'transparent', color: 'red',
                                 '.MuiOutlinedInput-notchedOutline': {
