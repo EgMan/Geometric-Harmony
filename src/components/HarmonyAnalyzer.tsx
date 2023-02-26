@@ -231,7 +231,7 @@ function HarmonyAnalyzer(props: Props) {
                             inputMode="text"
                             groupBy={(option) => option.shapeName}
                             value={selectedShape}
-                            onChange={(event, value, reason) => { if (selectedHomeNote === -1) { setSelectedHomeNote(0) } setSelectedShape(value); }}
+                            onChange={(event, value, reason) => { if (selectedHomeNote === -1) { setSelectedHomeNote(homeNote ?? 0) } setSelectedShape(value); }}
                             options={explorerElements}
                             sx={{
                                 width: autocompleteExplorerWidth, display: 'inline-block', bgcolor: 'transparent', color: 'red',
