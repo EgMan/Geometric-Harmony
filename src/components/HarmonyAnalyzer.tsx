@@ -154,6 +154,9 @@ function HarmonyAnalyzer(props: Props) {
 
                     if (startingNote.length < 2) return;
 
+                    // todo remove this for supporting chords in explorer
+                    if (noteCount < 5) return;
+
                     // Label defaults to shape name + mode number if no name is specified
                     const label = startingNote.length < 2 ? `${shape.name} mode ${startingNoteNum}` : startingNote[1] ?? "unknown";
 
