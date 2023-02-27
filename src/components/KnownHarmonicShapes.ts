@@ -97,7 +97,7 @@ export const knownShapes: HarmonicShape[][] = [
         },
         {
             name: "Kumoi Pentatonic Family",
-            notes: [[true, "Kumoi Pentatonic"], [false], [true], [true], [false], [false], [false], [true], [false], [true]]
+            notes: [[true, "Kumoi Pentatonic"], [false], [true, "Modern Japanese Pentatonic"], [true], [false], [false], [false], [true], [false], [true]]
         },
         {
             name: "Hirojoshi Pentatonic Family",
@@ -129,7 +129,7 @@ export const knownShapes: HarmonicShape[][] = [
     [
         {
             name: "Natural Mode Family",
-            notes: [[true, "Ionian (Major)"], [false], [true, "Dorian"], [false], [true, "Phrygian"], [true, "Lydian"], [false], [true, "Dominant (Mixolydian)"], [false], [true, "Aeolian (Minor)"], [false], [true, "Locrian"]],
+            notes: [[true, "Major (Ionian)"], [false], [true, "Dorian"], [false], [true, "Phrygian"], [true, "Lydian"], [false], [true, "Dominant (Mixolydian)"], [false], [true, "Minor (Aeolian)"], [false], [true, "Locrian"]],
         },
         {
             name: "Melodic Mode Family",
