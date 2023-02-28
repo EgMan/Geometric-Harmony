@@ -3,7 +3,7 @@ import { Text } from 'react-konva';
 import { HarmonicShape, knownShapes } from "./KnownHarmonicShapes";
 import Widget from "./Widget";
 import { getNoteName, getNoteNum } from "./Utils";
-import { NoteSet, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote } from "./NoteProvider";
+import { NoteSet, normalizeToSingleOctave, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote } from "./NoteProvider";
 import { Html } from "react-konva-utils";
 import { MenuItem, FormGroup, Select, Button, Autocomplete, TextField, } from "@mui/material";
 import { useSetActiveShape } from "./HarmonicModulation";
@@ -38,7 +38,6 @@ function HarmonyAnalyzer(props: Props) {
         setSelectedShape(null);
         setSelectedHomeNote(-1);
     }
-
     const tryToFitShape = React.useCallback((shape: HarmonicShape, notes: Set<number>) => {
         const noteArr = Array.from(notes);
 
@@ -91,14 +90,28 @@ function HarmonyAnalyzer(props: Props) {
         if (exactFit === null || exactFit === undefined) return getNoteName(note, activeNotes);
         let shapeIdx = (note + exactFit.noteToFirstNoteInShapeIdxOffset) % props.subdivisionCount;
         if (shapeIdx < 0) shapeIdx += props.subdivisionCount;
-        if (shapeIdx >= exactFit.shape.notes.length || shapeIdx < 0) return getNoteName(note, activeNotes);
-        return `${getNoteName(note, activeNotes)} ${exactFit.shape.notes[shapeIdx][1] ? exactFit.shape.notes[shapeIdx][1] : (exactFit.shape.notes[0][1] ? `${exactFit.shape.notes[0][1]} mode` : "")}`;
+        if (shapeIdx >= exactFit.shape.notes.length || shapeIdx < 0 || !exactFit.shape.notes[shapeIdx][0]) return getNoteName(note, activeNotes);
+        // return `${ getNoteName(note, activeNotes) } ${ exactFit.shape.notes[shapeIdx][1] ? exactFit.shape.notes[shapeIdx][1] : (exactFit.shape.notes[0][1] ? `${exactFit.shape.notes[0][1]} mode ${getScaleDegree(0, shapeIdx, exactFit.shape)}` : "") } `;
+        return `${getNoteName(note, activeNotes)} ${getModeNameInShape(shapeIdx, exactFit.shape)}`;
     }, [activeNotes, exactFit, props.subdivisionCount]);
 
 
     const infoTextElems = React.useMemo(() => {
+        //TODO Add exact fit names
         const emphasizedNoteInfo = Array.from(emphasizedNotes).map(note => {
-            return getNoteNameInExactFitShape(note) ?? '?';
+            // No exact fit, so display the note name
+            if (exactFit === null || exactFit === undefined) return getNoteName(note, activeNotes);
+
+            if (homeNote == null) {
+                if (emphasizedNotes.size === 1) {
+                    return getNoteNameInExactFitShape(note) ?? '?';
+                }
+                return getNoteName(note, activeNotes);
+            }
+            const scaleDegree = getScaleDegree(homeNote + exactFit.noteToFirstNoteInShapeIdxOffset, note + exactFit.noteToFirstNoteInShapeIdxOffset, exactFit.shape);
+            return `${getNoteName(note, activeNotes)}${scaleDegree > 0 ? `°${scaleDegree}` : ""}`;
+
+            // return `${exactFit.shape.name}`;
         }).filter(info => info !== '');
 
         // Populate infos that display under the shape explorer
@@ -117,11 +130,9 @@ function HarmonyAnalyzer(props: Props) {
                 color: "yellow",
             });
         }
-        emphasizedNoteInfo.forEach((infoText) => {
-            infos.push({
-                text: infoText,
-                color: "red",
-            });
+        infos.push({
+            text: emphasizedNoteInfo.join(", "),
+            color: "red",
         });
 
         // Convert infos to text elements
@@ -132,7 +143,7 @@ function HarmonyAnalyzer(props: Props) {
         return infos.filter(info => info.text !== "").map((info) => {
             return (<Text key={`info${info.text}${idx++}`} text={info.text} x={0} y={textelemoffset * (idx) + infosYOffset} fontSize={infosFontSize} fontFamily='monospace' fill={info.color} align="center" width={explorerWidth} />);
         });
-    }, [emphasizedNotes, exactFitName, getNoteNameInExactFitShape, homeNote]);
+    }, [activeNotes, emphasizedNotes, exactFit, exactFitName, getNoteNameInExactFitShape, homeNote]);
 
     type AutocompleteOptionType = {
         label: string;
@@ -141,6 +152,7 @@ function HarmonyAnalyzer(props: Props) {
         shapeNum: number;
         startingNoteNum: number;
         shape: HarmonicShape;
+        hasExplicitName: boolean;
     }
     const explorerElements: AutocompleteOptionType[] = React.useMemo(() => {
         return knownShapes.map((shapes, noteCount) => {
@@ -150,13 +162,15 @@ function HarmonyAnalyzer(props: Props) {
                     // Don't list notes not in the shape
                     if (startingNote[0] === false) return;
 
-                    if (startingNote.length < 2) return;
+                    // Disable unnamed modes
+                    // if (startingNote.length < 2) return;
 
                     // todo remove this for supporting chords in explorer
                     if (noteCount < 5) return;
 
                     // Label defaults to shape name + mode number if no name is specified
-                    const label = startingNote.length < 2 ? `${shape.name} mode ${startingNoteNum}` : startingNote[1] ?? "unknown";
+                    // const label = startingNote.length < 2 ? `${ shape.name } mode ${ startingNoteNum } ` : startingNote[1] ?? "unknown";
+                    const label = getModeNameInShape(startingNoteNum, shape);
 
                     elems.push({
                         label,
@@ -165,6 +179,7 @@ function HarmonyAnalyzer(props: Props) {
                         shapeNum,
                         startingNoteNum,
                         shape,
+                        hasExplicitName: startingNote.length >= 2,
                     });
                 });
                 return elems;
@@ -173,8 +188,8 @@ function HarmonyAnalyzer(props: Props) {
     }, []);
 
     const keySelectors = React.useMemo(() => {
-        return [<MenuItem value={-1}>{""}</MenuItem>].concat(Array.from(Array(12).keys()).map(num => {
-            return <MenuItem value={num}>{getNoteName(num, new Set())}</MenuItem>;
+        return [<MenuItem value={-1}>{""}</MenuItem>].concat(Array.from(Array(12).keys()).map((num, idx) => {
+            return <MenuItem key={`selectorOption${idx}`} value={num}>{getNoteName(num, new Set())}</MenuItem>;
         }));
     }, []);
 
@@ -188,7 +203,7 @@ function HarmonyAnalyzer(props: Props) {
             contextMenuY={20}>
             {infoTextElems}
             <Html transform={true} divProps={{ id: "shape-tool-div" }}>
-                <form onSubmit={evt => { evt.preventDefault(); console.log("submit", evt) }}>
+                <form onSubmit={evt => { evt.preventDefault() }}>
                     <FormGroup row sx={{ backgroundColor: 'rgb(255,255,255,0.1)', borderRadius: '9px' }}>
                         <Select
                             id="explorer-dropdown"
@@ -227,14 +242,14 @@ function HarmonyAnalyzer(props: Props) {
                             disablePortal
                             size="small"
                             inputMode="text"
-                            groupBy={(option) => option.shapeName}
+                            groupBy={(option) => `${option.shapeName} (${option.noteCount} notes)`}
                             value={selectedShape}
                             autoHighlight={true}
                             onChange={(event, value, reason) => { if (selectedHomeNote === -1) { setSelectedHomeNote(homeNote ?? 0) } setSelectedShape(value); }}
                             options={explorerElements}
+                            noOptionsText="¯\_(ツ)_/¯"
                             onInputChange={(event, value, reason) => {
                                 var leadingNoteName = value.match(inputBoxNoteNameRegex);
-                                console.log("leadingNoteName: " + leadingNoteName);
                                 if (leadingNoteName !== null) {
                                     var noteNum = getNoteNum(leadingNoteName[1]);
                                     if (noteNum !== -1) {
@@ -246,6 +261,7 @@ function HarmonyAnalyzer(props: Props) {
                                 var filteredOptions: AutocompleteOptionType[] = [];
                                 const inputVal = state.inputValue.replace(inputBoxNoteNameRegex, "").toUpperCase().replace(/^(.)#/g, "$1").replace(/^(.)b/g, "$1");
                                 options.forEach((option) => {
+                                    if ((!option.hasExplicitName) && (!inputVal.match(/(M$)|(MO$)|(MOD$)|(MODE[^A-Z]?)/g))) return;
                                     if (option.label.toUpperCase().includes(inputVal)) filteredOptions.push(option);
                                     else if (option.shapeName.toUpperCase().includes(inputVal)) filteredOptions.push(option);
                                 });
@@ -303,6 +319,34 @@ function HarmonyAnalyzer(props: Props) {
             </Html>
         </Widget >
     );
+}
+
+export function getScaleDegree(noteInShapeFrom: number, noteInShapeTo: number, shape: HarmonicShape): number {
+    var nextNote = normalizeToSingleOctave(noteInShapeFrom);
+    var noteTo = normalizeToSingleOctave(noteInShapeTo);
+    var count = 1;
+    if (!shape.notes[noteTo] || shape.notes[noteTo][0] !== true) return -1;
+    while (nextNote !== noteTo) {
+        if (shape.notes[nextNote] && shape.notes[nextNote][0] === true) {
+            count++;
+        }
+        nextNote = normalizeToSingleOctave(nextNote + 1);
+    }
+    return count;
+}
+
+export function getModeNameInShape(shapeIdx: number, shape: HarmonicShape): string {
+    // First, attempt to find the true name of the mode
+    const trueName = shape.notes[shapeIdx][1];
+    if (trueName) return trueName;
+
+    // If that fails, check to see note actually forms a node
+    const scaleDegree = getScaleDegree(0, shapeIdx, shape);
+    if (scaleDegree < 0) return "Not a mode";
+
+    // If does, name this mode with respect to the first mode of the shape
+    return `${shape.notes[0][1] ?? ""
+        } mode ${getScaleDegree(0, shapeIdx, shape)} `;
 }
 
 export default HarmonyAnalyzer;
