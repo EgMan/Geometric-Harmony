@@ -38,51 +38,8 @@ function HarmonyAnalyzer(props: Props) {
         setSelectedShape(null);
         setSelectedHomeNote(-1);
     }
-    const tryToFitShape = React.useCallback((shape: HarmonicShape, notes: Set<number>) => {
-        const noteArr = Array.from(notes);
 
-        const findNextNoteInShape = (startingIdx: number) => {
-            for (var i = startingIdx + 1; i < shape.notes.length; i++) {
-                if (shape.notes[i][0]) return i;
-            }
-            return -1;
-        }
-
-        const doesShapeFitStartingHere = (noteStart: number) => {
-            var idx = findNextNoteInShape(-1);
-            while (idx !== -1) {
-                if (!notes.has((noteStart + idx) % props.subdivisionCount)) {
-                    return false;
-                }
-                idx = findNextNoteInShape(idx);
-            }
-            return true;
-        }
-
-        for (const note of noteArr) {
-            if (doesShapeFitStartingHere(note)) {
-                return {
-                    shape,
-                    doesFit: true,
-                    noteToFirstNoteInShapeIdxOffset: findNextNoteInShape(-1) - note,
-                };
-            }
-        }
-
-        return {
-            shape,
-            doesFit: false,
-            noteToFirstNoteInShapeIdxOffset: 0,
-        };
-    }, [props.subdivisionCount])
-
-    const getAllExactFits = React.useCallback((notes: Set<number>) => {
-        const shapesOfCorrectSize = knownShapes[notes.size] ?? [];
-
-        return shapesOfCorrectSize.map(shape => tryToFitShape(shape, notes)).filter(shapeFit => shapeFit.doesFit);
-    }, [tryToFitShape])
-
-    const exactFits = getAllExactFits(activeNotes);
+    const exactFits = useGetAllActiveExactFits();
     const exactFit = exactFits[0];
     const exactFitName = exactFit ? exactFit.shape.name : "";
 
@@ -365,6 +322,62 @@ export function getModeNameInShape(shapeIdx: number, shape: HarmonicShape): stri
             // If does, name this mode with respect to the first mode of the shape
             return `${shape.notes[0][1] ?? ""} mode ${scaleDegree}`;
     }
+}
+
+export type ExactFit = {
+    shape: HarmonicShape
+    doesFit: boolean
+    noteToFirstNoteInShapeIdxOffset: number
+}
+
+function useTryToFitShape() {
+    return React.useCallback((shape: HarmonicShape, notes: Set<number>): ExactFit => {
+        const noteArr = Array.from(notes);
+
+        const findNextNoteInShape = (startingIdx: number) => {
+            for (var i = startingIdx + 1; i < shape.notes.length; i++) {
+                if (shape.notes[i][0]) return i;
+            }
+            return -1;
+        }
+
+        const doesShapeFitStartingHere = (noteStart: number) => {
+            var idx = findNextNoteInShape(-1);
+            while (idx !== -1) {
+                if (!notes.has(normalizeToSingleOctave(noteStart + idx))) {
+                    return false;
+                }
+                idx = findNextNoteInShape(idx);
+            }
+            return true;
+        }
+
+        for (const note of noteArr) {
+            if (doesShapeFitStartingHere(note)) {
+                return {
+                    shape,
+                    doesFit: true,
+                    noteToFirstNoteInShapeIdxOffset: findNextNoteInShape(-1) - note,
+                };
+            }
+        }
+
+        return {
+            shape,
+            doesFit: false,
+            noteToFirstNoteInShapeIdxOffset: 0,
+        };
+    }, []);
+}
+
+export function useGetAllActiveExactFits() {
+    const activeNotes = useNoteSet()(NoteSet.Active);
+    const tryToFitShape = useTryToFitShape();
+
+    return React.useMemo(() => {
+        const shapesOfCorrectSize = knownShapes[activeNotes.size] ?? [];
+        return shapesOfCorrectSize.map(shape => tryToFitShape(shape, activeNotes)).filter(shapeFit => shapeFit.doesFit);
+    }, [activeNotes, tryToFitShape]);
 }
 
 export default HarmonyAnalyzer;
