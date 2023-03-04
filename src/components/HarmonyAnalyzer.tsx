@@ -1,6 +1,6 @@
 import React from "react";
 import { Text } from 'react-konva';
-import { HarmonicShape, knownShapes } from "./KnownHarmonicShapes";
+import { HarmonicShape, ShapeType, knownShapes } from "./KnownHarmonicShapes";
 import Widget from "./Widget";
 import { getNoteName, getNoteNum } from "./Utils";
 import { NoteSet, normalizeToSingleOctave, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote } from "./NoteProvider";
@@ -91,8 +91,7 @@ function HarmonyAnalyzer(props: Props) {
         let shapeIdx = (note + exactFit.noteToFirstNoteInShapeIdxOffset) % props.subdivisionCount;
         if (shapeIdx < 0) shapeIdx += props.subdivisionCount;
         if (shapeIdx >= exactFit.shape.notes.length || shapeIdx < 0 || !exactFit.shape.notes[shapeIdx][0]) return getNoteName(note, activeNotes);
-        // return `${ getNoteName(note, activeNotes) } ${ exactFit.shape.notes[shapeIdx][1] ? exactFit.shape.notes[shapeIdx][1] : (exactFit.shape.notes[0][1] ? `${exactFit.shape.notes[0][1]} mode ${getScaleDegree(0, shapeIdx, exactFit.shape)}` : "") } `;
-        return `${getNoteName(note, activeNotes)} ${getModeNameInShape(shapeIdx, exactFit.shape)}`;
+        return `${getNoteName(maybeModulateNoteFromShapeType(note, shapeIdx, exactFit.shape), activeNotes)} ${getModeNameInShape(shapeIdx, exactFit.shape)}`;
     }, [activeNotes, exactFit, props.subdivisionCount]);
 
 
@@ -162,25 +161,27 @@ function HarmonyAnalyzer(props: Props) {
                     // Don't list notes not in the shape
                     if (startingNote[0] === false) return;
 
-                    // Disable unnamed modes
-                    // if (startingNote.length < 2) return;
-
-                    // todo remove this for supporting chords in explorer
-                    if (noteCount < 5) return;
-
-                    // Label defaults to shape name + mode number if no name is specified
-                    // const label = startingNote.length < 2 ? `${ shape.name } mode ${ startingNoteNum } ` : startingNote[1] ?? "unknown";
                     const label = getModeNameInShape(startingNoteNum, shape);
 
-                    elems.push({
-                        label,
-                        noteCount,
-                        shapeName: shape.name,
-                        shapeNum,
-                        startingNoteNum,
-                        shape,
-                        hasExplicitName: startingNote.length >= 2,
-                    });
+                    var hasExplicitName = false;
+                    switch (shape.type) {
+                        case ShapeType.CHORD:
+                            hasExplicitName = startingNoteNum === 0;
+                            break;
+                        default:
+                            hasExplicitName = startingNote.length >= 2;
+                    }
+                    if (label !== "") {
+                        elems.push({
+                            label,
+                            noteCount,
+                            shapeName: shape.name,
+                            shapeNum,
+                            startingNoteNum,
+                            shape,
+                            hasExplicitName,
+                        });
+                    }
                 });
                 return elems;
             });
@@ -242,7 +243,7 @@ function HarmonyAnalyzer(props: Props) {
                             disablePortal
                             size="small"
                             inputMode="text"
-                            groupBy={(option) => `${option.shapeName} (${option.noteCount} notes)`}
+                            groupBy={(option) => option.shape.groupByOverride ?? `${option.shapeName} (${option.noteCount} notes)`}
                             value={selectedShape}
                             autoHighlight={true}
                             onChange={(event, value, reason) => { if (selectedHomeNote === -1) { setSelectedHomeNote(homeNote ?? 0) } setSelectedShape(value); }}
@@ -335,18 +336,35 @@ export function getScaleDegree(noteInShapeFrom: number, noteInShapeTo: number, s
     return count;
 }
 
+export function maybeModulateNoteFromShapeType(note: number, shapeIdx: number, shape: HarmonicShape): number {
+    switch (shape.type) {
+        case ShapeType.CHORD:
+            return normalizeToSingleOctave(note - shapeIdx);
+        default:
+            return note;
+    }
+}
+
 export function getModeNameInShape(shapeIdx: number, shape: HarmonicShape): string {
-    // First, attempt to find the true name of the mode
-    const trueName = shape.notes[shapeIdx][1];
-    if (trueName) return trueName;
-
-    // If that fails, check to see note actually forms a node
     const scaleDegree = getScaleDegree(0, shapeIdx, shape);
-    if (scaleDegree < 0) return "Not a mode";
+    switch (shape.type) {
+        case ShapeType.INTERVAL:
+            return "";
+        case ShapeType.CHORD:
+            if (scaleDegree < 0) return "Not a chord";
+            if (scaleDegree === 1) return shape.name;
+            return `${shape.name} inversion ${scaleDegree - 1}`;
+        case ShapeType.SCALE:
+            // First, attempt to find the true name of the mode
+            const trueName = shape.notes[shapeIdx][1];
+            if (trueName) return trueName;
 
-    // If does, name this mode with respect to the first mode of the shape
-    return `${shape.notes[0][1] ?? ""
-        } mode ${getScaleDegree(0, shapeIdx, shape)} `;
+            // If that fails, check to see note actually forms a node
+            if (scaleDegree < 0) return "Not a mode";
+
+            // If does, name this mode with respect to the first mode of the shape
+            return `${shape.notes[0][1] ?? ""} mode ${scaleDegree}`;
+    }
 }
 
 export default HarmonyAnalyzer;
