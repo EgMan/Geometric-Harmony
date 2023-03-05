@@ -1,27 +1,70 @@
 import React from "react";
 import { useModulateActiveNotes } from "./HarmonicModulation";
 import { NoteSet, useUpdateNoteSet } from "./NoteProvider";
+import { useGetNoteFromActiveShapeScaleDegree} from "./HarmonyAnalyzer";
 
 const keyToNoteNumber = new Map<string, number>(
     [
-        ['a', 0],
-        ['w', 1],
-        ['s', 2],
-        ['e', 3],
-        ['d', 4],
-        ['f', 5],
-        ['t', 6],
-        ['g', 7],
-        ['y', 8],
-        ['h', 9],
-        ['u', 10],
-        ['j', 11],
-        ['k', 12],
-        ['o', 13],
-        ['l', 14],
-        ['p', 15],
-        [';', 16],
-        ['\'', 17],
+        // ['a', 0],
+        // ['w', 1],
+        // ['s', 2],
+        // ['e', 3],
+        // ['d', 4],
+        // ['f', 5],
+        // ['t', 6],
+        // ['g', 7],
+        // ['y', 8],
+        // ['h', 9],
+        // ['u', 10],
+        // ['j', 11],
+        // ['k', 12],
+        // ['o', 13],
+        // ['l', 14],
+        // ['p', 15],
+        // [';', 16],
+        // ['\'', 17],
+    ]
+);
+
+const keyToScaleDegree = new Map<string, number>(
+    [
+        [' ', 0],
+        ['z', 0],
+        ['x', 1],
+        ['c', 2],
+        ['v', 3],
+        ['b', 4],
+        ['n', 5],
+        ['m', 6],
+        ['a', 7],
+        ['s', 8],
+        ['d', 9],
+        ['f', 10],
+        ['g', 11],
+        ['h', 12],
+        ['j', 13],
+        ['k', 14],
+        ['l', 15],
+        ['q', 16],
+        ['w', 17],
+        ['e', 18],
+        ['r', 19],
+        ['t', 20],
+        ['y', 21],
+        ['u', 22],
+        ['i', 23],
+        ['o', 24],
+        ['p', 25],
+        ['1', 26],
+        ['2', 27],
+        ['3', 28],
+        ['4', 29],
+        ['5', 30],
+        ['6', 31],
+        ['7', 32],
+        ['8', 33],
+        ['9', 34],
+        ['0', 35],
     ]
 );
 
@@ -29,6 +72,7 @@ function useKeypressPlayer() {
     const [keysPressed, setKeysPressed] = React.useState(new Set<string>());
     const updateNotes = useUpdateNoteSet();
     const modulateActiveNotes = useModulateActiveNotes();
+    const getNoteFromScaleDegree = useGetNoteFromActiveShapeScaleDegree();
 
     const handleKeyDowns = React.useCallback((key: string) => {
         switch (key) {
@@ -94,12 +138,16 @@ function useKeypressPlayer() {
         if (keysPressed.has("Meta")) {
             return;
         }
+
+        const scaleDegreesPressed = Array.from(keysPressed).filter(key => keyToScaleDegree.get(key.toLocaleLowerCase()) !== undefined).map(key => {
+            return getNoteFromScaleDegree(keyToScaleDegree.get(key.toLocaleLowerCase())??0)-12;
+        })
         const notesPressed = Array.from(keysPressed).filter(key => keyToNoteNumber.get(key.toLocaleLowerCase()) !== undefined).map(key => {
             return keyToNoteNumber.get(key.toLocaleLowerCase()) ?? -1;
         })
-        updateNotes(NoteSet.Emphasized_OctaveGnostic, notesPressed, true, true);
+        updateNotes(NoteSet.Emphasized_OctaveGnostic, [...notesPressed, ...scaleDegreesPressed], true, true);
 
-        // setAreNotesEmphasized can not trigger this effect otherwise "no keys pressed" will constantly
+        // updateNotes can not trigger this effect otherwise "no keys pressed" will constantly
         // Be overwriting emphasized notes when the keyboard is not being touched.  
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [keysPressed])

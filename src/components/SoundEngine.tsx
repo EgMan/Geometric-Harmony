@@ -24,6 +24,7 @@ function SoundEngine(props: Props) {
             }
         });
     }, [playingNotes]);
+    console.log("playNotes", playNotes);
 
     React.useEffect(() => {
         const onMouseUp = (event: MouseEvent) => {

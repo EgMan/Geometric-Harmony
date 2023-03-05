@@ -1,6 +1,6 @@
 import React from "react";
 import { Text } from 'react-konva';
-import { HarmonicShape, ShapeType, knownShapes } from "./KnownHarmonicShapes";
+import { HarmonicShape, SCALE_CHROMATIC, ShapeType, knownShapes } from "./KnownHarmonicShapes";
 import Widget from "./Widget";
 import { getNoteName, getNoteNum } from "./Utils";
 import { NoteSet, normalizeToSingleOctave, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote } from "./NoteProvider";
@@ -291,6 +291,33 @@ export function getScaleDegree(noteInShapeFrom: number, noteInShapeTo: number, s
         nextNote = normalizeToSingleOctave(nextNote + 1);
     }
     return count;
+}
+
+export function useGetNoteFromActiveShapeScaleDegree() {
+    const activeNotes = useNoteSet()(NoteSet.Active);
+    const exactFit = useGetAllActiveExactFits()[0];
+    const homeNote = useHomeNote() ?? 0;
+
+    const shape = exactFit?.shape ?? SCALE_CHROMATIC;
+    const shapeOffset = exactFit?.noteToFirstNoteInShapeIdxOffset ?? 0;
+
+    // There's a more efficient way to do this, but I'm lazy.
+    // At least it's memoized ¯\_(ツ)_/¯
+    const scaleDegToNote = React.useMemo(() => {
+        const arr = Array(activeNotes.size);
+        Array.from(Array(12).keys()).forEach(note => {
+            const scaleDegree = getScaleDegree(homeNote + shapeOffset, note + shapeOffset, shape);
+            if (scaleDegree > 0) arr[scaleDegree - 1] = note;
+        });
+        return arr;
+    }, [activeNotes.size, homeNote, shapeOffset, shape]);
+
+    return React.useCallback((scaleDeg: number): number => {
+        const noteSingleOctave = scaleDegToNote[scaleDeg % scaleDegToNote.length];
+        var octaveShift = Math.floor(scaleDeg / scaleDegToNote.length);
+        if (noteSingleOctave < homeNote) octaveShift++;
+        return noteSingleOctave + (octaveShift * 12);
+    }, [homeNote, scaleDegToNote]);
 }
 
 export function maybeModulateNoteFromShapeType(note: number, shapeIdx: number, shape: HarmonicShape): number {
