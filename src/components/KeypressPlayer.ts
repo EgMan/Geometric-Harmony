@@ -55,16 +55,16 @@ const keyToScaleDegree = new Map<string, number>(
         ['i', 23],
         ['o', 24],
         ['p', 25],
-        ['1', 26],
-        ['2', 27],
-        ['3', 28],
-        ['4', 29],
-        ['5', 30],
-        ['6', 31],
-        ['7', 32],
-        ['8', 33],
-        ['9', 34],
-        ['0', 35],
+        // ['1', 26],
+        // ['2', 27],
+        // ['3', 28],
+        // ['4', 29],
+        // ['5', 30],
+        // ['6', 31],
+        // ['7', 32],
+        // ['8', 33],
+        // ['9', 34],
+        // ['0', 35],
     ]
 );
 
@@ -139,8 +139,13 @@ function useKeypressPlayer() {
             return;
         }
 
+        const numberKeyResult = Array.from(keysPressed).map(key => parseInt(key)).filter(key => key).reduce((prev, key) => {
+            return prev + key-1;
+        }, 0);
+
         const scaleDegreesPressed = Array.from(keysPressed).filter(key => keyToScaleDegree.get(key.toLocaleLowerCase()) !== undefined).map(key => {
-            return getNoteFromScaleDegree(keyToScaleDegree.get(key.toLocaleLowerCase())??0)-12;
+            const scaleDegree = (keyToScaleDegree.get(key.toLocaleLowerCase()) ?? 0) + numberKeyResult;
+            return getNoteFromScaleDegree(scaleDegree)-12;
         })
         const notesPressed = Array.from(keysPressed).filter(key => keyToNoteNumber.get(key.toLocaleLowerCase()) !== undefined).map(key => {
             return keyToNoteNumber.get(key.toLocaleLowerCase()) ?? -1;
