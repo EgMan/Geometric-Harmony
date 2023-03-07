@@ -210,6 +210,7 @@ function HarmonyAnalyzer(props: Props) {
                         </Select>
                         <Autocomplete
                             disablePortal
+                            id="explorerinput"
                             size="small"
                             inputMode="text"
                             groupBy={(option) => option.shape.groupByOverride ?? `${option.shapeName} (${option.noteCount} notes)`}
@@ -283,6 +284,7 @@ function HarmonyAnalyzer(props: Props) {
                                     resetSelectedShapeExplorerItems();
                                     setHomeNote(selectedHomeNote);
                                 }
+                                (document.activeElement as HTMLElement).blur();
                             }}>➔</Button>
                     </FormGroup>
                 </form>
@@ -325,6 +327,7 @@ export function useGetNoteFromActiveShapeScaleDegree() {
     }, [activeNotes.size, homeNote, shapeOffset, shape]);
 
     return React.useCallback((scaleDeg: number): number => {
+        // if (scaleDeg < 0) scaleDeg += (scaleDegToNote.length ** 2);
         const noteSingleOctave = scaleDegToNote[scaleDeg % scaleDegToNote.length];
         var octaveShift = Math.floor(scaleDeg / scaleDegToNote.length);
         if (noteSingleOctave < homeNote) octaveShift++;

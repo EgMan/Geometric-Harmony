@@ -1,18 +1,32 @@
 import { Song, Track, Instrument } from 'reactronica';
 import useKeypressPlayer from './KeypressPlayer';
 import React from 'react';
-import { getNote } from './Utils';
+import { getNote, getNoteMIDI, usePrevious } from './Utils';
 import { NoteSet, normalizeToSingleOctave, useNoteSet } from './NoteProvider';
+import { useConnectToMidi } from './MIDIInterface';
+import { WebMidi } from "webmidi";
 
 type Props = {}
 
 function SoundEngine(props: Props) {
     useKeypressPlayer();
+    useConnectToMidi();
 
     const activeNotes = useNoteSet()(NoteSet.Active);
     const emphasizedNotes = useNoteSet()(NoteSet.Emphasized);
     const emphasizedNotesOctaveGnostic = useNoteSet()(NoteSet.Emphasized_OctaveGnostic);
     const playingNotes = Array.from(emphasizedNotes).concat(Array.from(emphasizedNotesOctaveGnostic)).filter(note => activeNotes.has(normalizeToSingleOctave(note)));
+    const previousPlayingNotes = usePrevious<number[]>(playingNotes, []);
+
+    React.useEffect(() => {
+        WebMidi.outputs.forEach(output => {
+            const notesturnedoff = previousPlayingNotes.filter(note => !playingNotes.includes(note));
+            // output.stopNote(notesturnedoff.map(note => getNote(note)));
+            // output.playNote(playingNoteNames);
+            output.sendNoteOff(notesturnedoff.map(note => getNoteMIDI(note)));
+            output.sendNoteOn(playingNotes.map(note => getNoteMIDI(note)));
+        });
+    }, [playingNotes, previousPlayingNotes]);
 
     const [forceCutoff, setForceCutoff] = React.useState(false);
 

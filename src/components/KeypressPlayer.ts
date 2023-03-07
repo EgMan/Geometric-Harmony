@@ -5,7 +5,6 @@ import { useGetNoteFromActiveShapeScaleDegree} from "./HarmonyAnalyzer";
 
 const keyToNoteNumber = new Map<string, number>(
     [
-        // ['a', 0],
         // ['w', 1],
         // ['s', 2],
         // ['e', 3],
@@ -26,8 +25,7 @@ const keyToNoteNumber = new Map<string, number>(
     ]
 );
 
-const keyToScaleDegree = new Map<string, number>(
-    [
+const keyToScaleDegreeLow = new Map<string, number>([
         [' ', 0],
         ['z', 0],
         ['x', 1],
@@ -36,25 +34,43 @@ const keyToScaleDegree = new Map<string, number>(
         ['b', 4],
         ['n', 5],
         ['m', 6],
-        ['a', 7],
-        ['s', 8],
-        ['d', 9],
-        ['f', 10],
-        ['g', 11],
-        ['h', 12],
-        ['j', 13],
-        ['k', 14],
-        ['l', 15],
-        ['q', 16],
-        ['w', 17],
-        ['e', 18],
-        ['r', 19],
-        ['t', 20],
-        ['y', 21],
-        ['u', 22],
-        ['i', 23],
-        ['o', 24],
-        ['p', 25],
+        [',', 7],
+        ['.', 8],
+        ['/', 9],
+]);
+const keyToScaleDegreeMid = new Map<string, number>([
+        ['a', 0],
+        ['s', 1],
+        ['d', 2],
+        ['f', 3],
+        ['g', 4],
+        ['h', 5],
+        ['j', 6],
+        ['k', 7],
+        ['l', 8],
+        [';', 9],
+        ['\'', 10],
+]);
+const keyToScaleDegreeHigh = new Map<string, number>([
+        ['q', 0],
+        ['w', 1],
+        ['e', 2],
+        ['r', 3],
+        ['t', 4],
+        ['y', 5],
+        ['u', 6],
+        ['i', 7],
+        ['o', 8],
+        ['p', 9],
+        ['[', 10],
+        [']', 11],
+        ['\\', 12],
+]);
+const keyToScaleDegree = new Map<string, number>(
+    [
+        ...keyToScaleDegreeLow,
+        ...keyToScaleDegreeMid,
+        ...keyToScaleDegreeHigh,
         // ['1', 26],
         // ['2', 27],
         // ['3', 28],
@@ -73,6 +89,7 @@ function useKeypressPlayer() {
     const updateNotes = useUpdateNoteSet();
     const modulateActiveNotes = useModulateActiveNotes();
     const getNoteFromScaleDegree = useGetNoteFromActiveShapeScaleDegree();
+    const [octaveShift, setOctaveShift] = React.useState(0);
 
     const handleKeyDowns = React.useCallback((key: string) => {
         switch (key) {
@@ -88,14 +105,31 @@ function useKeypressPlayer() {
             case "ArrowLeft":
                 modulateActiveNotes(-1);
                 break;
+            case "-":
+                setOctaveShift(prev => prev-1);
+                break;
+            case "=":
+                setOctaveShift(prev => prev+1);
+                break;
+            case "Enter":
+                document.getElementById('explorerinput')?.focus();
+                break;
         }
     }, [modulateActiveNotes]);
 
     React.useEffect(() => {
         const onKeyDown = (event: KeyboardEvent) => {
-            keysPressed.add(event.key);
-            setKeysPressed(new Set(keysPressed));
-            handleKeyDowns(event.key);
+            // var mainStage = document.getElementById('root');
+            // console.log(event.key);
+            if (event.key === "Escape"){
+                (document.activeElement as HTMLElement).blur();
+            }
+            if (document.activeElement?.id === 'body')
+            {
+                keysPressed.add(event.key.toLocaleLowerCase());
+                setKeysPressed(new Set(keysPressed));
+                handleKeyDowns(event.key);
+            }
         }
 
         const onKeyUp = (event: KeyboardEvent) => {
@@ -103,7 +137,7 @@ function useKeypressPlayer() {
                 setKeysPressed(new Set());
                 return;
             }
-            keysPressed.delete(event.key);
+            keysPressed.delete(event.key.toLocaleLowerCase());
             setKeysPressed(new Set(keysPressed));
         }
 
@@ -145,7 +179,13 @@ function useKeypressPlayer() {
 
         const scaleDegreesPressed = Array.from(keysPressed).filter(key => keyToScaleDegree.get(key.toLocaleLowerCase()) !== undefined).map(key => {
             const scaleDegree = (keyToScaleDegree.get(key.toLocaleLowerCase()) ?? 0) + numberKeyResult;
-            return getNoteFromScaleDegree(scaleDegree)-12;
+
+            var specificKeyOffset = 0;
+            if (key === ' ') specificKeyOffset -= 12;
+            if (keyToScaleDegreeMid.has(key)) specificKeyOffset += 12;
+            if (keyToScaleDegreeHigh.has(key)) specificKeyOffset += 12*2;
+
+            return getNoteFromScaleDegree(scaleDegree)+specificKeyOffset+(octaveShift*12);
         })
         const notesPressed = Array.from(keysPressed).filter(key => keyToNoteNumber.get(key.toLocaleLowerCase()) !== undefined).map(key => {
             return keyToNoteNumber.get(key.toLocaleLowerCase()) ?? -1;

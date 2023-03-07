@@ -1,3 +1,4 @@
+import React from "react";
 import { normalizeToSingleOctave } from "./NoteProvider";
 
 // const numberToNote = ["C-1", "C#3", "D3", "D#3", "E3", "F3", "F#3", "G3", "G#3", "A3", "A#3", "B3"];
@@ -8,6 +9,15 @@ const numberToNoteNameFlat = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "
 export function getNote(i: number) {
     const octaveNum = Math.floor(i / 12) + 3;
     return `${numberToPlayableNote[normalizeToSingleOctave(i)]}${octaveNum}`;
+}
+
+export function getNoteMIDI(note: number) {
+    var octaveNum = Math.floor(note / 12) + 3;
+    if (octaveNum < -1) octaveNum = -1;
+    if (octaveNum > 9) octaveNum = 9;
+    var singleOctaveNote = normalizeToSingleOctave(note);
+    if (octaveNum === 9 && singleOctaveNote > 7) octaveNum = 8;// G9 is the highest note
+    return `${numberToPlayableNote[singleOctaveNote]}${octaveNum}`;
 }
 
 export function getNoteName(i: number, activeNotes: Set<number>) {
@@ -59,4 +69,12 @@ export const getIntervalDistance = (loc1: number, loc2: number, subdivisionCount
     // const dist2 = (props.subdivisionCount-loc1 +loc2) % (Math.ceil(props.subdivisionCount/2));
     const dist2 = (subdivisionCount - Math.max(loc1, loc2) + Math.min(loc1, loc2));
     return Math.min(dist1, dist2);
+}
+
+export function usePrevious<T>(value: T, initialValue: T) {
+    const ref = React.useRef<T>(initialValue);
+    React.useEffect(() => {
+        ref.current = value;
+    });
+    return ref.current;
 }

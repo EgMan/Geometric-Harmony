@@ -20,7 +20,7 @@ function App() {
     return () => {
       window.removeEventListener('resize', setWindowDimensions)
     }
-  }, [])
+  }, []);
 
   const limitingAxisIsHeight = windowWidth > windowHeight;
   const limitingAxisSize = limitingAxisIsHeight ? windowHeight : windowWidth;
