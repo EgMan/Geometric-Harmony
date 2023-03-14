@@ -111,12 +111,8 @@ function useKeypressPlayer() {
             case "=":
                 setOctaveShift(prev => prev+1);
                 break;
-            case "Enter":
-                document.getElementById('explorerinput')?.focus();
-                break;
         }
     }, [modulateActiveNotes]);
-
     React.useEffect(() => {
         const onKeyDown = (event: KeyboardEvent) => {
             // var mainStage = document.getElementById('root');
