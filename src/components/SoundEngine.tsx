@@ -21,10 +21,17 @@ function SoundEngine(props: Props) {
     React.useEffect(() => {
         WebMidi.outputs.forEach(output => {
             const notesturnedoff = previousPlayingNotes.filter(note => !playingNotes.includes(note));
+            const notesturnedon = playingNotes.filter(note => !previousPlayingNotes.includes(note));
             // output.stopNote(notesturnedoff.map(note => getNote(note)));
             // output.playNote(playingNoteNames);
+            if (notesturnedon.length > 0) {
+                console.log(`Turning on notes: ${notesturnedon.map(note => getNoteMIDI(note))}`);
+            }
+            if (notesturnedoff.length > 0) {
+                console.log(`Turning off notes: ${notesturnedoff.map(note => getNoteMIDI(note))}`);
+            }
             output.sendNoteOff(notesturnedoff.map(note => getNoteMIDI(note)));
-            output.sendNoteOn(playingNotes.map(note => getNoteMIDI(note)));
+            output.sendNoteOn(notesturnedon.map(note => getNoteMIDI(note)));
         });
     }, [playingNotes, previousPlayingNotes]);
 

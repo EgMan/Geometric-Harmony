@@ -117,6 +117,7 @@ function useKeypressPlayer() {
         const onKeyDown = (event: KeyboardEvent) => {
             // var mainStage = document.getElementById('root');
             // console.log(event.key);
+            console.log(event.key)
             if (event.key === "Escape"){
                 (document.activeElement as HTMLElement).blur();
             }
