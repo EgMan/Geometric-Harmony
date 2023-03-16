@@ -90,6 +90,7 @@ function useKeypressPlayer() {
     const modulateActiveNotes = useModulateActiveNotes();
     const getNoteFromScaleDegree = useGetNoteFromActiveShapeScaleDegree();
     const [octaveShift, setOctaveShift] = React.useState(0);
+    const [mostRecentlyPressedNumberKey, setMostRecentlyPressedNumberKey] = React.useState("");
 
     const handleKeyDowns = React.useCallback((key: string) => {
         switch (key) {
@@ -111,6 +112,9 @@ function useKeypressPlayer() {
             case "=":
                 setOctaveShift(prev => prev+1);
                 break;
+        }
+        if (!isNaN(parseInt(key))) {
+            setMostRecentlyPressedNumberKey(key);
         }
     }, [modulateActiveNotes]);
     React.useEffect(() => {
@@ -170,8 +174,9 @@ function useKeypressPlayer() {
             return;
         }
 
-        const numberKeyResult = Array.from(keysPressed).map(key => parseInt(key)).filter(key => key).reduce((prev, key) => {
-            return prev + key-1;
+        // Use the most recently played number key.  If the most recent one has been released, use the highest number key that is still pressed.
+        const numberKeyResult = keysPressed.has(mostRecentlyPressedNumberKey) ? parseInt(mostRecentlyPressedNumberKey) : Array.from(keysPressed).map(key => parseInt(key)).filter(key => key).reduce((prev, key) => {
+            return prev > key ? prev : key;
         }, 0);
 
         const scaleDegreesPressed = Array.from(keysPressed).filter(key => keyToScaleDegree.get(key.toLocaleLowerCase()) !== undefined).map(key => {
