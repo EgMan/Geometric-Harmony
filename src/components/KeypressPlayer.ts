@@ -175,8 +175,9 @@ function useKeypressPlayer() {
         }
 
         // Use the most recently played number key.  If the most recent one has been released, use the highest number key that is still pressed.
-        const numberKeyResult = keysPressed.has(mostRecentlyPressedNumberKey) ? parseInt(mostRecentlyPressedNumberKey) : Array.from(keysPressed).map(key => parseInt(key)).filter(key => key).reduce((prev, key) => {
-            return prev > key ? prev : key;
+        const transformNum = (num: number): number => {if (num === 0) return 9; return num-1;}
+        const numberKeyResult = keysPressed.has(mostRecentlyPressedNumberKey) ? transformNum(parseInt(mostRecentlyPressedNumberKey)) : Array.from(keysPressed).map(key => parseInt(key)).filter(key => key).reduce((prev, key) => {
+            return prev > transformNum(key) ? prev : transformNum(key);
         }, 0);
 
         const scaleDegreesPressed = Array.from(keysPressed).filter(key => keyToScaleDegree.get(key.toLocaleLowerCase()) !== undefined).map(key => {

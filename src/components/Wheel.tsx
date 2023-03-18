@@ -265,7 +265,7 @@ function Wheel(props: Props) {
             emphasized: emphasized,
             highlighted: highlighted,
         }
-    }, [activeNotes, displayInterval, emphasizedNotes, getNoteLocation, highlightedNotes, props.subdivisionCount, updateNotes]);
+    }, [IntervalDisplayType.Playing, activeNotes, displayInterval, emphasizedNotes, getNoteLocation, highlightedNotes, intervalDisplay, props.subdivisionCount, updateNotes]);
 
     const centerpoint = (<Circle radius={1} fill="grey"></Circle>);
 
