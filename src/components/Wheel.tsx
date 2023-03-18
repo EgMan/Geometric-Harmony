@@ -41,6 +41,12 @@ function Wheel(props: Props) {
 
     const [showNoteNames, setShowNoteNames] = React.useState(true);
 
+    enum IntervalDisplayType {
+        Active,
+        Playing,
+    }
+    const [intervalDisplay, setIntervalDisplay] = React.useState(IntervalDisplayType.Active);
+
     ///////////////////
 
     const getNoteLocation = React.useCallback((i: number) => {
@@ -84,6 +90,19 @@ function Wheel(props: Props) {
             <td>Show Tritones</td>
             <td style={{ color: getIntervalColor(6), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[5]} onChange={e => setDisplayInterval(5, e.target.checked)} /></td>
+        </tr>),
+        (<tr>
+            <td>Display Intervals For</td>
+            <td colSpan={2}><Select
+                id="menu-dropdown"
+                value={intervalDisplay}
+                label="Interval Display Type"
+                labelId="demo-simple-select-filled-label"
+                onChange={e => { setIntervalDisplay(e.target.value as number) }}
+            >
+                <MenuItem value={IntervalDisplayType.Active}>Active Notes</MenuItem>
+                <MenuItem value={IntervalDisplayType.Playing}>Playing Notes</MenuItem>
+            </Select></td>
         </tr>),
         (<tr>
             <td>Show note names</td>
@@ -216,6 +235,9 @@ function Wheel(props: Props) {
                 const bLoc = getNoteLocation(noteB);
                 const dist = getIntervalDistance(noteA, noteB, props.subdivisionCount);
                 const discColor = getIntervalColor(dist);
+                if (intervalDisplay === IntervalDisplayType.Playing && (!emphasizedNotes.has(noteA) || !emphasizedNotes.has(noteB))) {
+                    continue;
+                }
                 if (!displayInterval[dist - 1]) {
                     continue;
                 }
