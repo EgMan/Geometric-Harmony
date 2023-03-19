@@ -47,6 +47,8 @@ export function getNoteNum(noteName: string) {
 
 export const getIntervalColor = (distance: number) => {
     switch (distance) {
+        case 0:
+            return "black"
         case 1:
             return "violet"
         case 2:

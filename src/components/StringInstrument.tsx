@@ -1,9 +1,9 @@
 import React from 'react';
-import { Circle, Rect, Line, Text } from 'react-konva';
+import { Circle, Rect, Line, Text, Shape } from 'react-konva';
 import Widget from './Widget';
 import { MenuItem, Select } from '@mui/material';
-import { getNoteName } from './Utils';
-import { NoteSet, useCheckNoteEmphasis, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from './NoteProvider';
+import { getIntervalColor, getIntervalDistance, getNoteName } from './Utils';
+import { NoteSet, normalizeToSingleOctave, useCheckNoteEmphasis, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from './NoteProvider';
 import { KonvaEventObject } from 'konva/lib/Node';
 
 type Props = {
@@ -23,7 +23,8 @@ function StringInstrument(props: Props) {
 
     const activeNotes = useNoteSet()(NoteSet.Active);
     const checkEmphasis = useCheckNoteEmphasis();
-    // const emphasizedNotes = useGetCombinedModdedEmphasis()();
+    const combinedEmphasis = useGetCombinedModdedEmphasis()();
+    const emphasizedNotesOctaveGnostic = useNoteSet()(NoteSet.Emphasized_OctaveGnostic);
     const updateNotes = useUpdateNoteSet();
 
     const homeNote = useHomeNote();
@@ -35,6 +36,15 @@ function StringInstrument(props: Props) {
         ActiveNoteNames,
     }
     const [noteLabeling, setNoteLabeling] = React.useState(NoteLabling.NoteNames);
+
+    // TODO add this back in
+    // enum IntervalDisplayType {
+    //     Active_No_Inverse,
+    //     Active_With_Inverse,
+    //     Playing,
+    // }
+
+    // const [intervalDisplay, setIntervalDisplay] = React.useState(IntervalDisplayType.Active_No_Inverse);
 
     const settingsMenuItems = [
         (<tr>
@@ -51,7 +61,24 @@ function StringInstrument(props: Props) {
                 <MenuItem value={NoteLabling.ActiveNoteNames}>Note Names (only active notes)</MenuItem>
             </Select></td>
         </tr>),
+        // (<tr>
+        //     <td>Display Intervals For</td>
+        //     <td colSpan={2}><Select
+        //         id="menu-dropdown"
+        //         value={intervalDisplay}
+        //         label="Interval Display Type"
+        //         labelId="demo-simple-select-filled-label"
+        //         onChange={e => { setIntervalDisplay(e.target.value as number) }}
+        //     >
+        //         <MenuItem value={IntervalDisplayType.Active_No_Inverse}>Active Notes</MenuItem>
+        //         <MenuItem value={IntervalDisplayType.Playing}>Playing Notes</MenuItem>
+        //     </Select></td>
+        // </tr>),
     ];
+
+    const getXPos = React.useCallback((stringNum: number): number => { return (stringSpacing * stringNum) }, [stringSpacing])
+    const getYPos = React.useCallback((fretNum: number): number => { return (fretSpacing * fretNum) }, [fretSpacing])
+
     const elems = React.useMemo(() => {
         let stringElements: JSX.Element[] = [];
         let fretElements: JSX.Element[] = [];
@@ -61,7 +88,7 @@ function StringInstrument(props: Props) {
         let clickListeners: JSX.Element[] = [];
 
         for (let fretNum = 0; fretNum < props.fretCount; fretNum++) {
-            const posY = (fretSpacing * fretNum);
+            const posY = getYPos(fretNum);
             fretElements.push(
                 <Line stroke={"grey"} strokeWidth={3} points={[0, posY, props.width, posY]} />
             );
@@ -79,7 +106,7 @@ function StringInstrument(props: Props) {
                 );
             }
             props.tuning.forEach((openNote, stringNum) => {
-                const posX = (stringSpacing * stringNum);
+                const posX = getXPos(stringNum);
                 const absoluteNote = (openNote + fretNum);
                 const note = absoluteNote % 12;
                 // <Line x={props.x} y={props.y} stroke={discColor} strokeWidth={lineWidth} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />
@@ -113,7 +140,7 @@ function StringInstrument(props: Props) {
                         )
                     }
                 } else if (noteLabeling === NoteLabling.NoteNames || fretNum === 0) {
-                    if (fretNum !== 0) activeNoteIndicators.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={"rgb(55,55,55)"}></Circle>)
+                    if (fretNum !== 0) stringElements.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={"rgb(55,55,55)"}></Circle>)
                     noteNames.push(
                         <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note, activeNotes)} fontSize={12} fontFamily='monospace' fill={"grey"} align="center" verticalAlign="middle" />
                     )
@@ -130,13 +157,145 @@ function StringInstrument(props: Props) {
             emphasized,
             clickListeners,
         }
-    }, [NoteLabling.ActiveNoteNames, NoteLabling.NoteNames, activeNotes, checkEmphasis, circleElemRadius, fretElemYOffset, fretSpacing, homeNote, noteLabeling, props.fretCount, props.tuning, props.width, setHomeNote, stringSpacing, updateNotes]);
+    }, [NoteLabling.ActiveNoteNames, NoteLabling.NoteNames, activeNotes, checkEmphasis, circleElemRadius, fretElemYOffset, fretSpacing, getXPos, getYPos, homeNote, noteLabeling, props.fretCount, props.tuning, props.width, setHomeNote, stringSpacing, updateNotes]);
+
+    const getOrgnogonalUnitVect = (x: number, y: number) => {
+        const mag = Math.sqrt(x * x + y * y);
+        return { x: -y / mag, y: x / mag }
+    }
+
+    const intervals = React.useMemo(() => {
+        var intervalLines: JSX.Element[] = [];
+        var emphasized: JSX.Element[] = [];
+        var touchListeners: JSX.Element[] = [];
+        const activeNoteArr = Array.from(activeNotes);
+        // for (let stringA = 0; stringA < props.tuning.length; stringA++) {
+        //     for (let stringB = 0; stringB <= props.tuning.length; stringB++) {
+        props.tuning.forEach((openNoteA, stringA) => {
+            props.tuning.forEach((openNoteB, stringB) => {
+                for (let fretA = 0; fretA < props.fretCount; fretA++) {
+                    for (let fretB = 0; fretB < props.fretCount; fretB++) {
+
+                        const fretDist = Math.abs(fretA - fretB);
+                        const stringDist = Math.abs(stringA - stringB);
+                        if (fretDist + stringDist > 12 / 2) continue;
+
+                        // const noteA = activeNoteArr[a];
+                        // const noteB = activeNoteArr[b];
+                        const absoluteNoteA = openNoteA + fretA;
+                        const absoluteNoteB = openNoteB + fretB;
+
+                        if (absoluteNoteA > absoluteNoteB) continue;
+
+                        const noteA = normalizeToSingleOctave(absoluteNoteA);
+                        const noteB = normalizeToSingleOctave(absoluteNoteB);
+                        const absoluteInverval = [absoluteNoteA, absoluteNoteB];
+
+                        // const propsA = getPropsForNote(noteA, octaveA);
+                        // const propsB = getPropsForNote(noteB, octaveB);
+
+                        const aLoc = { x: getXPos(stringA), y: getYPos(fretA) + fretElemYOffset };
+                        const bLoc = { x: getXPos(stringB), y: getYPos(fretB) + fretElemYOffset };
+
+
+                        const dist = getIntervalDistance(noteA, noteB, 12);
+                        const discColor = getIntervalColor(dist);
+                        const absoluteDist = Math.abs(absoluteNoteA - absoluteNoteB);
+                        if (dist === 0) continue;
+
+                        // todo add this in
+                        // if (onlyShowIntervalsOnHover) {
+                        if (combinedEmphasis.size === 0)
+                            continue;
+                        if (combinedEmphasis.size === 1)
+                            continue;
+                        // To instead show all intervals between the single emphasized note
+                        // if (emphasizedNotes.size === 1 && !emphasizedNotes.has(noteA) && !emphasizedNotes.has(noteB))
+                        //     continue;
+                        if (combinedEmphasis.size >= 2 && (!combinedEmphasis.has(noteA) || !combinedEmphasis.has(noteB)))
+                            continue;
+                        // }
+
+                        // if (!displayInterval[dist - 1]) {
+                        //     continue;
+                        // }
+
+                        const showInverseIntervals = true;//todo remove this
+
+                        // if (showInverseIntervals && absoluteDist > 12 - dist) {
+                        //     continue;
+                        // }
+                        if (!showInverseIntervals && absoluteDist > dist) {
+                            continue;
+                        }
+
+                        const emphasize = () => {
+                            updateNotes([NoteSet.Emphasized_OctaveGnostic], absoluteInverval, true, true);
+                        };
+                        const deemphasize = () => {
+                            updateNotes([NoteSet.Emphasized_OctaveGnostic], absoluteInverval, false);
+                        };
+                        const isIntervalEmphasized = emphasizedNotesOctaveGnostic.size > 0 ? emphasizedNotesOctaveGnostic.has(absoluteNoteA) && emphasizedNotesOctaveGnostic.has(absoluteNoteB) : combinedEmphasis.has(noteA) && combinedEmphasis.has(noteB);
+                        if (emphasizedNotesOctaveGnostic.size > 0 && !isIntervalEmphasized) continue;
+
+                        const orthoVect = getOrgnogonalUnitVect(aLoc.x - bLoc.x, aLoc.y - bLoc.y);
+                        intervalLines.push(
+                            <Shape
+                                sceneFunc={(context, shape) => {
+                                    context.beginPath();
+                                    context.moveTo(aLoc.x, aLoc.y);
+                                    context.bezierCurveTo(
+                                        aLoc.x + 2 * (fretSpacing + stringSpacing) * (orthoVect.x / 12),
+                                        aLoc.y + 2 * (fretSpacing + stringSpacing) * (orthoVect.y / 12),
+                                        bLoc.x + 2 * (fretSpacing + stringSpacing) * (orthoVect.x / 12),
+                                        bLoc.y + 2 * (fretSpacing + stringSpacing) * (orthoVect.y / 12),
+                                        bLoc.x,
+                                        bLoc.y
+                                    );
+                                    context.strokeShape(shape);
+                                }}
+                                stroke={discColor}
+                                strokeWidth={isIntervalEmphasized ? 3 : 1.5}
+                            />
+                        );
+                        touchListeners.push(
+                            <Shape
+                                sceneFunc={(context, shape) => {
+                                    context.beginPath();
+                                    context.moveTo(aLoc.x, aLoc.y);
+                                    context.bezierCurveTo(
+                                        aLoc.x,
+                                        aLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
+                                        bLoc.x,
+                                        bLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
+                                        bLoc.x,
+                                        bLoc.y
+                                    );
+                                    context.strokeShape(shape);
+                                }}
+                                stroke={'rgba(0,0,0,0)'}
+                                strokeWidth={3}
+                                onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize}
+                            />
+                        );
+                    }
+                }
+            });
+        });
+        return {
+            line: intervalLines,
+            emphasized: emphasized,
+            listeners: touchListeners,
+        }
+    }, [activeNotes, combinedEmphasis, emphasizedNotesOctaveGnostic, fretElemYOffset, fretSpacing, getXPos, getYPos, props.fretCount, props.height, props.tuning, stringSpacing, updateNotes]);
 
     return (
         <Widget x={props.x - (props.width / 2)} y={props.y} contextMenuX={props.width / 2} contextMenuY={-fretSpacing} settingsRows={settingsMenuItems}>
             {/* <Circle radius={100} fill={"green"} /> */}
             {elems.frets}
             {elems.strings}
+            {intervals.line}
+            {intervals.emphasized}
             {elems.noteIndicators}
             {elems.emphasized}
             {elems.noteNames}
