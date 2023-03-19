@@ -89,7 +89,7 @@ function useKeypressPlayer() {
     const updateNotes = useUpdateNoteSet();
     const modulateActiveNotes = useModulateActiveNotes();
     const getNoteFromScaleDegree = useGetNoteFromActiveShapeScaleDegree();
-    const [octaveShift, setOctaveShift] = React.useState(0);
+    const [octaveShift, setOctaveShift] = React.useState(-1);
     const [mostRecentlyPressedNumberKey, setMostRecentlyPressedNumberKey] = React.useState("");
 
     const handleKeyDowns = React.useCallback((key: string) => {

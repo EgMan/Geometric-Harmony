@@ -80,3 +80,38 @@ export function usePrevious<T>(value: T, initialValue: T) {
     });
     return ref.current;
 }
+
+export enum BrowserType {
+    Opera,
+    Edge,
+    Chrome,
+    Safari,
+    Firefox,
+    IE,
+    Unknown,
+}
+export function useBrowserVersion() {
+    return React.useMemo(() => {
+        if ((navigator.userAgent.indexOf("Opera") || navigator.userAgent.indexOf('OPR')) !== -1) {
+            return BrowserType.Opera;
+        }
+        else if (navigator.userAgent.indexOf("Edg") !== -1) {
+            return BrowserType.Edge;
+        }
+        else if (navigator.userAgent.indexOf("Chrome") !== -1) {
+            return BrowserType.Chrome;
+        }
+        else if (navigator.userAgent.indexOf("Safari") !== -1) {
+            return BrowserType.Safari;
+        }
+        else if (navigator.userAgent.indexOf("Firefox") !== -1) {
+            return BrowserType.Firefox;
+        }
+        else if ((navigator.userAgent.indexOf("MSIE") !== -1)) {
+            return BrowserType.IE;
+        }
+        else {
+            return BrowserType.Unknown;
+        }
+    }, []);
+}

@@ -8,7 +8,9 @@ import NoteProvider from './components/NoteProvider';
 import HarmonyAnalyzer from './components/HarmonyAnalyzer';
 import BackPlate from './components/BackPlate';
 import StringInstrument from './components/StringInstrument';
+import useSoundEngine from './components/SoundEngine';
 function App() {
+  useSoundEngine();
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth)
   const [windowHeight, setWindowHeight] = React.useState(window.innerHeight)
   const setWindowDimensions = () => {
