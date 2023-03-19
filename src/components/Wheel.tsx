@@ -191,7 +191,7 @@ function Wheel(props: Props) {
             const emphasize = () => {
                 updateNotes(NoteSet.Emphasized, [i], true, true);
             };
-            const deemphasize = () => {
+            const unemphasize = () => {
                 updateNotes(NoteSet.Emphasized, [i], false);
             };
             if (activeNotes.has(i)) {
@@ -209,7 +209,7 @@ function Wheel(props: Props) {
                 noteNames.push(<Text key={`noteName${i}`} width={40} height={40} x={noteLoc.x - 20} y={noteLoc.y - 20} text={getNoteName(i, activeNotes)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(i) ? "rgb(37,37,37)" : "grey"} align="center" verticalAlign="middle" />);
             }
             notesHaloArr.push(<Circle key={`halo${i}`} x={noteLoc.x} y={noteLoc.y} stroke="grey" radius={20} />);
-            clickListenersArr.push(<Circle key={`clickListen${i}`} draggable x={noteLoc.x} y={noteLoc.y} radius={20} onClick={toggleActive} onTap={toggleActive} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize} onDragMove={onRotateDrag} onDragStart={(e) => onRotateDragStart(e, i)} onDragEnd={onRotateDragEnd} />);
+            clickListenersArr.push(<Circle key={`clickListen${i}`} draggable x={noteLoc.x} y={noteLoc.y} radius={20} onClick={toggleActive} onTap={toggleActive} onTouchStart={emphasize} onTouchEnd={unemphasize} onMouseOver={emphasize} onMouseOut={unemphasize} onDragMove={onRotateDrag} onDragStart={(e) => onRotateDragStart(e, i)} onDragEnd={onRotateDragEnd} />);
         }
         return {
             values: notesArr,
@@ -255,9 +255,8 @@ function Wheel(props: Props) {
                 if (isIntervalHighlighted) {
                     highlighted.push(<Line stroke={discColor} strokeWidth={5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />);
                 }
-                intervalLines.push(<Line stroke={discColor} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />);
+                intervalLines.push(<Line stroke={discColor} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} opacity={0.25} />);
                 intervalLines.push(<Line stroke={'rgba(0,0,0,0)'} strokeWidth={5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize} />);
-                // intervalLines.push(<Line x={props.x} y={props.y} stroke={emphasisColor} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]}/>);
             }
         }
         return {
