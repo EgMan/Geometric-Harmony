@@ -5,6 +5,7 @@ export enum ShapeType {
     INTERVAL,
     CHORD,
     SCALE,
+    DYNAMIC,
 }
 
 export type HarmonicShape =

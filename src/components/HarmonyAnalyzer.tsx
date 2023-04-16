@@ -348,6 +348,7 @@ export function getModeNameInShape(shapeIdx: number, shape: HarmonicShape): stri
     const scaleDegree = getScaleDegree(0, shapeIdx, shape);
     switch (shape.type) {
         case ShapeType.INTERVAL:
+        case ShapeType.DYNAMIC:
             return "";
         case ShapeType.CHORD:
             if (scaleDegree < 0) return "Not a chord";
@@ -412,12 +413,25 @@ function useTryToFitShape() {
     }, []);
 }
 
+export function getDynamicShape(notes: Set<number>): HarmonicShape {
+    return {
+        name: "",
+        notes: Array.from(Array(12).keys()).map(i => [notes.has(i)]),
+        type: ShapeType.DYNAMIC,
+    }
+}
+
 export function useGetAllExactFits(notes: Set<number>): ExactFit[] {
     const tryToFitShape = useTryToFitShape();
 
     return React.useMemo(() => {
+        const defaultExactFit: ExactFit = {
+            shape: getDynamicShape(notes),
+            doesFit: true,
+            noteToFirstNoteInShapeIdxOffset: 0,
+        }
         const shapesOfCorrectSize = knownShapes[notes.size] ?? [];
-        return shapesOfCorrectSize.map(shape => tryToFitShape(shape, notes)).filter(shapeFit => shapeFit.doesFit);
+        return shapesOfCorrectSize.map(shape => tryToFitShape(shape, notes)).filter(shapeFit => shapeFit.doesFit).concat(defaultExactFit);
     }, [notes, tryToFitShape]);
 }
 
