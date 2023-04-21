@@ -1,7 +1,8 @@
 import React from "react";
 import { useModulateActiveNotes } from "./HarmonicModulation";
-import { NoteSet, useUpdateNoteSet } from "./NoteProvider";
-import { useGetNoteFromActiveShapeScaleDegree} from "./HarmonyAnalyzer";
+import { NoteSet, normalizeToSingleOctave, useNoteSet, useUpdateNoteSet } from "./NoteProvider";
+import { useGetActiveShapeScaleDegreeFromNote, useGetNoteFromActiveShapeScaleDegree} from "./HarmonyAnalyzer";
+import { useExecuteOnPlayingNoteStateChange } from "./SoundEngine";
 
 const keyToNoteNumber = new Map<string, number>(
     [
@@ -84,15 +85,59 @@ const keyToScaleDegree = new Map<string, number>(
     ]
 );
 
+type SingleNoteShift =
+    {
+        scaleDegree: number,
+        shiftAmount: number,
+        isDiatonic: boolean,
+    };
+
 function useKeypressPlayer() {
     const [keysPressed, setKeysPressed] = React.useState(new Set<string>());
+    const activeNotes = useNoteSet()(NoteSet.Active);
     const updateNotes = useUpdateNoteSet();
     const modulateActiveNotes = useModulateActiveNotes();
     const getNoteFromScaleDegree = useGetNoteFromActiveShapeScaleDegree();
+    const getActiveShapeScaleDegree = useGetActiveShapeScaleDegreeFromNote();
     const [octaveShift, setOctaveShift] = React.useState(-1);
     const [mostRecentlyPressedNumberKey, setMostRecentlyPressedNumberKey] = React.useState("");
+    const [mostRecentlyPlayedScaleDegree, setMostRecentlyPlayedScaleDegree] = React.useState<number | null>(null);
+    const [singleNoteShift, setSingleNoteShift] = React.useState<SingleNoteShift | null>(null);
+    const mostRecentlyPlayedNote = mostRecentlyPlayedScaleDegree && normalizeToSingleOctave(getNoteFromScaleDegree(mostRecentlyPlayedScaleDegree-1));//todo figure out why -1
 
-    const handleKeyDowns = React.useCallback((key: string) => {
+    useExecuteOnPlayingNoteStateChange((notesTurnedOn, _notesTurnedOff) => {
+        if (notesTurnedOn.length === 1)
+        {
+            setMostRecentlyPlayedScaleDegree(getActiveShapeScaleDegree(normalizeToSingleOctave(notesTurnedOn[0])));
+        }
+    });
+    const handleKeyDownsWithoutRepeats = React.useCallback((key: string) => {
+        switch (key) {
+            case "Control":
+            case "Shift":
+                if (singleNoteShift == null && mostRecentlyPlayedNote != null) {
+                    const shiftAmount = key === "Shift" ? 1 : -1;
+                    if (activeNotes.has(normalizeToSingleOctave(mostRecentlyPlayedNote + shiftAmount))) {
+                        setSingleNoteShift({
+                            scaleDegree: mostRecentlyPlayedScaleDegree ?? 0,
+                            shiftAmount: shiftAmount,
+                            isDiatonic: true,
+                        });
+                    }
+                    else {
+                        modulateActiveNotes(shiftAmount, new Set([mostRecentlyPlayedNote]));
+                        setSingleNoteShift({
+                            scaleDegree: mostRecentlyPlayedScaleDegree ?? 0,
+                            shiftAmount: shiftAmount,
+                            isDiatonic: false,
+                        });
+                    }
+                }
+                break;
+        }
+    }, [activeNotes, modulateActiveNotes, mostRecentlyPlayedNote, mostRecentlyPlayedScaleDegree, singleNoteShift]);
+
+    const handleKeyDownsWithRepeats = React.useCallback((key: string) => {
         switch (key) {
             case "ArrowUp":
                 modulateActiveNotes(7);
@@ -121,23 +166,42 @@ function useKeypressPlayer() {
         const onKeyDown = (event: KeyboardEvent) => {
             // var mainStage = document.getElementById('root');
             // console.log(event.key);
-            console.log(event.key)
             if (event.key === "Escape"){
                 (document.activeElement as HTMLElement).blur();
             }
             if (document.activeElement?.id === 'body')
             {
-                keysPressed.add(event.key.toLocaleLowerCase());
-                setKeysPressed(new Set(keysPressed));
-                handleKeyDowns(event.key);
+                if (!keysPressed.has(event.key.toLocaleLowerCase())) {
+                    keysPressed.add(event.key.toLocaleLowerCase());
+                    setKeysPressed(new Set(keysPressed));
+                    handleKeyDownsWithoutRepeats(event.key);
+                }
+                handleKeyDownsWithRepeats(event.key);
             }
         }
 
         const onKeyUp = (event: KeyboardEvent) => {
             if (event.key === "Meta") {
+            }
+        switch (event.key) {
+            case "Meta":
                 setKeysPressed(new Set());
                 return;
-            }
+            case "Control":
+            case "Shift":
+                if (singleNoteShift != null) {
+                    const shiftNoteBack = normalizeToSingleOctave(getNoteFromScaleDegree(singleNoteShift.scaleDegree-1));
+                    if (!singleNoteShift.isDiatonic && !activeNotes.has(shiftNoteBack - singleNoteShift.shiftAmount)) {
+                        modulateActiveNotes(-singleNoteShift.shiftAmount, new Set([shiftNoteBack]));
+                    }
+                    setSingleNoteShift(null);
+                    // const shiftAmount = event.key === "Shift" ? -1 : 1;
+                    // if (!activeNotes.has(normalizeToSingleOctave(mostRecentlyPlayedNote + shiftAmount))) {
+                    //     modulateActiveNotes(shiftAmount, new Set([mostRecentlyPlayedNote]));
+                    // }
+                }
+                break;
+        }
             keysPressed.delete(event.key.toLocaleLowerCase());
             setKeysPressed(new Set(keysPressed));
         }
@@ -167,7 +231,7 @@ function useKeypressPlayer() {
             window.removeEventListener("keydown", onKeyDown);
             window.removeEventListener("keyup", onKeyUp);
         }
-    }, [handleKeyDowns, keysPressed, modulateActiveNotes, updateNotes]);
+    }, [activeNotes, getNoteFromScaleDegree, handleKeyDownsWithRepeats, handleKeyDownsWithoutRepeats, keysPressed, modulateActiveNotes, mostRecentlyPlayedNote, singleNoteShift, updateNotes]);
 
     React.useEffect(() => {
         if (keysPressed.has("Meta")) {
@@ -181,7 +245,10 @@ function useKeypressPlayer() {
         }, 0);
 
         const scaleDegreesPressed = Array.from(keysPressed).filter(key => keyToScaleDegree.get(key.toLocaleLowerCase()) !== undefined).map(key => {
-            const scaleDegree = (keyToScaleDegree.get(key.toLocaleLowerCase()) ?? 0) + numberKeyResult;
+            var scaleDegree = (keyToScaleDegree.get(key.toLocaleLowerCase()) ?? 0) + numberKeyResult;
+            if (singleNoteShift != null && singleNoteShift.isDiatonic && normalizeToSingleOctave(scaleDegree) === normalizeToSingleOctave(singleNoteShift.scaleDegree-1)) {
+                scaleDegree += singleNoteShift.shiftAmount;
+            }
 
             var specificKeyOffset = 0;
             if (key === ' ') specificKeyOffset -= 12;
@@ -198,7 +265,7 @@ function useKeypressPlayer() {
         // updateNotes can not trigger this effect otherwise "no keys pressed" will constantly
         // Be overwriting emphasized notes when the keyboard is not being touched.  
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [keysPressed])
+    }, [getNoteFromScaleDegree, keysPressed, mostRecentlyPressedNumberKey, octaveShift])
 }
 
 export default useKeypressPlayer;

@@ -307,7 +307,7 @@ export function getScaleDegree(noteInShapeFrom: number, noteInShapeTo: number, s
     return count;
 }
 
-export function useGetNoteFromActiveShapeScaleDegree() {
+export function useGetActiveShapeScaleDegreeFromNote() {
     const activeNotes = useNoteSet()(NoteSet.Active);
     const exactFit = useGetAllExactFits(activeNotes)[0];
     const homeNote = useHomeNote() ?? 0;
@@ -315,16 +315,23 @@ export function useGetNoteFromActiveShapeScaleDegree() {
     const shape = exactFit?.shape ?? SCALE_CHROMATIC;
     const shapeOffset = exactFit?.noteToFirstNoteInShapeIdxOffset ?? 0;
 
+    return React.useCallback((note: number) => getScaleDegree(homeNote + shapeOffset, note + shapeOffset, shape), [homeNote, shape, shapeOffset]);
+}
+export function useGetNoteFromActiveShapeScaleDegree() {
+    const activeNotes = useNoteSet()(NoteSet.Active);
+    const homeNote = useHomeNote() ?? 0;
+    const getActiveShapeScaleDegree = useGetActiveShapeScaleDegreeFromNote();
+
     // There's a more efficient way to do this, but I'm lazy.
     // At least it's memoized ¯\_(ツ)_/¯
     const scaleDegToNote = React.useMemo(() => {
         const arr = Array(activeNotes.size);
         Array.from(Array(12).keys()).forEach(note => {
-            const scaleDegree = getScaleDegree(homeNote + shapeOffset, note + shapeOffset, shape);
+            const scaleDegree = getActiveShapeScaleDegree(note);
             if (scaleDegree > 0) arr[scaleDegree - 1] = note;
         });
         return arr;
-    }, [activeNotes.size, homeNote, shapeOffset, shape]);
+    }, [activeNotes.size, getActiveShapeScaleDegree]);
 
     return React.useCallback((scaleDeg: number): number => {
         // if (scaleDeg < 0) scaleDeg += (scaleDegToNote.length ** 2);

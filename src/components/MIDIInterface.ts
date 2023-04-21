@@ -24,5 +24,5 @@ export function useConnectToMidi() {
             // Outputs
             WebMidi.outputs.forEach(output => console.log("Midi output found: ", output.manufacturer, output.name));
         }
-    }, []);
+    }, [browserType]);
 }

@@ -2,8 +2,8 @@ import React from "react";
 import { HarmonicShape } from "./KnownHarmonicShapes";
 import { NoteSet, normalizeToSingleOctave, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from "./NoteProvider";
 
-function getModulatedNotes(activeNotes: Set<number>, semitones: number) {
-    return Array.from(activeNotes).map(note => (note + semitones) % 12);//Do I want to do the modulus here?
+function getModulatedNotes(notes: Set<number>, semitones: number) {
+    return Array.from(notes).map(note => (note + semitones) % 12);//Do I want to do the modulus here?
 }
 
 export function useModulateActiveNotes() {
@@ -12,11 +12,13 @@ export function useModulateActiveNotes() {
     const homeNote = useHomeNote();
     const setHomeNote = useSetHomeNote();
     
-    return React.useCallback((semitones: number) => {
-        if (homeNote !== undefined && homeNote !== null) {
-            setHomeNote(normalizeToSingleOctave(homeNote + semitones));
+    return React.useCallback((semitones: number, notes?: Set <number>) => {
+        const affectedNotes = notes ?? new Set<number>(activeNotes);
+        const unaffectedNotes = new Set<number>(Array.from(activeNotes).filter(note => !affectedNotes.has(note)));
+        if (homeNote != null && affectedNotes.has(homeNote)){
+                setHomeNote(normalizeToSingleOctave(homeNote + semitones));
         }
-        updateNotes(NoteSet.Active, getModulatedNotes(activeNotes, semitones), true, true);
+        updateNotes(NoteSet.Active, [...unaffectedNotes, ...getModulatedNotes(affectedNotes, semitones)], true, true);
     }, [activeNotes, homeNote, setHomeNote, updateNotes])
 }
 
@@ -37,7 +39,6 @@ export function useSetActiveShape() {
     const updateNotes = useUpdateNoteSet();
     return React.useCallback((shape: HarmonicShape, startingWhere: number) => {
         let newActiveNotes: number[] = [];
-        console.log("shapename", shape.name);
         shape.notes.forEach((note, i) => {
             if (note[0]) newActiveNotes.push(i + startingWhere)//Do I want to do the modulus here?
         });

@@ -12,25 +12,30 @@ function useSoundEngine() {
     const synth = React.useMemo(() => {
         return new Tone.PolySynth(Tone.AMSynth).toDestination();
     }, []);
-
-    const activeNotes = useNoteSet()(NoteSet.Active);
-    const emphasizedNotes = useNoteSet()(NoteSet.Emphasized);
-    const emphasizedNotesOctaveGnostic = useNoteSet()(NoteSet.Emphasized_OctaveGnostic);
-    const playingNotes = Array.from(emphasizedNotes).concat(Array.from(emphasizedNotesOctaveGnostic)).filter(note => activeNotes.has(normalizeToSingleOctave(note)));
-    const previousPlayingNotes = usePrevious<number[]>(playingNotes, []);
-
-    React.useEffect(() => {
-        const notesturnedoff = previousPlayingNotes.filter(note => !playingNotes.includes(note));
-        const notesturnedon = playingNotes.filter(note => !previousPlayingNotes.includes(note));
-
-        synth.triggerAttack(notesturnedon.map(note => getNote(note)))
-        synth.triggerRelease(notesturnedoff.map(note => getNote(note)))
+    useExecuteOnPlayingNoteStateChange((notesTurnedOn, notesTurnedOff) => {
+        synth.triggerAttack(notesTurnedOn.map(note => getNote(note)))
+        synth.triggerRelease(notesTurnedOff.map(note => getNote(note)))
 
         WebMidi.outputs.forEach(output => {
-            output.sendNoteOff(notesturnedoff.map(note => getNoteMIDI(note)));
-            output.sendNoteOn(notesturnedon.map(note => getNoteMIDI(note)));
+            output.sendNoteOff(notesTurnedOff.map(note => getNoteMIDI(note)));
+            output.sendNoteOn(notesTurnedOn.map(note => getNoteMIDI(note)));
         });
-    }, [playingNotes, previousPlayingNotes]);
+    });
     return null;
 }
 export default useSoundEngine;
+
+export function useExecuteOnPlayingNoteStateChange(callback: (notesTurnedOn: number[], notesTurnedOff: number[]) => void) {
+    const activeNotes = useNoteSet()(NoteSet.Active);
+    const emphasizedNotes = useNoteSet()(NoteSet.Emphasized);
+    const emphasizedNotesOctaveGnostic = useNoteSet()(NoteSet.Emphasized_OctaveGnostic);
+    const playingNotes = React.useMemo(() => {
+        return Array.from(emphasizedNotes).concat(Array.from(emphasizedNotesOctaveGnostic)).filter(note => activeNotes.has(normalizeToSingleOctave(note)));
+    }, [activeNotes, emphasizedNotes, emphasizedNotesOctaveGnostic]);
+    const previousPlayingNotes = usePrevious<number[]>(playingNotes, []);
+    React.useEffect(() => {
+        const notesturnedoff = previousPlayingNotes.filter(note => !playingNotes.includes(note));
+        const notesturnedon = playingNotes.filter(note => !previousPlayingNotes.includes(note));
+        callback(notesturnedon, notesturnedoff);
+    }, [callback, playingNotes, previousPlayingNotes]);
+}
