@@ -43,11 +43,19 @@
   top: 0;
   right: 0;
   bottom: 0;
+}
+#overlay-no-pointer-events {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+#backdrop-blur {
   background-color: #7c7c7c37;
-
-/* background:rgba(0,0,0,0.8); */
-backdrop-filter: blur(6px);
-
+  /* background:rgba(0,0,0,0.8); */
+  backdrop-filter: blur(16px);
 }
 
 #overlay-content {
@@ -81,20 +89,39 @@ button {
 
 table {
   padding: 10px 20px;
-  background: rgb(0, 0, 0, 0.5);
+  background: rgba(255, 255, 255, 0.75);
   border-radius: 9px;
+  border-collapse: collapse;
+}
+tr { 
+  border: solid rgb(180, 180, 180);
+  border-width: 1px 0;
+  border-radius: 9px;
+}
+tr:first-child {
+  border-top: none;
+}
+tr:last-child {
+  border-bottom: none;
 }
 
 tr, td {
   text-align: left;
+  /* color: rgb(10, 10, 10); */
+  color: black;
+  font-family: monospace;
+  font-size: 0.8em;
+  padding: 8px 12px;
 }
 
 #menu-dropdown {
   background-color: rgba(255, 255, 255, 0.309);
-  color: white; 
+  /* color: black;  */
+  font-family: monospace;
   padding: 8px;
   padding-right: 32px;
   border-radius: 9px;
+  border:none;
 }
 
 #explorer-dropdown {
