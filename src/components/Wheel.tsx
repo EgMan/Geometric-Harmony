@@ -1,18 +1,17 @@
 import React from 'react';
 import { Circle, Group, Line, Text } from 'react-konva';
-import Widget from './Widget';
+import { WidgetComponentProps } from './Widget';
 import { MenuItem, Select, Switch } from '@mui/material';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { useGetActiveNotesInCommonWithModulation, useModulateActiveNotes } from './HarmonicModulation';
 import { getIntervalColor, getIntervalDistance, getNoteName } from './Utils';
 import { NoteSet, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from './NoteProvider';
+import SettingsMenuOverlay from './SettingsMenuOverlay';
 type Props = {
-    x: number
-    y: number
     radius: number
     subdivisionCount: number
     isCircleOfFifths: boolean
-}
+} & WidgetComponentProps
 
 function Wheel(props: Props) {
     const activeNotes = useNoteSet()(NoteSet.Active);
@@ -266,29 +265,40 @@ function Wheel(props: Props) {
         }
     }, [IntervalDisplayType.Playing, activeNotes, displayInterval, emphasizedNotes, getNoteLocation, highlightedNotes, intervalDisplay, props.subdivisionCount, updateNotes]);
 
-    const centerpoint = (<Circle radius={1} fill="grey"></Circle>);
+    const fullRender = React.useMemo((
+    ) => {
+        const centerpoint = (<Circle radius={1} fill="grey"></Circle>);
+        return (
+            <Group>
+                <Group opacity={isRotating ? 0.125 : 1} key={"realGroup"}>
+                    {notes.halos}
+                    {intervals.emphasized}
+                    {intervals.line}
+                    {notes.values}
+                    {notes.emphasized}
+                    {centerpoint}
+                </Group>
+                {isRotating && <Group rotation={rotation} key={"rotationalGroup"}>
+                    {notes.halos}
+                    {intervals.line}
+                    {intervals.highlighted}
+                    {notes.values}
+                    {notes.highlighted}
+                    {centerpoint}
+                </Group>}
+                {notes.names}
+                {notes.clickListeners}
+            </Group>
+        );
+    }, [intervals.emphasized, intervals.highlighted, intervals.line, isRotating, notes.clickListeners, notes.emphasized, notes.halos, notes.highlighted, notes.names, notes.values, rotation]);
 
     return (
-        <Widget x={props.x} y={props.y} contextMenuX={0} contextMenuY={-props.radius - 50} settingsRows={settingsMenuItems}>
-            <Group opacity={isRotating ? 0.125 : 1} key={"realGroup"}>
-                {notes.halos}
-                {intervals.emphasized}
-                {intervals.line}
-                {notes.values}
-                {notes.emphasized}
-                {centerpoint}
-            </Group>
-            {isRotating && <Group rotation={rotation} key={"rotationalGroup"}>
-                {notes.halos}
-                {intervals.line}
-                {intervals.highlighted}
-                {notes.values}
-                {notes.highlighted}
-                {centerpoint}
-            </Group>}
-            {notes.names}
-            {notes.clickListeners}
-        </Widget>
+        <Group>
+            {fullRender}
+            <SettingsMenuOverlay settingsRows={settingsMenuItems} fromWidget={props.fromWidget}>
+                {fullRender}
+            </SettingsMenuOverlay>
+        </Group>
     );
 }
 export default Wheel;

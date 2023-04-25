@@ -23,15 +23,8 @@ type Props = {
 }
 
 function ModalOverlay(props: Props) {
-    // const overlayTransition = useTransition_web(true, {
-    //     from: { opacity: 0 },
-    //     enter: { opacity: 1 },
-    //     leave: { opacity: 0 },
-    //     config: { duration: 750 }
-    // });
     const overlayProps = useSpring_web({ opacity: props.isVisible ? 1 : 0 })
     return <Html divProps={{ id: props.isVisible ? "overlay" : "overlay-no-pointer-events" }} >
-        {/* <div id="backdrop-blur"> */}
         < animated_web.div id="backdrop-blur" style={overlayProps}>
             {
                 props.canvasContent &&

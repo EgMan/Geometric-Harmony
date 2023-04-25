@@ -1,28 +1,26 @@
 import React from "react";
-import { Text } from 'react-konva';
+import { Group, Text } from 'react-konva';
 import { HarmonicShape, SCALE_CHROMATIC, ShapeType, knownShapes } from "./KnownHarmonicShapes";
-import Widget from "./Widget";
 import { getNoteName, getNoteNum } from "./Utils";
 import { NoteSet, normalizeToSingleOctave, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote } from "./NoteProvider";
 import { Html } from "react-konva-utils";
 import { MenuItem, FormGroup, Select, Button, Autocomplete, TextField, } from "@mui/material";
 import { useSetActiveShape } from "./HarmonicModulation";
+import { WidgetComponentProps } from "./Widget";
 
 // TODO make these dependent on props.width
 const keySelectorExplorerWidth = 70;
 const autocompleteExplorerWidth = 400;
 const submitButtonExplorerWidth = 70;
-const explorerWidth = keySelectorExplorerWidth + autocompleteExplorerWidth + submitButtonExplorerWidth;
+export const explorerWidth = keySelectorExplorerWidth + autocompleteExplorerWidth + submitButtonExplorerWidth;
 
 const inputBoxNoteNameRegex = /^([aAbBcCdDeEfFgG][b#♭♯]?)\s/
 
 type Props =
     {
-        x: number
-        y: number
         width: number
         subdivisionCount: number
-    }
+    } & WidgetComponentProps
 
 function HarmonyAnalyzer(props: Props) {
     const activeNotes = useNoteSet()(NoteSet.Active);
@@ -163,133 +161,139 @@ function HarmonyAnalyzer(props: Props) {
         }));
     }, []);
 
-    return (
-        <Widget
-            x={props.x - (explorerWidth / 2)}
-            y={props.y}
-            // contextMenuX={window.innerWidth / 2}
-            // contextMenuY={60}>
-            contextMenuX={-20}
-            contextMenuY={20}>
-            {infoTextElems}
-            <Html transform={true} divProps={{ id: "shape-tool-div" }}>
-                <form onSubmit={evt => { evt.preventDefault() }}>
-                    <FormGroup row sx={{ backgroundColor: 'rgb(255,255,255,0.1)', borderRadius: '9px' }}>
-                        <Select
-                            id="explorer-dropdown"
-                            value={selectedHomeNote}
-                            label="Note layout"
-                            labelId="demo-simple-select-filled-label"
-                            onChange={e => { setSelectedHomeNote(e.target.value as number) }}
-                            // sx={{ border: 0 }}
-                            sx={{
-                                width: keySelectorExplorerWidth,
-                                color: "white",
-                                // backgroundColor: "rbga(0,0,0,0.5)",
-                                '.MuiInputBase-input': {
-                                    fontFamily: "monospace",
-                                },
-                                '.MuiOutlinedInput-notchedOutline': {
-                                    borderColor: 'transparent',
-                                    borderRadius: '9px',
-                                },
-                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                    border: '1px solid transparent',
-                                },
-                                '&:hover .MuiOutlinedInput-notchedOutline': {
-                                    borderRadius: '9px',
-                                    backgroundColor: 'rgb(255,255,255,0.1)',
-                                    border: '1px solid transparent',
-                                },
-                                '.MuiSvgIcon-root ': {
-                                    fill: "white !important",
-                                }
-                            }}
-                        >
-                            {keySelectors}
-                        </Select>
-                        <Autocomplete
-                            disablePortal
-                            id="explorerinput"
-                            size="small"
-                            inputMode="text"
-                            groupBy={(option) => option.shape.groupByOverride ?? `${option.shapeName} (${option.noteCount} notes)`}
-                            value={selectedShape}
-                            autoHighlight={true}
-                            onChange={(event, value, reason) => { if (selectedHomeNote === -1) { setSelectedHomeNote(homeNote ?? 0) } setSelectedShape(value); }}
-                            options={explorerElements}
-                            noOptionsText="¯\_(ツ)_/¯"
-                            onInputChange={(event, value, reason) => {
-                                var leadingNoteName = value.match(inputBoxNoteNameRegex);
-                                if (leadingNoteName !== null) {
-                                    var noteNum = getNoteNum(leadingNoteName[1]);
-                                    if (noteNum !== -1) {
-                                        setSelectedHomeNote(noteNum);
-                                    }
-                                }
-                            }}
-                            filterOptions={(options, state) => {
-                                var filteredOptions: AutocompleteOptionType[] = [];
-                                const inputVal = state.inputValue.replace(inputBoxNoteNameRegex, "").toUpperCase().replace(/^(.)#/g, "$1").replace(/^(.)b/g, "$1");
-                                options.forEach((option) => {
-                                    if ((!option.hasExplicitName) && (!inputVal.match(/(M$)|(MO$)|(MOD$)|(MODE[^A-Z]?)/g))) return;
-                                    if (option.label.toUpperCase().includes(inputVal)) filteredOptions.push(option);
-                                    else if (option.shapeName.toUpperCase().includes(inputVal)) filteredOptions.push(option);
-                                });
-                                return filteredOptions;
-                            }}
-                            sx={{
-                                width: autocompleteExplorerWidth, display: 'inline-block', bgcolor: 'transparent', color: 'red',
-                                '.MuiOutlinedInput-notchedOutline': {
-                                    borderColor: 'transparent',
-                                    borderRadius: '9px',
-                                },
-                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                    border: '1px solid transparent',
-                                },
-                                '&:hover .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline': {
-                                    borderRadius: '9px',
-                                    backgroundColor: 'rgb(255,255,255,0.1)',
-                                    border: '1px solid transparent',
-                                },
-                                '.MuiSvgIcon-root ': {
-                                    fill: "white !important",
-                                },
-                                '.MuiAutocomplete-inputRoot': {
+    const fullRender = React.useMemo((
+    ) => {
+        return (
+            <Group x={- (explorerWidth / 2)}>
+                {infoTextElems}
+                <Html transform={true} divProps={{ id: "shape-tool-div" }}>
+                    <form onSubmit={evt => { evt.preventDefault() }}>
+                        <FormGroup row sx={{ backgroundColor: 'rgb(255,255,255,0.1)', borderRadius: '9px' }}>
+                            <Select
+                                id="explorer-dropdown"
+                                value={selectedHomeNote}
+                                label="Note layout"
+                                labelId="demo-simple-select-filled-label"
+                                onChange={e => { setSelectedHomeNote(e.target.value as number) }}
+                                // sx={{ border: 0 }}
+                                sx={{
+                                    width: keySelectorExplorerWidth,
                                     color: "white",
-                                    fontFamily: "monospace",
-                                    border: '1px solid transparent',
-                                },
-                            }}
-                            renderInput={(params) => <TextField {...params} label="" />}
-                        />
-                        <Button type="submit" variant="contained"
-                            sx={{
-                                color: 'white',
-                                backgroundColor: 'transparent',
-                                boxShadow: 'none',
-                                '&:hover': {
-                                    borderRadius: '9px',
-                                    backgroundColor: 'rgb(255,255,255,0.1)',
-                                },
-                                "&.Mui-disabled": {
-                                    background: 'transparent',
-                                    color: "grey"
-                                }
-                            }}
-                            disabled={selectedShape == null || selectedHomeNote === -1}
-                            onClick={() => {
-                                if (selectedShape != null && selectedHomeNote !== -1) {
-                                    setActiveShape(selectedShape.shape, selectedHomeNote - selectedShape.startingNoteNum);
-                                    resetSelectedShapeExplorerItems();
-                                    setHomeNote(selectedHomeNote);
-                                }
-                                (document.activeElement as HTMLElement).blur();
-                            }}>➔</Button>
-                    </FormGroup>
-                </form>
-            </Html>
-        </Widget >
+                                    // backgroundColor: "rbga(0,0,0,0.5)",
+                                    '.MuiInputBase-input': {
+                                        fontFamily: "monospace",
+                                    },
+                                    '.MuiOutlinedInput-notchedOutline': {
+                                        borderColor: 'transparent',
+                                        borderRadius: '9px',
+                                    },
+                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                        border: '1px solid transparent',
+                                    },
+                                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                                        borderRadius: '9px',
+                                        backgroundColor: 'rgb(255,255,255,0.1)',
+                                        border: '1px solid transparent',
+                                    },
+                                    '.MuiSvgIcon-root ': {
+                                        fill: "white !important",
+                                    }
+                                }}
+                            >
+                                {keySelectors}
+                            </Select>
+                            <Autocomplete
+                                disablePortal
+                                id="explorerinput"
+                                size="small"
+                                inputMode="text"
+                                groupBy={(option) => option.shape.groupByOverride ?? `${option.shapeName} (${option.noteCount} notes)`}
+                                value={selectedShape}
+                                autoHighlight={true}
+                                onChange={(event, value, reason) => { if (selectedHomeNote === -1) { setSelectedHomeNote(homeNote ?? 0) } setSelectedShape(value); }}
+                                options={explorerElements}
+                                noOptionsText="¯\_(ツ)_/¯"
+                                onInputChange={(event, value, reason) => {
+                                    var leadingNoteName = value.match(inputBoxNoteNameRegex);
+                                    if (leadingNoteName !== null) {
+                                        var noteNum = getNoteNum(leadingNoteName[1]);
+                                        if (noteNum !== -1) {
+                                            setSelectedHomeNote(noteNum);
+                                        }
+                                    }
+                                }}
+                                filterOptions={(options, state) => {
+                                    var filteredOptions: AutocompleteOptionType[] = [];
+                                    const inputVal = state.inputValue.replace(inputBoxNoteNameRegex, "").toUpperCase().replace(/^(.)#/g, "$1").replace(/^(.)b/g, "$1");
+                                    options.forEach((option) => {
+                                        if ((!option.hasExplicitName) && (!inputVal.match(/(M$)|(MO$)|(MOD$)|(MODE[^A-Z]?)/g))) return;
+                                        if (option.label.toUpperCase().includes(inputVal)) filteredOptions.push(option);
+                                        else if (option.shapeName.toUpperCase().includes(inputVal)) filteredOptions.push(option);
+                                    });
+                                    return filteredOptions;
+                                }}
+                                sx={{
+                                    width: autocompleteExplorerWidth, display: 'inline-block', bgcolor: 'transparent', color: 'red',
+                                    '.MuiOutlinedInput-notchedOutline': {
+                                        borderColor: 'transparent',
+                                        borderRadius: '9px',
+                                    },
+                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                        border: '1px solid transparent',
+                                    },
+                                    '&:hover .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline': {
+                                        borderRadius: '9px',
+                                        backgroundColor: 'rgb(255,255,255,0.1)',
+                                        border: '1px solid transparent',
+                                    },
+                                    '.MuiSvgIcon-root ': {
+                                        fill: "white !important",
+                                    },
+                                    '.MuiAutocomplete-inputRoot': {
+                                        color: "white",
+                                        fontFamily: "monospace",
+                                        border: '1px solid transparent',
+                                    },
+                                }}
+                                renderInput={(params) => <TextField {...params} label="" />}
+                            />
+                            <Button type="submit" variant="contained"
+                                sx={{
+                                    color: 'white',
+                                    backgroundColor: 'transparent',
+                                    boxShadow: 'none',
+                                    '&:hover': {
+                                        borderRadius: '9px',
+                                        backgroundColor: 'rgb(255,255,255,0.1)',
+                                    },
+                                    "&.Mui-disabled": {
+                                        background: 'transparent',
+                                        color: "grey"
+                                    }
+                                }}
+                                disabled={selectedShape == null || selectedHomeNote === -1}
+                                onClick={() => {
+                                    if (selectedShape != null && selectedHomeNote !== -1) {
+                                        setActiveShape(selectedShape.shape, selectedHomeNote - selectedShape.startingNoteNum);
+                                        resetSelectedShapeExplorerItems();
+                                        setHomeNote(selectedHomeNote);
+                                    }
+                                    (document.activeElement as HTMLElement).blur();
+                                }}>➔</Button>
+                        </FormGroup>
+                    </form>
+                </Html>
+            </Group >
+        );
+    }, [explorerElements, homeNote, infoTextElems, keySelectors, selectedHomeNote, selectedShape, setActiveShape, setHomeNote]);
+
+    return (
+        <Group>
+            {fullRender}
+            {/* <SettingsMenuOverlay fromWidget={props.fromWidget}>
+                {fullRender}
+            </SettingsMenuOverlay> */}
+        </Group>
     );
 }
 

@@ -1,19 +1,18 @@
 import React from 'react';
-import { Circle, Rect, Line, Text, Shape } from 'react-konva';
-import Widget from './Widget';
+import { Circle, Rect, Line, Text, Shape, Group } from 'react-konva';
+import { WidgetComponentProps } from './Widget';
 import { MenuItem, Select } from '@mui/material';
 import { getIntervalColor, getIntervalDistance, getNoteName } from './Utils';
 import { NoteSet, normalizeToSingleOctave, useCheckNoteEmphasis, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from './NoteProvider';
 import { KonvaEventObject } from 'konva/lib/Node';
+import SettingsMenuOverlay from './SettingsMenuOverlay';
 
 type Props = {
-    x: number
-    y: number
     height: number
     width: number
     fretCount: number
     tuning: number[]
-}
+} & WidgetComponentProps
 
 function StringInstrument(props: Props) {
     const stringSpacing = props.width / (props.tuning.length - 1);
@@ -168,7 +167,6 @@ function StringInstrument(props: Props) {
         var intervalLines: JSX.Element[] = [];
         var emphasized: JSX.Element[] = [];
         var touchListeners: JSX.Element[] = [];
-        const activeNoteArr = Array.from(activeNotes);
         // for (let stringA = 0; stringA < props.tuning.length; stringA++) {
         //     for (let stringB = 0; stringB <= props.tuning.length; stringB++) {
         props.tuning.forEach((openNoteA, stringA) => {
@@ -289,18 +287,29 @@ function StringInstrument(props: Props) {
         }
     }, [activeNotes, combinedEmphasis, emphasizedNotesOctaveGnostic, fretElemYOffset, fretSpacing, getXPos, getYPos, props.fretCount, props.height, props.tuning, stringSpacing, updateNotes]);
 
+    const fullRender = React.useMemo((
+    ) => {
+        return (
+            <Group>
+                {elems.frets}
+                {elems.strings}
+                {intervals.line}
+                {intervals.emphasized}
+                {elems.noteIndicators}
+                {elems.emphasized}
+                {elems.noteNames}
+                {elems.clickListeners}
+            </Group>
+        );
+    }, [elems.clickListeners, elems.emphasized, elems.frets, elems.noteIndicators, elems.noteNames, elems.strings, intervals.emphasized, intervals.line]);
+
     return (
-        <Widget x={props.x - (props.width / 2)} y={props.y} contextMenuX={props.width / 2} contextMenuY={-fretSpacing} settingsRows={settingsMenuItems}>
-            {/* <Circle radius={100} fill={"green"} /> */}
-            {elems.frets}
-            {elems.strings}
-            {intervals.line}
-            {intervals.emphasized}
-            {elems.noteIndicators}
-            {elems.emphasized}
-            {elems.noteNames}
-            {elems.clickListeners}
-        </Widget>
+        <Group>
+            {fullRender}
+            <SettingsMenuOverlay settingsRows={settingsMenuItems} fromWidget={props.fromWidget}>
+                {fullRender}
+            </SettingsMenuOverlay>
+        </Group>
     );
 }
 

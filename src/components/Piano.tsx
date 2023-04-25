@@ -1,10 +1,11 @@
 import React from 'react';
-import { Circle, Rect, Shape, Text } from 'react-konva';
-import Widget from './Widget';
+import { Circle, Group, Rect, Shape, Text } from 'react-konva';
+import { WidgetComponentProps } from './Widget';
 import { MenuItem, Select, Switch } from '@mui/material';
 import { getIntervalColor, getIntervalDistance, getNoteName } from './Utils';
 import { NoteSet, useCheckNoteEmphasis, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from './NoteProvider';
 import { KonvaEventObject } from 'konva/lib/Node';
+import SettingsMenuOverlay from './SettingsMenuOverlay';
 
 const keyColor = "grey";
 const noteToXOffsetFactor = [0, 1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 6];
@@ -12,12 +13,10 @@ const blackKeyNums = [1, 3, 6, 8, 10];
 const whiteKeyNums = [0, 2, 4, 5, 7, 9, 11];
 
 type Props = {
-    x: number
-    y: number
     height: number
     width: number
     octaveCount: number
-}
+} & WidgetComponentProps;
 
 function Piano(props: Props) {
     // Settings Storage
@@ -382,18 +381,30 @@ function Piano(props: Props) {
         }
     }, [activeNotes, combinedEmphasis, displayInterval, emphasizedNotesOctaveGnostic, getAbsoluteNoteNum, getPropsForNote, octaveCount, onlyShowIntervalsOnHover, props.height, showInverseIntervals, updateNotes]);
 
+    const fullRender = React.useMemo((
+    ) => {
+        return (
+            <Group>
+                {keys.keys}
+                {intervals.line}
+                {intervals.emphasized}
+                {keys.activeNoteIndicators}
+                {keys.emphasized}
+                {keys.noteNames}
+                {keys.clickListenersArr}
+                {intervals.listeners}
+            </Group>
+        );
+    }, [intervals, keys]);
+
     return (
-        <Widget x={props.x} y={props.y} contextMenuX={0} contextMenuY={-props.height - 20} settingsRows={settingsMenuItems}>
-            {keys.keys}
-            {intervals.line}
-            {intervals.emphasized}
-            {keys.activeNoteIndicators}
-            {keys.emphasized}
-            {keys.noteNames}
-            {keys.clickListenersArr}
-            {intervals.listeners}
-        </Widget>
-    )
+        <Group>
+            {fullRender}
+            <SettingsMenuOverlay settingsRows={settingsMenuItems} fromWidget={props.fromWidget}>
+                {fullRender}
+            </SettingsMenuOverlay>
+        </Group>
+    );
 }
 
 export default Piano;

@@ -1,21 +1,29 @@
 import React from "react";
-import { Circle, Group, Layer, Stage, Text } from "react-konva";
+import { Circle, Group, Text } from "react-konva";
 import { animated, useSpring, useTransition } from '@react-spring/konva';
-import { Html } from "react-konva-utils";
-import { ThemeProvider, createTheme } from "@mui/material";
+import { createTheme } from "@mui/material";
 import { green, purple } from "@mui/material/colors";
-import ModalOverlay from "./ModalOverlay";
+import { Vector2d } from "konva/lib/types";
 
-type Props = {
-    children?: React.ReactNode
-    x: number
-    y: number
-    contextMenuX: number
-    contextMenuY: number
-    settingsRows?: JSX.Element[];
+export type WidgetComponentProps = {
+    fromWidget: {
+        isOverlayVisible: boolean;
+        setIsOverlayVisible: React.Dispatch<React.SetStateAction<boolean>>;
+        position: Vector2d;
+        containerPosition: Vector2d;
+    }
 }
 
-function Widget(props: Props) {
+type WidgetProps<TElem extends React.ElementType> = {
+    of?: TElem;
+    children?: React.ReactNode;
+    initialPosition: Vector2d;
+    contextMenuOffset: Vector2d;
+} & Omit<React.ComponentPropsWithoutRef<TElem>, keyof WidgetComponentProps>;
+
+function Widget<TElem extends React.ElementType>({ of, children, initialPosition, contextMenuOffset, ...otherProps }: WidgetProps<TElem>) {
+    // const test = <Component {...otherProps}></Component>
+    const Component = of || Group;
 
     const [draggedX, setDraggedX] = React.useState(0);
     const [draggedY, setDraggedY] = React.useState(0);
@@ -42,61 +50,24 @@ function Widget(props: Props) {
         }
     });
 
+    const fromWidget = {
+        isOverlayVisible: isSettingsOverlayVisible,
+        setIsOverlayVisible: setIsSettingsOverlayVisible,
+        position: { x: initialPosition.x + draggedX, y: initialPosition.y + draggedY },
+        containerPosition: { x: initialPosition.x + draggedX, y: initialPosition.y + draggedY },
+    }
+
     return (
         <div>
-            {/* {isSettingsOverlayVisible &&
-                <Html divProps={{ id: "overlay" }}>
-                    <Stage width={window.innerWidth} height={window.innerHeight}>
-                        <Layer>
-                            <Group x={props.x + draggedX} y={props.y + draggedY}>
-                                {props.children}
-                            </Group>
-                        </Layer>
-                    </Stage>
-                    <ThemeProvider theme={theme}>
-                        <div id="click-back-div" onClick={() => setIsSettingsOverlayVisible(false)}>
-                            <div id="overlay-content" onClick={(e) => e.stopPropagation()}>
-                                <table>
-                                    {props.settingsRows}
-                                </table>
-                            </div>
-                        </div>
-                    </ThemeProvider>
-                </Html>
-            } */}
-
-            <ModalOverlay
-                isVisible={isSettingsOverlayVisible}
-                setIsVisible={setIsSettingsOverlayVisible}
-                htmlContent={
-                    // <table border={1} rules="rows">
-                    <div>
-                        {/* <table>
-                            <th colSpan={10}>test</th>
-                            <tr>test</tr>
-                        </table> */}
-                        <table>
-                            {props.settingsRows}
-                        </table>
-                    </div>
-                }
-                canvasContent={
-                    isSettingsOverlayVisible ? (<Group x={props.x + draggedX} y={props.y + draggedY}>
-                        {props.children}
-                    </Group>) : undefined
-                }
-            />
-            {/* … */}
-
-            <Group x={props.x} y={props.y}>
+            <Group x={initialPosition?.x ?? 0} y={initialPosition?.y ?? 0}>
                 {mainGroupTransition(
                     (transitionProps, item, t) =>
                         /* @ts-ignore: https://github.com/pmndrs/react-spring/issues/1515 */
                         <animated.Group x={draggedX} y={draggedY} {...transitionProps}>
-                            {props.children}
+                            <Component {...otherProps} fromWidget={fromWidget}>{children}</Component>
                         </animated.Group>
                 )}
-                <Group draggable x={props.contextMenuX} y={props.contextMenuY} onDragMove={a => { setDraggedX(a.currentTarget.x() - props.contextMenuX); setDraggedY(a.currentTarget.y() - props.contextMenuY); }}>
+                <Group draggable x={contextMenuOffset?.x ?? 0} y={contextMenuOffset?.y ?? 0} onDragMove={a => { setDraggedX(a.currentTarget.x() - (contextMenuOffset?.x ?? 0)); setDraggedY(a.currentTarget.y() - (contextMenuOffset?.y ?? 0)); }}>
                     {/* @ts-ignore: https://github.com/pmndrs/react-spring/issues/1515 */}
                     <animated.Circle radius={15} {...contextMenuProps} fill={"white"}></animated.Circle>
                     <Circle radius={15} opacity={0} onMouseEnter={() => setContextMenuUpen(true)} onMouseLeave={() => setContextMenuUpen(false)} onTouchStart={() => setIsSettingsOverlayVisible(true)} onClick={() => setIsSettingsOverlayVisible(true)} onContextMenu={(e) => { setIsSettingsOverlayVisible(true); e.currentTarget.preventDefault() }}></Circle>
