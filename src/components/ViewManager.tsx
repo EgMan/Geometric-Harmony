@@ -7,9 +7,11 @@ import StringInstrument from "./StringInstrument";
 import QuickSettingDropdown from "./QuickSettingDropdown";
 import React from "react";
 import Widget from "./Widget";
+import { Vector2d } from "konva/lib/types";
 
 type WidgetTracker = {
     type: WidgetType,
+    initialPosition: Vector2d,
     // width: number,
     // height: number,
 }
@@ -20,16 +22,32 @@ enum WidgetType {
     Analyzer,
 }
 
-// const startingScene: WidgetTracker[] = [{ type: WidgetType.Piano, width: 0, height: 0 }, { type: WidgetType.Wheel, width: 0, height: 0 }, { type: WidgetType.Guitar, width: 0, height: 0 }, { type: WidgetType.Analyzer, width: 0, height: 0 }];
-const startingScene: WidgetTracker[] = [{ type: WidgetType.Analyzer }, { type: WidgetType.Piano }, { type: WidgetType.Guitar }, { type: WidgetType.Wheel }];
-
 type Props = {
     width: number,
     height: number,
 }
 
 function ViewManager(props: Props) {
-    const [trackedWidgets, setTrackedWidgets] = React.useState<WidgetTracker[]>(startingScene);
+    const [trackedWidgets, setTrackedWidgets] = React.useState<WidgetTracker[]>(
+        [
+            {
+                type: WidgetType.Analyzer,
+                initialPosition: { x: props.width / 2, y: 10 },
+            },
+            {
+                type: WidgetType.Piano,
+                initialPosition: { x: props.width / 2, y: props.height - 1 },
+            },
+            {
+                type: WidgetType.Guitar,
+                initialPosition: { x: (4 * props.width / 5) - 50, y: props.height / 8 },
+            },
+            {
+                type: WidgetType.Wheel,
+                initialPosition: { x: props.width / 4, y: props.height / 2 },
+            }
+        ]
+    );
 
     const limitingAxisIsHeight = props.width > props.height;
     const limitingAxisSize = limitingAxisIsHeight ? props.height : props.width;
@@ -45,29 +63,24 @@ function ViewManager(props: Props) {
             switch (widget.type) {
                 case WidgetType.Piano:
                     return <Widget of={Piano}
-                        initialPosition={{ x: props.width / 2, y: props.height - 1 }}
+                        initialPosition={widget.initialPosition}
                         contextMenuOffset={{ x: 0, y: -pianoHeight - 20 }}
                         height={pianoHeight}
                         width={pianoWidth}
                         octaveCount={pianoOctaveCount}
                     />
                 case WidgetType.Wheel:
-                    // return <Wheel subdivisionCount={12} radius={wheelRadius} x={props.width / 4} y={props.height / 2} isCircleOfFifths={false} />
-                    // <Piano x={windowWidth / 2} y={windowHeight - 1} height={pianoHeight} width={pianoWidth} octaveCount={pianoOctaveCount} />
-                    // <Wheel subdivisionCount={12} radius={wheelRadius} x={windowWidth / 4} y={windowHeight / 2} isCircleOfFifths={false} />
                     return <Widget of={Wheel}
-                        initialPosition={{ x: props.width / 4, y: props.height / 2 }}
+                        initialPosition={widget.initialPosition}
                         contextMenuOffset={{ x: 0, y: -40 - wheelRadius }}
                         subdivisionCount={12}
                         radius={wheelRadius}
                         isCircleOfFifths={false} />
                 case WidgetType.Guitar:
                     const fretCount = 13;
-                    // <Widget x={props.x - (props.width / 2)} y={props.y} contextMenuX={props.width / 2} contextMenuY={-fretSpacing} settingsRows={settingsMenuItems}>
                     return <Widget of={StringInstrument}
-                        initialPosition={{ x: 4 * props.width / 5, y: props.height / 8 }}
+                        initialPosition={widget.initialPosition}
                         contextMenuOffset={{ x: wheelRadius / 2, y: - guitarHeight / fretCount }}
-                        // x={4 * props.width / 5} y={props.height / 8}
                         height={guitarHeight}
                         width={wheelRadius}
                         fretCount={fretCount}
@@ -81,14 +94,14 @@ function ViewManager(props: Props) {
                     // </Group>
                     return <Widget of={HarmonyAnalyzer}
                         contextMenuOffset={{ x: (-explorerWidth / 2) - 20, y: 20 }}
-                        initialPosition={{ x: props.width / 2, y: 10 }}
+                        initialPosition={widget.initialPosition}
                         subdivisionCount={12}
                         width={props.width}
                     />
             }
             return <div />;
         })
-    }, [guitarHeight, pianoHeight, pianoOctaveCount, pianoWidth, props.height, props.width, trackedWidgets, wheelRadius]);
+    }, [guitarHeight, pianoHeight, pianoOctaveCount, pianoWidth, props.width, trackedWidgets, wheelRadius]);
 
     return (
         <Stage
