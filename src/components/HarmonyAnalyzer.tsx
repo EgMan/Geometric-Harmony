@@ -8,12 +8,6 @@ import { MenuItem, FormGroup, Select, Button, Autocomplete, TextField, } from "@
 import { useSetActiveShape } from "./HarmonicModulation";
 import { WidgetComponentProps } from "./Widget";
 
-// TODO make these dependent on props.width
-const keySelectorExplorerWidth = 70;
-const autocompleteExplorerWidth = 400;
-const submitButtonExplorerWidth = 70;
-export const explorerWidth = keySelectorExplorerWidth + autocompleteExplorerWidth + submitButtonExplorerWidth;
-
 const inputBoxNoteNameRegex = /^([aAbBcCdDeEfFgG][b#♭♯]?)\s/
 
 type Props =
@@ -31,6 +25,11 @@ function HarmonyAnalyzer(props: Props) {
 
     const [selectedShape, setSelectedShape] = React.useState<AutocompleteOptionType | null>(null);
     const [selectedHomeNote, setSelectedHomeNote] = React.useState<number>(-1);
+
+    const keySelectorExplorerWidth = 70;
+    const submitButtonExplorerWidth = 70;
+    const autocompleteExplorerWidth = props.width - keySelectorExplorerWidth - submitButtonExplorerWidth;
+    const explorerWidth = keySelectorExplorerWidth + autocompleteExplorerWidth + submitButtonExplorerWidth;
 
     const resetSelectedShapeExplorerItems = () => {
         setSelectedShape(null);
@@ -109,7 +108,7 @@ function HarmonyAnalyzer(props: Props) {
         return infos.filter(info => info.text !== "").map((info) => {
             return (<Text key={`info${info.text}${idx++}`} text={info.text} x={0} y={textelemoffset * (idx) + infosYOffset} fontSize={infosFontSize} fontFamily='monospace' fill={info.color} align="center" width={explorerWidth} />);
         });
-    }, [activeExactFit, activeExactFitName, activeNotes, emphasizedExactFit, emphasizedNotes, getNoteNameInExactFitShape, homeNote]);
+    }, [activeExactFit, activeExactFitName, activeNotes, emphasizedExactFit, emphasizedNotes, explorerWidth, getNoteNameInExactFitShape, homeNote]);
 
     type AutocompleteOptionType = {
         label: string;
@@ -285,7 +284,7 @@ function HarmonyAnalyzer(props: Props) {
                 </Html>
             </Group >
         );
-    }, [explorerElements, homeNote, infoTextElems, keySelectors, selectedHomeNote, selectedShape, setActiveShape, setHomeNote]);
+    }, [autocompleteExplorerWidth, explorerElements, explorerWidth, homeNote, infoTextElems, keySelectors, selectedHomeNote, selectedShape, setActiveShape, setHomeNote]);
 
     return (
         <Group>

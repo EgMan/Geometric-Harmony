@@ -1,6 +1,6 @@
 import { Layer, Stage } from "react-konva";
 import BackPlate from "./BackPlate";
-import HarmonyAnalyzer, { explorerWidth } from "./HarmonyAnalyzer";
+import HarmonyAnalyzer from "./HarmonyAnalyzer";
 import Wheel from "./Wheel";
 import Piano from "./Piano";
 import StringInstrument from "./StringInstrument";
@@ -93,10 +93,10 @@ function ViewManager(props: Props) {
                     //         width={props.width} />
                     // </Group>
                     return <Widget of={HarmonyAnalyzer}
-                        contextMenuOffset={{ x: (-explorerWidth / 2) - 20, y: 20 }}
+                        contextMenuOffset={{ x: (-(props.width / (2 * 8 / 3)) - 20), y: 20 }}
                         initialPosition={widget.initialPosition}
                         subdivisionCount={12}
-                        width={props.width}
+                        width={props.width / (8 / 3)}
                     />
             }
             return <div />;
