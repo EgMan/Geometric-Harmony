@@ -1,12 +1,12 @@
 import React from 'react';
 import { Circle, Group, Line, Text } from 'react-konva';
-import { WidgetComponentProps } from './Widget';
+import { WidgetComponentProps } from '../view/Widget';
 import { MenuItem, Select, Switch } from '@mui/material';
 import { KonvaEventObject } from 'konva/lib/Node';
-import { useGetActiveNotesInCommonWithModulation, useModulateActiveNotes } from './HarmonicModulation';
-import { getIntervalColor, getIntervalDistance, getNoteName } from './Utils';
-import { NoteSet, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from './NoteProvider';
-import SettingsMenuOverlay from './SettingsMenuOverlay';
+import { useGetActiveNotesInCommonWithModulation, useModulateActiveNotes } from '../sound/HarmonicModulation';
+import { getIntervalColor, getIntervalDistance, getNoteName } from '../utils/Utils';
+import { NoteSet, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
+import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 type Props = {
     radius: number
     subdivisionCount: number

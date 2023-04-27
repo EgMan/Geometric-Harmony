@@ -1,5 +1,5 @@
 import React from "react";
-import { HarmonicShape } from "./KnownHarmonicShapes";
+import { HarmonicShape } from "../utils/KnownHarmonicShapes";
 import { NoteSet, normalizeToSingleOctave, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from "./NoteProvider";
 
 function getModulatedNotes(notes: Set<number>, semitones: number) {

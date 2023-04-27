@@ -1,6 +1,6 @@
 import React from "react";
 import { Rect } from "react-konva";
-import { NoteSet, useUpdateNoteSet } from "./NoteProvider";
+import { NoteSet, useUpdateNoteSet } from "../sound/NoteProvider";
 
 type Props =
     {

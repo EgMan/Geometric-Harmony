@@ -1,6 +1,6 @@
 import useKeypressPlayer from './KeypressPlayer';
 import React from 'react';
-import { getNote, getNoteMIDI, usePrevious } from './Utils';
+import { getNote, getNoteMIDI, usePrevious } from '../utils/Utils';
 import { NoteSet, normalizeToSingleOctave, useNoteSet } from './NoteProvider';
 import { useConnectToMidi } from './MIDIInterface';
 import { WebMidi } from "webmidi";

@@ -1,6 +1,6 @@
 import React from "react";
 import { WebMidi } from "webmidi";
-import { BrowserType, useBrowserVersion } from "./Utils";
+import { BrowserType, useBrowserVersion } from "../utils/Utils";
 
 export function useConnectToMidi() {
     const browserType = useBrowserVersion();

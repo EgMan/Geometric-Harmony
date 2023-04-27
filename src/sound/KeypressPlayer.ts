@@ -1,7 +1,7 @@
 import React from "react";
 import { useModulateActiveNotes } from "./HarmonicModulation";
 import { NoteSet, normalizeToSingleOctave, useNoteSet, useUpdateNoteSet } from "./NoteProvider";
-import { useGetActiveShapeScaleDegreeFromNote, useGetNoteFromActiveShapeScaleDegree} from "./HarmonyAnalyzer";
+import { useGetActiveShapeScaleDegreeFromNote, useGetNoteFromActiveShapeScaleDegree} from "../toys/HarmonyAnalyzer";
 import { useExecuteOnPlayingNoteStateChange } from "./SoundEngine";
 
 const keyToNoteNumber = new Map<string, number>(

@@ -1,12 +1,12 @@
 import React from "react";
 import { Group, Text } from 'react-konva';
-import { HarmonicShape, SCALE_CHROMATIC, ShapeType, knownShapes } from "./KnownHarmonicShapes";
-import { getNoteName, getNoteNum } from "./Utils";
-import { NoteSet, normalizeToSingleOctave, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote } from "./NoteProvider";
+import { HarmonicShape, SCALE_CHROMATIC, ShapeType, knownShapes } from "../utils/KnownHarmonicShapes";
+import { getNoteName, getNoteNum } from "../utils/Utils";
+import { NoteSet, normalizeToSingleOctave, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote } from "../sound/NoteProvider";
 import { Html } from "react-konva-utils";
 import { MenuItem, FormGroup, Select, Button, Autocomplete, TextField, } from "@mui/material";
-import { useSetActiveShape } from "./HarmonicModulation";
-import { WidgetComponentProps } from "./Widget";
+import { useSetActiveShape } from "../sound/HarmonicModulation";
+import { WidgetComponentProps } from "../view/Widget";
 
 const inputBoxNoteNameRegex = /^([aAbBcCdDeEfFgG][b#♭♯]?)\s/
 

@@ -1,11 +1,11 @@
 import React from 'react';
 import { Circle, Group, Rect, Shape, Text } from 'react-konva';
-import { WidgetComponentProps } from './Widget';
+import { WidgetComponentProps } from '../view/Widget';
 import { MenuItem, Select, Switch } from '@mui/material';
-import { getIntervalColor, getIntervalDistance, getNoteName } from './Utils';
-import { NoteSet, useCheckNoteEmphasis, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from './NoteProvider';
+import { getIntervalColor, getIntervalDistance, getNoteName } from '../utils/Utils';
+import { NoteSet, useCheckNoteEmphasis, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
 import { KonvaEventObject } from 'konva/lib/Node';
-import SettingsMenuOverlay from './SettingsMenuOverlay';
+import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 
 const keyColor = "grey";
 const noteToXOffsetFactor = [0, 1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 6];

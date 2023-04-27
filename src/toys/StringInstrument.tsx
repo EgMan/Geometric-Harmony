@@ -1,11 +1,11 @@
 import React from 'react';
 import { Circle, Rect, Line, Text, Shape, Group } from 'react-konva';
-import { WidgetComponentProps } from './Widget';
+import { WidgetComponentProps } from '../view/Widget';
 import { MenuItem, Select } from '@mui/material';
-import { getIntervalColor, getIntervalDistance, getNoteName } from './Utils';
-import { NoteSet, normalizeToSingleOctave, useCheckNoteEmphasis, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from './NoteProvider';
+import { getIntervalColor, getIntervalDistance, getNoteName } from '../utils/Utils';
+import { NoteSet, normalizeToSingleOctave, useCheckNoteEmphasis, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
 import { KonvaEventObject } from 'konva/lib/Node';
-import SettingsMenuOverlay from './SettingsMenuOverlay';
+import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 
 type Props = {
     height: number

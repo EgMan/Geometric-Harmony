@@ -1,9 +1,9 @@
 import { Layer, Stage } from "react-konva";
 import BackPlate from "./BackPlate";
-import HarmonyAnalyzer from "./HarmonyAnalyzer";
-import Wheel from "./Wheel";
-import Piano from "./Piano";
-import StringInstrument from "./StringInstrument";
+import HarmonyAnalyzer from "../toys/HarmonyAnalyzer";
+import Wheel from "../toys/Wheel";
+import Piano from "../toys/Piano";
+import StringInstrument from "../toys/StringInstrument";
 import QuickSettingDropdown from "./QuickSettingDropdown";
 import React from "react";
 import Widget from "./Widget";

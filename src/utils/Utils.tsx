@@ -1,5 +1,5 @@
 import React from "react";
-import { normalizeToSingleOctave } from "./NoteProvider";
+import { normalizeToSingleOctave } from "../sound/NoteProvider";
 
 // const numberToNote = ["C-1", "C#3", "D3", "D#3", "E3", "F3", "F#3", "G3", "G#3", "A3", "A#3", "B3"];
 const numberToPlayableNote = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];

@@ -1,9 +1,9 @@
 import React from 'react';
 import './App.css';
-import SoundEngine from './components/SoundEngine';
-import NoteProvider from './components/NoteProvider';
-import useSoundEngine from './components/SoundEngine';
-import ViewManager from './components/ViewManager';
+import SoundEngine from './sound/SoundEngine';
+import NoteProvider from './sound/NoteProvider';
+import useSoundEngine from './sound/SoundEngine';
+import ViewManager from './view/ViewManager';
 function App() {
   useSoundEngine();
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth)
