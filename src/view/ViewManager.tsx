@@ -10,6 +10,7 @@ import Widget from "./Widget";
 import { Vector2d } from "konva/lib/types";
 
 type WidgetTracker = {
+    uid: string,
     type: WidgetType,
     initialPosition: Vector2d,
     // width: number,
@@ -31,18 +32,22 @@ function ViewManager(props: Props) {
     const [trackedWidgets, setTrackedWidgets] = React.useState<WidgetTracker[]>(
         [
             {
+                uid: "1",
                 type: WidgetType.Analyzer,
                 initialPosition: { x: props.width / 2, y: 10 },
             },
             {
+                uid: "2",
                 type: WidgetType.Piano,
                 initialPosition: { x: props.width / 2, y: props.height - 1 },
             },
             {
+                uid: "3",
                 type: WidgetType.Guitar,
                 initialPosition: { x: (4 * props.width / 5) - 50, y: props.height / 8 },
             },
             {
+                uid: "4",
                 type: WidgetType.Wheel,
                 initialPosition: { x: props.width / 4, y: props.height / 2 },
             }
@@ -63,6 +68,7 @@ function ViewManager(props: Props) {
             switch (widget.type) {
                 case WidgetType.Piano:
                     return <Widget of={Piano}
+                        key={widget.uid}
                         initialPosition={widget.initialPosition}
                         contextMenuOffset={{ x: 0, y: -pianoHeight - 20 }}
                         height={pianoHeight}
@@ -71,6 +77,7 @@ function ViewManager(props: Props) {
                     />
                 case WidgetType.Wheel:
                     return <Widget of={Wheel}
+                        key={widget.uid}
                         initialPosition={widget.initialPosition}
                         contextMenuOffset={{ x: 0, y: -40 - wheelRadius }}
                         subdivisionCount={12}
@@ -79,6 +86,7 @@ function ViewManager(props: Props) {
                 case WidgetType.Guitar:
                     const fretCount = 13;
                     return <Widget of={StringInstrument}
+                        key={widget.uid}
                         initialPosition={widget.initialPosition}
                         contextMenuOffset={{ x: wheelRadius / 2, y: - guitarHeight / fretCount }}
                         height={guitarHeight}
@@ -93,6 +101,7 @@ function ViewManager(props: Props) {
                     //         width={props.width} />
                     // </Group>
                     return <Widget of={HarmonyAnalyzer}
+                        key={widget.uid}
                         contextMenuOffset={{ x: (-(props.width / (2 * 8 / 3)) - 20), y: 20 }}
                         initialPosition={widget.initialPosition}
                         subdivisionCount={12}

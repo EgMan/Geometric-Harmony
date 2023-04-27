@@ -39,7 +39,7 @@ function Piano(props: Props) {
     ///////////////////
 
     const settingsMenuItems = [
-        (<tr>
+        (<tr key={"tr1"}>
             <td>OctaveCount</td>
             <td colSpan={2}>  <Select
                 id="menu-dropdown"
@@ -56,47 +56,47 @@ function Piano(props: Props) {
 
             </Select></td>
         </tr>),
-        (<tr>
+        (<tr key={"tr2"}>
             <td>Show Minor Seconds (Major Sevenths)</td>
             <td style={{ color: getIntervalColor(1), textAlign: "center" }}>■</td>
             <td><Switch color={"primary"} checked={displayInterval[0]} onChange={e => setDisplayInterval(0, e.target.checked)} /></td>
         </tr>),
-        (<tr>
+        (<tr key={"tr3"}>
             <td>Show Major Seconds (Minor Sevenths)</td>
             <td style={{ color: getIntervalColor(2), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[1]} onChange={e => setDisplayInterval(1, e.target.checked)} /></td>
         </tr>),
-        (<tr>
+        (<tr key={"tr4"}>
             <td>Show Minor Thirds (Major Sixths)</td>
             <td style={{ color: getIntervalColor(3), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[2]} onChange={e => setDisplayInterval(2, e.target.checked)} /></td>
         </tr>),
-        (<tr>
+        (<tr key={"tr5"}>
             <td>Show Major Thirds (Minor Sixths)</td>
             <td style={{ color: getIntervalColor(4), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[3]} onChange={e => setDisplayInterval(3, e.target.checked)} /></td>
         </tr>),
-        (<tr>
+        (<tr key={"tr6"}>
             <td>Show Perfect Fourths (Perfect Fifths)</td>
             <td style={{ color: getIntervalColor(5), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[4]} onChange={e => setDisplayInterval(4, e.target.checked)} /></td>
         </tr>),
-        (<tr>
+        (<tr key={"tr7"}>
             <td>Show Tritones</td>
             <td style={{ color: getIntervalColor(6), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[5]} onChange={e => setDisplayInterval(5, e.target.checked)} /></td>
         </tr>),
-        (<tr>
+        (<tr key={"tr8"}>
             <td>Only show intervals on <span style={{ color: "red" }}>emmphasized</span> notes</td>
             <td style={{ textAlign: "center" }}></td>
             <td><Switch checked={onlyShowIntervalsOnHover} onChange={e => setOnlyShowIntervalsOnHover(e.target.checked)} /></td>
         </tr>),
-        (<tr>
+        (<tr key={"tr9"}>
             <td>Show inverse intervals</td>
             <td style={{ textAlign: "center" }}>⤡</td>
             <td><Switch checked={showInverseIntervals} onChange={e => setShowInverseIntervals(e.target.checked)} /></td>
         </tr>),
-        (<tr>
+        (<tr key={"tr10"}>
             <td>Show note names</td>
             <td style={{ textAlign: "center" }}>♯</td>
             <td><Switch checked={showNoteNames} onChange={e => setShowNoteNames(e.target.checked)} /></td>
@@ -333,6 +333,7 @@ function Piano(props: Props) {
 
                         intervalLines.push(
                             <Shape
+                                key={`interval${absoluteInverval}`}
                                 sceneFunc={(context, shape) => {
                                     context.beginPath();
                                     context.moveTo(aLoc.x, aLoc.y);
@@ -352,6 +353,7 @@ function Piano(props: Props) {
                         );
                         touchListeners.push(
                             <Shape
+                                key={`touchlisten${absoluteInverval}`}
                                 sceneFunc={(context, shape) => {
                                     context.beginPath();
                                     context.moveTo(aLoc.x, aLoc.y);

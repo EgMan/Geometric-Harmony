@@ -155,7 +155,7 @@ function HarmonyAnalyzer(props: Props) {
     }, []);
 
     const keySelectors = React.useMemo(() => {
-        return [<MenuItem value={-1}>{""}</MenuItem>].concat(Array.from(Array(12).keys()).map((num, idx) => {
+        return [<MenuItem key={'nullSelectorOption'} value={-1}>{""}</MenuItem>].concat(Array.from(Array(12).keys()).map((num, idx) => {
             return <MenuItem key={`selectorOption${idx}`} value={num}>{getNoteName(num, new Set())}</MenuItem>;
         }));
     }, []);

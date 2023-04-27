@@ -60,37 +60,37 @@ function Wheel(props: Props) {
     }, [isCircleOfFifths, props.radius, props.subdivisionCount])
 
     const settingsMenuItems = [
-        (<tr>
+        (<tr key={'tr0'}>
             <td>Show Minor Seconds (Major Sevenths)</td>
             <td style={{ color: getIntervalColor(1), textAlign: "center" }}>■</td>
             <td><Switch color={"primary"} checked={displayInterval[0]} onChange={e => setDisplayInterval(0, e.target.checked)} /></td>
         </tr>),
-        (<tr>
+        (<tr key={'tr1'}>
             <td>Show Major Seconds (Minor Sevenths)</td>
             <td style={{ color: getIntervalColor(2), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[1]} onChange={e => setDisplayInterval(1, e.target.checked)} /></td>
         </tr>),
-        (<tr>
+        (<tr key={'tr2'}>
             <td>Show Minor Thirds (Major Sixths)</td>
             <td style={{ color: getIntervalColor(3), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[2]} onChange={e => setDisplayInterval(2, e.target.checked)} /></td>
         </tr>),
-        (<tr>
+        (<tr key={'tr3'}>
             <td>Show Major Thirds (Minor Sixths)</td>
             <td style={{ color: getIntervalColor(4), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[3]} onChange={e => setDisplayInterval(3, e.target.checked)} /></td>
         </tr>),
-        (<tr>
+        (<tr key={'tr4'}>
             <td>Show Perfect Fourths (Perfect Fifths)</td>
             <td style={{ color: getIntervalColor(5), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[4]} onChange={e => setDisplayInterval(4, e.target.checked)} /></td>
         </tr>),
-        (<tr>
+        (<tr key={'tr5'}>
             <td>Show Tritones</td>
             <td style={{ color: getIntervalColor(6), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[5]} onChange={e => setDisplayInterval(5, e.target.checked)} /></td>
         </tr>),
-        (<tr>
+        (<tr key={'tr6'}>
             <td>Display Intervals For</td>
             <td colSpan={2}><Select
                 id="menu-dropdown"
@@ -103,12 +103,12 @@ function Wheel(props: Props) {
                 <MenuItem value={IntervalDisplayType.Playing}>Playing Notes</MenuItem>
             </Select></td>
         </tr>),
-        (<tr>
+        (<tr key={'tr7'}>
             <td>Show note names</td>
             <td style={{ textAlign: "center" }}>♯</td>
             <td><Switch checked={showNoteNames} onChange={e => setShowNoteNames(e.target.checked)} /></td>
         </tr>),
-        (<tr>
+        (<tr key={'tr8'}>
             <td>Adjacent notes are</td>
             {/* <td><FormControlLabel control={<Switch checked={isCircleOfFifths} onChange={e => setIsCircleOfFiths(e.target.checked)}/>} label={isCircleOfFifths ? "" : 1} /></td> */}
             <td colSpan={2}>  <Select
@@ -248,14 +248,14 @@ function Wheel(props: Props) {
                 };
                 const isIntervalEmphasized = emphasizedNotes.has(noteA) && emphasizedNotes.has(noteB);
                 if (isIntervalEmphasized) {
-                    emphasized.push(<Line stroke={discColor} strokeWidth={3} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />);
+                    emphasized.push(<Line key={`1-${noteA}-${noteB}`} stroke={discColor} strokeWidth={3} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />);
                 }
                 const isIntervalHighlighted = highlightedNotes.has(noteA) && highlightedNotes.has(noteB);
                 if (isIntervalHighlighted) {
-                    highlighted.push(<Line stroke={discColor} strokeWidth={5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />);
+                    highlighted.push(<Line key={`2-${noteA}-${noteB}`} stroke={discColor} strokeWidth={5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />);
                 }
-                intervalLines.push(<Line stroke={discColor} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} opacity={0.25} />);
-                intervalLines.push(<Line stroke={'rgba(0,0,0,0)'} strokeWidth={5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize} />);
+                intervalLines.push(<Line key={`3-${noteA}-${noteB}`} stroke={discColor} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} opacity={0.25} />);
+                intervalLines.push(<Line key={`4-${noteA}-${noteB}`} stroke={'rgba(0,0,0,0)'} strokeWidth={5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize} />);
             }
         }
         return {
@@ -267,7 +267,7 @@ function Wheel(props: Props) {
 
     const fullRender = React.useMemo((
     ) => {
-        const centerpoint = (<Circle radius={1} fill="grey"></Circle>);
+        const centerpoint = (<Circle radius={1} fill="white"></Circle>);
         return (
             <Group>
                 <Group opacity={isRotating ? 0.125 : 1} key={"realGroup"}>

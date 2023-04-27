@@ -46,7 +46,7 @@ function StringInstrument(props: Props) {
     // const [intervalDisplay, setIntervalDisplay] = React.useState(IntervalDisplayType.Active_No_Inverse);
 
     const settingsMenuItems = [
-        (<tr>
+        (<tr key="tr0">
             <td>Note labeling</td>
             {/* <td><FormControlLabel control={<Switch checked={isCircleOfFifths} onChange={e => setIsCircleOfFiths(e.target.checked)}/>} label={isCircleOfFifths ? "" : 1} /></td> */}
             <td colSpan={2}>  <Select
@@ -89,19 +89,19 @@ function StringInstrument(props: Props) {
         for (let fretNum = 0; fretNum < props.fretCount; fretNum++) {
             const posY = getYPos(fretNum);
             fretElements.push(
-                <Line stroke={"grey"} strokeWidth={3} points={[0, posY, props.width, posY]} />
+                <Line key={`l1-${fretNum}`} stroke={"grey"} strokeWidth={3} points={[0, posY, props.width, posY]} />
             );
             if ([3, 5, 7, 9,].includes(fretNum % 12)) {
                 fretElements.push(
-                    <Circle x={props.width / 2} y={posY + fretElemYOffset} radius={stringSpacing / 6} fill={"grey"} />
+                    <Circle key={`c1-${fretNum}`} x={props.width / 2} y={posY + fretElemYOffset} radius={stringSpacing / 6} fill={"grey"} />
                 );
             }
             if (fretNum % 12 === 0 && fretNum > 0) {
                 fretElements.push(
-                    <Circle x={3 * props.width / 10} y={posY + fretElemYOffset} radius={stringSpacing / 6} fill={"grey"} />
+                    <Circle key={`c2-${fretNum}`} x={3 * props.width / 10} y={posY + fretElemYOffset} radius={stringSpacing / 6} fill={"grey"} />
                 );
                 fretElements.push(
-                    <Circle x={7 * props.width / 10} y={posY + fretElemYOffset} radius={stringSpacing / 6} fill={"grey"} />
+                    <Circle key={`c3-${fretNum}`} x={7 * props.width / 10} y={posY + fretElemYOffset} radius={stringSpacing / 6} fill={"grey"} />
                 );
             }
             props.tuning.forEach((openNote, stringNum) => {
@@ -120,9 +120,8 @@ function StringInstrument(props: Props) {
                 };
                 if (fretNum !== props.fretCount - 1) {
                     stringElements.push(
-                        <Line stroke={"grey"} strokeWidth={1} points={[posX, posY, posX, posY + fretSpacing]} />
+                        <Line key={`l2-${fretNum}-${stringNum}`} stroke={"grey"} strokeWidth={1} points={[posX, posY, posX, posY + fretSpacing]} />
                     );
-
                 }
                 if (checkEmphasis(absoluteNote, true)) {
                     emphasized.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={"red"}></Circle>)
@@ -239,6 +238,7 @@ function StringInstrument(props: Props) {
                         const orthoVect = getOrgnogonalUnitVect(aLoc.x - bLoc.x, aLoc.y - bLoc.y);
                         intervalLines.push(
                             <Shape
+                                key={`interval${fretA}-${fretB}-${stringA}-${stringB}`}
                                 sceneFunc={(context, shape) => {
                                     context.beginPath();
                                     context.moveTo(aLoc.x, aLoc.y);
@@ -258,6 +258,7 @@ function StringInstrument(props: Props) {
                         );
                         touchListeners.push(
                             <Shape
+                                key={`touchlisten${fretA}-${fretB}-${stringA}-${stringB}`}
                                 sceneFunc={(context, shape) => {
                                     context.beginPath();
                                     context.moveTo(aLoc.x, aLoc.y);
@@ -285,7 +286,7 @@ function StringInstrument(props: Props) {
             emphasized: emphasized,
             listeners: touchListeners,
         }
-    }, [activeNotes, combinedEmphasis, emphasizedNotesOctaveGnostic, fretElemYOffset, fretSpacing, getXPos, getYPos, props.fretCount, props.height, props.tuning, stringSpacing, updateNotes]);
+    }, [combinedEmphasis, emphasizedNotesOctaveGnostic, fretElemYOffset, fretSpacing, getXPos, getYPos, props.fretCount, props.height, props.tuning, stringSpacing, updateNotes]);
 
     const fullRender = React.useMemo((
     ) => {
