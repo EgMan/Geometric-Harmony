@@ -57,7 +57,7 @@ function QuickSettingDropdown(props: Props) {
         <Circle
             x={props.x}
             y={props.y}
-            radius={15}
+            radius={16}
             opacity={0}
             onMouseEnter={() => setNewWidgetMenuOpen(true)}
             onClick={() => setIsModalOpen(true)}

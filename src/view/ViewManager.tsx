@@ -6,7 +6,7 @@ import Piano from "../toys/Piano";
 import StringInstrument from "../toys/StringInstrument";
 import QuickSettingDropdown from "./QuickSettingDropdown";
 import React from "react";
-import Widget from "./Widget";
+import Widget, { WidgetManagerActions } from "./Widget";
 import { Vector2d } from "konva/lib/types";
 
 type WidgetTracker = {
@@ -15,7 +15,7 @@ type WidgetTracker = {
     // width: number,
     // height: number,
 }
-enum WidgetType {
+export enum WidgetType {
     Piano,
     Wheel,
     Guitar,
@@ -28,6 +28,27 @@ type Props = {
 }
 
 function ViewManager(props: Props) {
+    const killWidget = (uid: String) => {
+        if (trackedWidgets.has(uid)) {
+            setTrackedWidgets(oldTrackedWidgets => {
+                const newTrackedWidgets = new Map(oldTrackedWidgets);
+                newTrackedWidgets.delete(uid);
+                return newTrackedWidgets;
+            });
+            return true;
+        }
+        return false;
+    }
+
+    const spawnWidget = (type: WidgetType,) => {
+        const newUid = genUID();
+        const newWidget = {
+            type: type,
+            initialPosition: { x: props.width / 2, y: props.height / 2 },
+        }
+        setTrackedWidgets(oldTrackedWidgets => new Map(oldTrackedWidgets).set(newUid, newWidget));
+    }
+
     const [trackedWidgets, setTrackedWidgets] = React.useState<Map<String, WidgetTracker>>(
         new Map<String, WidgetTracker>([
             ['1', {
@@ -60,9 +81,13 @@ function ViewManager(props: Props) {
 
     const widgetElements = React.useMemo(() => {
         return Array.from(trackedWidgets).map(([uid, widget]) => {
+            const actions: WidgetManagerActions = {
+                killSelf: () => killWidget(uid),
+            }
             switch (widget.type) {
                 case WidgetType.Piano:
                     return <Widget of={Piano}
+                        actions={actions}
                         key={`${uid}`}
                         initialPosition={widget.initialPosition}
                         contextMenuOffset={{ x: 0, y: -pianoHeight - 20 }}
@@ -72,6 +97,7 @@ function ViewManager(props: Props) {
                     />
                 case WidgetType.Wheel:
                     return <Widget of={Wheel}
+                        actions={actions}
                         key={`${uid}`}
                         initialPosition={widget.initialPosition}
                         contextMenuOffset={{ x: 0, y: -40 - wheelRadius }}
@@ -81,6 +107,7 @@ function ViewManager(props: Props) {
                 case WidgetType.Guitar:
                     const fretCount = 13;
                     return <Widget of={StringInstrument}
+                        actions={actions}
                         key={`${uid}`}
                         initialPosition={widget.initialPosition}
                         contextMenuOffset={{ x: wheelRadius / 2, y: - guitarHeight / fretCount }}
@@ -96,6 +123,7 @@ function ViewManager(props: Props) {
                     //         width={props.width} />
                     // </Group>
                     return <Widget of={HarmonyAnalyzer}
+                        actions={actions}
                         key={`${uid}`}
                         contextMenuOffset={{ x: (-(props.width / (2 * 8 / 3)) - 20), y: 20 }}
                         initialPosition={widget.initialPosition}
@@ -105,7 +133,7 @@ function ViewManager(props: Props) {
             }
             return <div />;
         })
-    }, [guitarHeight, pianoHeight, pianoOctaveCount, pianoWidth, props.width, trackedWidgets, wheelRadius]);
+    }, [guitarHeight, killWidget, pianoHeight, pianoOctaveCount, pianoWidth, props.width, trackedWidgets, wheelRadius]);
 
     return (
         <Stage
@@ -116,10 +144,14 @@ function ViewManager(props: Props) {
             <Layer>
                 <BackPlate width={props.width} height={props.height} />
                 {widgetElements}
-                {/* <QuickSettingDropdown x={25} y={25} icon={'+'} /> */}
+                <QuickSettingDropdown x={30} y={30} icon={'+'} />
             </Layer>
         </Stage>
     );
+}
+
+export function genUID() {
+    return `BADUID-${Math.random() * 16}`;
 }
 
 export default ViewManager;
