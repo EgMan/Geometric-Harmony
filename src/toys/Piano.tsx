@@ -6,6 +6,7 @@ import { getIntervalColor, getIntervalDistance, getNoteName } from '../utils/Uti
 import { NoteSet, useCheckNoteEmphasis, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
 import { KonvaEventObject } from 'konva/lib/Node';
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
+import { useMouseIntersection } from '../view/StageWithIntersectionProvider';
 
 const keyColor = "grey";
 const noteToXOffsetFactor = [0, 1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 6];
@@ -20,6 +21,10 @@ type Props = {
 
 function Piano(props: Props) {
     // Settings Storage
+    const removeme = useMouseIntersection();
+    React.useEffect(() => {
+        console.log(removeme.intersectedShape);
+    }, [removeme]);
 
     const [octaveCount, setOctaveCount] = React.useState(props.octaveCount);
 

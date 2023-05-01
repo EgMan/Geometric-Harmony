@@ -43,7 +43,7 @@ function MiniButton(props: Props) {
                 x={-20 + (props.iconOffset?.x ?? 0)}
                 y={-20 + (props.iconOffset?.y ?? 0)}
                 text={props.icon}
-                fill={(props.disabled ?? false) ? "grey" : "white"}
+                fill={(props.disabled ?? false) ? "grey" : "black"}
                 fontSize={16}
                 fontFamily='monospace'
                 align="center"
