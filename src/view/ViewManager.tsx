@@ -83,9 +83,10 @@ function ViewManager(props: Props) {
             }],
         ])
     );
-    React.useEffect(() => {
-        console.log("Widget tracker:", trackedWidgets);
-    }, [trackedWidgets]);
+
+    // React.useEffect(() => {
+    //     console.log("Widget tracker:", trackedWidgets);
+    // }, [trackedWidgets]);
 
     const killWidget = React.useCallback((uid: String) => {
         if (trackedWidgets.has(uid)) {
@@ -300,7 +301,7 @@ function ViewManager(props: Props) {
 }
 
 export function genUID() {
-    return `UID-${Math.random() * 10000000000000000}`;
+    return `UID-${Math.floor(Math.random() * 10000000000000000)}`;
 }
 
 export default ViewManager;
