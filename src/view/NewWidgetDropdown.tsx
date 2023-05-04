@@ -149,6 +149,7 @@ function NewWidgetDropdown(props: Props) {
             radius={16}
             opacity={0}
             onMouseEnter={() => setNewWidgetMenuOpen(true)}
+            onTouchStart={() => setNewWidgetMenuOpen(newWidgetMenuOpen => !newWidgetMenuOpen)}
             listening={!newWidgetMenuOpen}
         />
     </Group>

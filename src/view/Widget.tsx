@@ -128,7 +128,7 @@ function Widget<TElem extends React.ElementType>({ of, actions, children, initia
                     <MiniButton icon={"﹣"}
                         x={30}
                         iconOffset={{ x: 0, y: 2 }}
-                        onTouchStart={() => actions.setIsMaxamized(false)}
+                        onTouchStart={() => { actions.setIsMaxamized(false); setFullContextMenuOpen(false) }}
                         onClick={() => { actions.setIsMaxamized(false); setFullContextMenuOpen(false) }}
                         onContextMenu={() => actions.setIsMaxamized(false)}
                     />
@@ -160,8 +160,8 @@ function Widget<TElem extends React.ElementType>({ of, actions, children, initia
                         opacity={0}
                         onMouseEnter={() => { setMainButtonHover(true) }}
                         onMouseLeave={() => { setMainButtonHover(false) }}
-                        onTouchStart={isMaxamized ? (fullContextMenuOpen ? () => setIsSettingsOverlayVisible(true) : () => setFullContextMenuOpen(true)) : () => actions.setIsMaxamized(true)}
-                        onClick={isMaxamized ? (fullContextMenuOpen ? () => setIsSettingsOverlayVisible(true) : () => setFullContextMenuOpen(true)) : () => actions.setIsMaxamized(true)}
+                        onTouchStart={isMaxamized ? (fullContextMenuOpen ? () => { setIsSettingsOverlayVisible(true); setFullContextMenuOpen(false) } : () => setFullContextMenuOpen(true)) : () => actions.setIsMaxamized(true)}
+                        onClick={isMaxamized ? (fullContextMenuOpen ? () => { setIsSettingsOverlayVisible(true); setFullContextMenuOpen(false) } : () => setFullContextMenuOpen(true)) : () => actions.setIsMaxamized(true)}
                         onContextMenu={(e) => { setIsSettingsOverlayVisible(true); e.currentTarget.preventDefault() }} />
                     <animated.Text
                         {...mainButtonTextProps}

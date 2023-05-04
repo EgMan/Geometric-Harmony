@@ -135,14 +135,17 @@ function ViewManager(props: Props) {
                 const newTrackedWidgets = new Map(oldTrackedWidgets);
                 const widget = newTrackedWidgets.get(uid);
                 if (widget) {
-                    setWidgetTracker(uid, callback(widget));
+                    const newTracker = callback(widget);
+                    if (newTracker) {
+                        newTrackedWidgets.set(uid, { ...widget, ...newTracker });
+                    }
                 }
                 return newTrackedWidgets;
             });
             return true;
         }
         return false;
-    }, [setWidgetTracker, trackedWidgets]);
+    }, [trackedWidgets]);
 
     const setIsMaxamized = React.useCallback((uid: String, isMaxamized: boolean) => {
         if (trackedWidgets.has(uid)) {
@@ -173,6 +176,11 @@ function ViewManager(props: Props) {
         if (!stage) return;
         setPointerPos(stage.getPointerPosition());
     };
+    const handleTouchStart = (e: Konva.KonvaEventObject<TouchEvent>) => {
+        const stage = e.target.getStage();
+        if (!stage) return;
+        setPointerPos(stage.getPointerPosition());
+    };
 
     const onWidgetDrag = React.useCallback((uid: String, value: Vector2d) => {
         updateWidgetTracker(uid, (widget) => {
@@ -191,6 +199,7 @@ function ViewManager(props: Props) {
         });
     }, [updateWidgetTracker]);
 
+    // TODO remove all constant functions to improve performance
     const renderWidgetFromTracker = React.useCallback((uid: String, widget: WidgetTracker) => {
         const actions: WidgetManagerActions = {
             killSelf: () => killWidget(uid),
@@ -283,6 +292,7 @@ function ViewManager(props: Props) {
             height={props.height}
             onContextMenu={(e) => { e.evt.preventDefault() }}
             onMouseMove={handleMouseMove}
+            onTouchStart={handleTouchStart}
         >
             <Layer>
                 <BackPlate width={props.width} height={props.height} />
