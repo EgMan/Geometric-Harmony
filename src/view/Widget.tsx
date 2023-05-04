@@ -96,8 +96,8 @@ function Widget<TElem extends React.ElementType>({ of, actions, children, initia
             })}
             <Group
                 draggable
-                // x={contextMenuOffset?.x ?? 0}
-                // y={contextMenuOffset?.y ?? 0}
+                x={draggedPosition.x}
+                y={draggedPosition.y}
                 ref={contextMenuRef}
                 onDragMove={onDrag}
                 onDragEnd={onDragEnd}

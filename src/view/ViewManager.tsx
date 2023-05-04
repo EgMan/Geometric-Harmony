@@ -181,21 +181,13 @@ function ViewManager(props: Props) {
     }, [updateWidgetTracker]);
 
     const onWidgetDragComplete = React.useCallback((uid: String, position: Vector2d) => {
-        // const myPromise = new Promise((resolve, reject) => {
-        //     setTimeout(() => {
-        //         resolve('Promise resolved');
-        //     }, 1000);
-        // });
-
-        // myPromise.then((value) => {
-        //     console.log('promise resolved', value);
         updateWidgetTracker(uid, (widget) => {
             if (widget.isMaxamized) {
+                //todo move logic into widget
                 return { ...widget, isTrayWidget: false, initialPosition: position, draggedPosition: undefined };
             }
             return null;
         });
-        // });
     }, [updateWidgetTracker]);
 
     const renderWidgetFromTracker = React.useCallback((uid: String, widget: WidgetTracker) => {

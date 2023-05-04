@@ -3,7 +3,6 @@ import { animated, useSpring } from '@react-spring/konva';
 import { Circle, Group, Text } from 'react-konva';
 import { WidgetTrackerActions, WidgetType, widgetNameByType } from './ViewManager';
 import { Vector2d } from 'konva/lib/types';
-import Konva from 'konva';
 
 export enum QuickSettingType {
     SideBarDropdown,
