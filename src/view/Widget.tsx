@@ -1,5 +1,5 @@
 import React from "react";
-import { Group, Rect } from "react-konva";
+import { Circle, Group, Rect } from "react-konva";
 import { animated, useSpring, useTransition } from '@react-spring/konva';
 import { Vector2d } from "konva/lib/types";
 import MiniButton from "./MiniButton";
@@ -38,7 +38,7 @@ function Widget<TElem extends React.ElementType>({ of, actions, children, initia
 
     const [isSettingsOverlayVisible, setIsSettingsOverlayVisible] = React.useState(false);
 
-    const mainGroupTransition = useTransition(true, {
+    const mainGroupTransition = useTransition(isMaxamized, {
         from: { opacity: 0 },
         enter: { opacity: 1 },
         leave: { opacity: 0 },
@@ -50,6 +50,15 @@ function Widget<TElem extends React.ElementType>({ of, actions, children, initia
 
     const contextMenuRef = React.useRef<Konva.Group>(null);
     const widgetRef = React.useRef<Konva.Group>(null);
+
+    const [mainButtonHover, setMainButtonHover] = React.useState(false);
+    const mainButtonProps = useSpring({ opacity: (!isMaxamized && 0.3) || (mainButtonHover && 0.1) || 0, radius: !isMaxamized || mainButtonHover ? 15 : 10, fill: isMaxamized ? "white" : "black" });
+    const mainButtonTextProps = useSpring(
+        {
+            text: isMaxamized ? (fullContextMenuOpen ? "⚙" : "…") : "﹣",
+            y: (!isMaxamized && -18) || (fullContextMenuOpen && -19) || -22,
+        }
+    );
 
     const fromWidget = {
         isOverlayVisible: isSettingsOverlayVisible,
@@ -68,15 +77,23 @@ function Widget<TElem extends React.ElementType>({ of, actions, children, initia
 
     return (
         <Group x={(initialPosition?.x ?? 0)} y={(initialPosition?.y ?? 0)} ref={widgetRef}>
-            {mainGroupTransition(
-                (transitionProps, item, t) =>
-                    isMaxamized && (
-                        /* @ts-ignore: https://github.com/pmndrs/react-spring/issues/1515 */
-                        <animated.Group x={draggedPosition.x - (contextMenuOffset?.x ?? 0)} y={draggedPosition.y - (contextMenuOffset?.y ?? 0)} {...transitionProps}>
-                            <Component {...otherProps} fromWidget={fromWidget}>{children}</Component>
-                        </animated.Group>
-                    )
-            )}
+            {mainGroupTransition((transitionProps, item) => {
+                return (
+                    /* @ts-ignore: https://github.com/pmndrs/react-spring/issues/1515 */
+                    < animated.Group
+                        x={draggedPosition.x - (contextMenuOffset?.x ?? 0)}
+                        y={draggedPosition.y - (contextMenuOffset?.y ?? 0)}
+                        opacity={transitionProps.opacity}
+                    >
+                        {item && (
+                            <Component {...otherProps} fromWidget={fromWidget}>
+                                {children}
+                            </Component>
+                        )
+                        }
+                    </animated.Group>
+                );
+            })}
             <Group
                 draggable
                 // x={contextMenuOffset?.x ?? 0}
@@ -106,6 +123,7 @@ function Widget<TElem extends React.ElementType>({ of, actions, children, initia
                     />
                     <MiniButton icon={"﹣"}
                         x={30}
+                        iconOffset={{ x: 0, y: 2 }}
                         onTouchStart={() => actions.setIsMaxamized(false)}
                         onClick={() => { actions.setIsMaxamized(false); setFullContextMenuOpen(false) }}
                         onContextMenu={() => actions.setIsMaxamized(false)}
@@ -126,15 +144,35 @@ function Widget<TElem extends React.ElementType>({ of, actions, children, initia
                         disabled={true}
                     />
                 </animated.Group>
-                <MiniButton
-                    icon={isMaxamized ? (fullContextMenuOpen ? "⚙" : "…") : "﹣"}
-                    iconOffset={(!isMaxamized || fullContextMenuOpen) ? { x: 0, y: 0 } : { x: 0, y: -3 }}
-                    onTouchStart={isMaxamized ? (fullContextMenuOpen ? () => setIsSettingsOverlayVisible(true) : () => setFullContextMenuOpen(true)) : () => actions.setIsMaxamized(true)}
-                    onClick={isMaxamized ? (fullContextMenuOpen ? () => setIsSettingsOverlayVisible(true) : () => setFullContextMenuOpen(true)) : () => actions.setIsMaxamized(true)}
-                    onContextMenu={() => setIsSettingsOverlayVisible(true)}
-                />
+                <Group>
+                    {/* @ts-ignore: https://github.com/pmndrs/react-spring/issues/1515 */}
+                    <animated.Circle {...mainButtonProps} ></animated.Circle>
+                    <Circle
+                        radius={16}
+                        opacity={0}
+                        onMouseEnter={() => { setMainButtonHover(true) }}
+                        onMouseLeave={() => { setMainButtonHover(false) }}
+                        onTouchStart={isMaxamized ? (fullContextMenuOpen ? () => setIsSettingsOverlayVisible(true) : () => setFullContextMenuOpen(true)) : () => actions.setIsMaxamized(true)}
+                        onClick={isMaxamized ? (fullContextMenuOpen ? () => setIsSettingsOverlayVisible(true) : () => setFullContextMenuOpen(true)) : () => actions.setIsMaxamized(true)}
+                        onContextMenu={(e) => { setIsSettingsOverlayVisible(true); e.currentTarget.preventDefault() }} />
+                    <animated.Text
+                        {...mainButtonTextProps}
+                        bold={true}
+                        listening={false}
+                        opacity={1}
+                        width={40}
+                        height={40}
+                        // x={-20 + (props.iconOffset?.x ?? 0)}
+                        // y={-20 + (props.iconOffset?.y ?? 0)}
+                        x={-20}
+                        fill={"white"}
+                        fontSize={16}
+                        fontFamily='monospace'
+                        align="center"
+                        verticalAlign="middle" />
+                </Group>
             </Group>
-        </Group>
+        </Group >
     )
 }
 

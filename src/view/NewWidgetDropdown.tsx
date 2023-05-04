@@ -35,7 +35,7 @@ function NewWidgetDropdown(props: Props) {
     const textProps = useSpring({ opacity: newWidgetMenuOpen ? 1 : 0 });
 
     const startPosition = 75;
-    const rowSpacing = 60;
+    const rowSpacing = 65;
 
     React.useEffect(() => {
         if (newWidgetMenuOpen) {
@@ -79,7 +79,7 @@ function NewWidgetDropdown(props: Props) {
                         width={props.width}
                         height={40}
                         x={0}
-                        y={startPosition + (rowSpacing * (index))}
+                        y={startPosition + (rowSpacing * (index)) + 5}
                         text={widgetName}
                         fill={"black"}
                         fontSize={16}
@@ -100,23 +100,9 @@ function NewWidgetDropdown(props: Props) {
         }
     }, [props.pointerPosition, props.width]);
 
-    const dropdownRef = React.useRef<Konva.Group>(null);
-    React.useEffect(() => {
-        if (dropdownRef.current) {
-            // dropdownRef.current.moveToBottom();
-            // dropdownRef.current.parent?.moveToTop();
-
-            // dropdownRef.current.setZIndex(ZIndices.newWidgetDropdown);
-            // console.log("dropdown", dropdownRef.current.zIndex());
-
-            // dropdownRef.current.zIndex(ZIndices.contextMenu);
-            // console.log("dropdown", contextMenuRef.current);
-        }
-    }, [props.pointerPosition]);
-
     return <Group>
         {/* @ts-ignore: https://github.com/pmndrs/react-spring/issues/1515 */}
-        <Group ref={dropdownRef}>
+        <Group>
             <animated.Rect
                 {...newWidgetMenuProps}
                 cornerRadius={[0, 9, 9, 0]}
