@@ -5,6 +5,7 @@ import { Vector2d } from "konva/lib/types";
 import MiniButton from "./MiniButton";
 import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
+import { addVectors, useShadowVector } from "../utils/Utils";
 
 export type WidgetComponentProps = {
     fromWidget: {
@@ -42,8 +43,9 @@ function Widget<TElem extends React.ElementType>({ of, actions, children, initia
         from: { opacity: 0 },
         enter: { opacity: 1 },
         leave: { opacity: 0 },
-        config: { duration: 750 }
+        // config: { duration: 750 }
     });
+    const [shadowVect] = useShadowVector(addVectors(initialPosition, draggedPosition), { x: window.innerWidth / 2, y: 0 }, 7);
 
     const [fullContextMenuOpen, setFullContextMenuOpen] = React.useState(false);
     const fullContextMenuProps = useSpring({ opacity: fullContextMenuOpen ? 1 : 0, scaleX: fullContextMenuOpen ? 1 : 0.8, scaleY: fullContextMenuOpen ? 1 : 0.8 });
@@ -55,8 +57,9 @@ function Widget<TElem extends React.ElementType>({ of, actions, children, initia
     const mainButtonProps = useSpring({ opacity: (!isMaxamized && 0.3) || (mainButtonHover && 0.1) || 0, radius: !isMaxamized || mainButtonHover ? 15 : 10, fill: isMaxamized ? "white" : "black" });
     const mainButtonTextProps = useSpring(
         {
-            text: isMaxamized ? (fullContextMenuOpen ? "⚙" : "…") : "﹣",
-            y: (!isMaxamized && -18) || (fullContextMenuOpen && -19) || -22,
+            text: isMaxamized ? (fullContextMenuOpen ? "⚙" : "…") : "•",
+            y: (!isMaxamized && -19) || (fullContextMenuOpen && -19) || -22,
+            fill: isMaxamized ? "white" : "grey",
         }
     );
 
@@ -106,6 +109,7 @@ function Widget<TElem extends React.ElementType>({ of, actions, children, initia
                 {/* @ts-ignore: https://github.com/pmndrs/react-spring/issues/1515 */}
                 <animated.Group {...fullContextMenuProps} listening={fullContextMenuOpen}>
                     <Rect cornerRadius={15} fill="rgba(255,255,255,0.1)" width={90} height={60} x={-45} y={-45} />
+                    <Rect cornerRadius={15} fill="rgba(255,255,255,0)" width={110} height={80} x={-55} y={-55} />
                     <MiniButton icon={"?"}
                         y={-30}
                         onTouchStart={() => setIsSettingsOverlayVisible(true)}
@@ -146,7 +150,11 @@ function Widget<TElem extends React.ElementType>({ of, actions, children, initia
                 </animated.Group>
                 <Group>
                     {/* @ts-ignore: https://github.com/pmndrs/react-spring/issues/1515 */}
-                    <animated.Circle {...mainButtonProps} ></animated.Circle>
+                    <animated.Circle {...mainButtonProps}
+                        shadowBlur={11}
+                        shadowColor={"black"}
+                        shadowOffset={shadowVect}
+                    ></animated.Circle>
                     <Circle
                         radius={16}
                         opacity={0}
@@ -165,7 +173,6 @@ function Widget<TElem extends React.ElementType>({ of, actions, children, initia
                         // x={-20 + (props.iconOffset?.x ?? 0)}
                         // y={-20 + (props.iconOffset?.y ?? 0)}
                         x={-20}
-                        fill={"white"}
                         fontSize={16}
                         fontFamily='monospace'
                         align="center"
