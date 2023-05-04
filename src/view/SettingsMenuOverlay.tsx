@@ -15,7 +15,9 @@ type Props = {
 
 function SettingsMenuOverlay(props: Props) {
     return (
-        <Group x={-props.fromWidget.containerPosition.x} y={-props.fromWidget.containerPosition.y}>
+        <Group
+            x={-(props.fromWidget.position.x + props.fromWidget.containerPosition.x)}
+            y={-(props.fromWidget.position.y + props.fromWidget.containerPosition.y)}>
             <ModalOverlay
                 isVisible={props.fromWidget.isOverlayVisible}
                 setIsVisible={props.fromWidget.setIsOverlayVisible}
@@ -29,7 +31,7 @@ function SettingsMenuOverlay(props: Props) {
                     </div>
                 }
                 canvasContent={
-                    props.fromWidget.isOverlayVisible ? (<Group x={props.fromWidget.position.x} y={props.fromWidget.position.y}>
+                    props.fromWidget.isOverlayVisible ? (<Group x={props.fromWidget.position.x + props.fromWidget.containerPosition.x} y={props.fromWidget.position.y + props.fromWidget.containerPosition.y}>
                         {props.children}
                     </Group>) : undefined
                 }

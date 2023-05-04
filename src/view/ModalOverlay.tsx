@@ -1,7 +1,7 @@
 import React from "react";
 import { Layer, Stage } from "react-konva";
 import { Html } from "react-konva-utils";
-import { ThemeProvider, createTheme, css } from "@mui/material";
+import { ThemeProvider, createTheme } from "@mui/material";
 import { green, purple } from "@mui/material/colors";
 import { useSpring as useSpring_web, animated as animated_web } from "@react-spring/web";
 
