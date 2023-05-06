@@ -9,6 +9,7 @@ import React from "react";
 import Widget, { WidgetManagerActions } from "./Widget";
 import { Vector2d } from "konva/lib/types";
 import Konva from "konva";
+import Tonnetz from "../toys/Tonnetz";
 
 type WidgetTracker = {
     type: WidgetType,
@@ -33,6 +34,7 @@ export enum WidgetType {
     Piano,
     Guitar,
     Analyzer,
+    Tonnetz,
 }
 
 export const widgetNameByType = (type: WidgetType) => {
@@ -45,6 +47,8 @@ export const widgetNameByType = (type: WidgetType) => {
             return "Guitar";
         case WidgetType.Analyzer:
             return "Analyzer";
+        case WidgetType.Tonnetz:
+            return "Tonnetz";
     }
 }
 
@@ -266,6 +270,21 @@ function ViewManager(props: Props) {
                     setDragComplete={setDragComplete}
                     subdivisionCount={12}
                     width={props.width / (8 / 3)}
+                />
+            case WidgetType.Tonnetz:
+                return <Widget of={Tonnetz}
+                    actions={actions}
+                    key={`${uid}`}
+                    isMaxamized={widget.isMaxamized ?? true}
+                    initialPosition={widget.initialPosition}
+                    draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
+                    setDraggedPosition={setDraggedPosition}
+                    setDragComplete={setDragComplete}
+                    contextMenuOffset={{ x: 0, y: -40 - wheelRadius }}
+                    // subdivisionCount={12}
+                    width={wheelRadius * 2}
+                    height={wheelRadius * 2}
+                // isCircleOfFifths={false} 
                 />
         }
     }, [guitarHeight, killWidget, onWidgetDrag, onWidgetDragComplete, pianoHeight, pianoOctaveCount, pianoWidth, props.width, setIsMaxamized, wheelRadius])
