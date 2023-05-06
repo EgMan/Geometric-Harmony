@@ -10,6 +10,7 @@ import Widget from "./Widget";
 import { Vector2d } from "konva/lib/types";
 import Konva from "konva";
 import { Shape } from "konva/lib/Shape";
+import Tonnetz from "../toys/Tonnetz";
 
 export type WidgetTracker = {
     type: WidgetType,
@@ -35,6 +36,7 @@ export enum WidgetType {
     Piano,
     Guitar,
     Analyzer,
+    Tonnetz,
 }
 
 export const widgetNameByType = (type: WidgetType) => {
@@ -47,6 +49,8 @@ export const widgetNameByType = (type: WidgetType) => {
             return "Guitar";
         case WidgetType.Analyzer:
             return "Analyzer";
+        case WidgetType.Tonnetz:
+            return "Tonnetz";
     }
 }
 
@@ -79,11 +83,15 @@ function ViewManager(props: Props) {
                 width: props.width,
                 height: pianoHeight,
             }],
+            // ['3', {
+            //     type: WidgetType.Guitar,
+            //     initialPosition: { x: (4 * props.width / 5) - 50 + (wheelRadius / 2), y: (props.height / 8) - (guitarHeight / 13) },
+            // }],
             ['3', {
-                type: WidgetType.Guitar,
-                initialPosition: { x: (4 * props.width / 5) - 50 + (wheelRadius / 2), y: (props.height / 8) - (guitarHeight / 13) },
+                type: WidgetType.Tonnetz,
+                initialPosition: { x: 3 * props.width / 4, y: (props.height / 2) - wheelRadius - 40 },
                 width: wheelRadius,
-                height: guitarHeight,
+                height: wheelRadius,
             }],
             ['4', {
                 type: WidgetType.Wheel,
@@ -312,6 +320,23 @@ function ViewManager(props: Props) {
                     setDragComplete={setDragComplete(uid)}
                     subdivisionCount={12}
                     width={props.width / (8 / 3)}
+                />
+            case WidgetType.Tonnetz:
+                return <Widget of={Tonnetz}
+                    uid={uid}
+                    actions={trackerActions}
+                    tracker={widget}
+                    key={`${uid}`}
+                    isMaxamized={widget.isMaxamized ?? true}
+                    initialPosition={widget.initialPosition}
+                    draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
+                    setDraggedPosition={setDraggedPosition(uid)}
+                    setDragComplete={setDragComplete(uid)}
+                    contextMenuOffset={{ x: 0, y: -40 - wheelRadius }}
+                    // subdivisionCount={12}
+                    width={wheelRadius * 2}
+                    height={wheelRadius * 2}
+                // isCircleOfFifths={false} 
                 />
         }
     }, [guitarHeight, pianoHeight, pianoOctaveCount, pianoWidth, props.width, setDragComplete, setDraggedPosition, trackerActions, wheelRadius])

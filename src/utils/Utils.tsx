@@ -54,7 +54,7 @@ export const getIntervalColor = (distance: number) => {
         case 1:
             return "violet"
         case 2:
-            return "rgb(112, 0, 195)"
+            return "rgb(100, 61, 255)"
         case 3:
             return "blue"
         case 4:
