@@ -77,9 +77,13 @@ function ViewManager(props: Props) {
                 type: WidgetType.Piano,
                 initialPosition: { x: props.width / 2, y: props.height - pianoHeight - 21 },
             }],
+            // ['3', {
+            //     type: WidgetType.Guitar,
+            //     initialPosition: { x: (4 * props.width / 5) - 50 + (wheelRadius / 2), y: (props.height / 8) - (guitarHeight / 13) },
+            // }],
             ['3', {
-                type: WidgetType.Guitar,
-                initialPosition: { x: (4 * props.width / 5) - 50 + (wheelRadius / 2), y: (props.height / 8) - (guitarHeight / 13) },
+                type: WidgetType.Tonnetz,
+                initialPosition: { x: 3 * props.width / 4, y: (props.height / 2) - wheelRadius - 40 },
             }],
             ['4', {
                 type: WidgetType.Wheel,
