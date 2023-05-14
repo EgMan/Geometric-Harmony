@@ -224,7 +224,7 @@ function useKeypressPlayer() {
             case "Shift":
                 if (singleNoteShift != null) {
                     const shiftNoteBack = normalizeToSingleOctave(getNoteFromScaleDegree(singleNoteShift.scaleDegree));
-                    if (!singleNoteShift.isDiatonic && !activeNotes.has(shiftNoteBack - singleNoteShift.shiftAmount)) {
+                    if (!singleNoteShift.isDiatonic && !activeNotes.has(normalizeToSingleOctave(shiftNoteBack - singleNoteShift.shiftAmount))) {
                         modulateActiveNotes(-singleNoteShift.shiftAmount, new Set([shiftNoteBack]));
                     }
                     setSingleNoteShift(null);

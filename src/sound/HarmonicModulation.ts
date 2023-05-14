@@ -3,7 +3,7 @@ import { HarmonicShape } from "../utils/KnownHarmonicShapes";
 import { NoteSet, normalizeToSingleOctave, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from "./NoteProvider";
 
 function getModulatedNotes(notes: Set<number>, semitones: number) {
-    return Array.from(notes).map(note => (note + semitones) % 12);//Do I want to do the modulus here?
+    return Array.from(notes).map(note => (note + semitones + 12) % 12);//Do I want to do the modulus here?
 }
 
 export function useModulateActiveNotes() {

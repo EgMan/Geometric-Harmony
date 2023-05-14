@@ -337,7 +337,7 @@ export function useGetNoteFromActiveShapeScaleDegree() {
     }, [activeNotes.size, getActiveShapeScaleDegree]);
 
     return React.useCallback((scaleDeg: number): number => {
-        // if (scaleDeg <= 0) scaleDeg += scaleDegToNote.length;
+        if (scaleDeg <= 0) scaleDeg += scaleDegToNote.length;
         const noteSingleOctave = scaleDegToNote[(scaleDeg - 1) % scaleDegToNote.length];
         var octaveShift = Math.floor((scaleDeg - 1) / scaleDegToNote.length);
         if (noteSingleOctave < homeNote) octaveShift++;
