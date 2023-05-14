@@ -9,6 +9,7 @@ import React from "react";
 import Widget, { WidgetManagerActions } from "./Widget";
 import { Vector2d } from "konva/lib/types";
 import Konva from "konva";
+import { Shape } from "konva/lib/Shape";
 
 type WidgetTracker = {
     type: WidgetType,
@@ -182,6 +183,31 @@ function ViewManager(props: Props) {
         setPointerPos(stage.getPointerPosition());
     };
 
+    const [shapeHoveredOnTouchDevice, setShapeHoveredOnTouchDevice] = React.useState<Shape | null>(null);
+    const handleTouchMove = (e: Konva.KonvaEventObject<TouchEvent>) => {
+        const stage = e.target.getStage();
+
+        if (!stage) return;
+        const position = stage.getPointerPosition();
+        if (!position) return;
+
+        const shape = stage.getIntersection(position);
+
+        shapeHoveredOnTouchDevice?.fire('mouseout');
+        shapeHoveredOnTouchDevice?.fire('mouseleave');
+
+        setShapeHoveredOnTouchDevice(shape);
+
+        shape?.fire('mouseover');
+        shape?.fire('mouseenter');
+    };
+    const handleTouchEnd = (e: Konva.KonvaEventObject<TouchEvent>) => {
+        shapeHoveredOnTouchDevice?.fire('mouseout');
+        shapeHoveredOnTouchDevice?.fire('mouseleave');
+
+        setShapeHoveredOnTouchDevice(null);
+    };
+
     const onWidgetDrag = React.useCallback((uid: String, value: Vector2d) => {
         updateWidgetTracker(uid, (widget) => {
             setPointerPos({ x: value.x + widget.initialPosition.x, y: value.y + widget.initialPosition.y });
@@ -293,6 +319,8 @@ function ViewManager(props: Props) {
             onContextMenu={(e) => { e.evt.preventDefault() }}
             onMouseMove={handleMouseMove}
             onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
         >
             <Layer>
                 <BackPlate width={props.width} height={props.height} />
