@@ -6,19 +6,20 @@ import Piano from "../toys/Piano";
 import StringInstrument from "../toys/StringInstrument";
 import NewWidgetDropdown from "./NewWidgetDropdown";
 import React from "react";
-import Widget, { WidgetManagerActions } from "./Widget";
+import Widget from "./Widget";
 import { Vector2d } from "konva/lib/types";
 import Konva from "konva";
 import { Shape } from "konva/lib/Shape";
 
-type WidgetTracker = {
+export type WidgetTracker = {
     type: WidgetType,
     initialPosition: Vector2d,
     draggedPosition?: Vector2d,
     isMaxamized?: boolean,
     isTrayWidget?: boolean,
-    // width: number,
-    // height: number,
+    // dimentions: Dimentions,
+    width: number,
+    height: number,
 }
 
 export type WidgetTrackerActions = {
@@ -69,18 +70,26 @@ function ViewManager(props: Props) {
             ['1', {
                 type: WidgetType.Analyzer,
                 initialPosition: { x: (props.width / 2) + (-(props.width / (2 * 8 / 3)) - 20), y: 30 },
+                width: props.width / (8 / 3),
+                height: 0,
             }],
             ['2', {
                 type: WidgetType.Piano,
                 initialPosition: { x: props.width / 2, y: props.height - pianoHeight - 21 },
+                width: pianoWidth,
+                height: pianoHeight,
             }],
             ['3', {
                 type: WidgetType.Guitar,
                 initialPosition: { x: (4 * props.width / 5) - 50 + (wheelRadius / 2), y: (props.height / 8) - (guitarHeight / 13) },
+                width: wheelRadius,
+                height: guitarHeight,
             }],
             ['4', {
                 type: WidgetType.Wheel,
                 initialPosition: { x: props.width / 4, y: (props.height / 2) - wheelRadius - 40 },
+                width: wheelRadius,
+                height: wheelRadius,
             }],
         ])
     );
@@ -108,6 +117,8 @@ function ViewManager(props: Props) {
             initialPosition: position ?? { x: props.width / 2, y: props.height / 2 },
             isMaxamized: false,
             isTrayWidget: true,
+            width: 50,//TODO CHANGE THIS
+            height: 50,
         }
         setTrackedWidgets(oldTrackedWidgets => new Map(oldTrackedWidgets).set(newUid, newWidget));
         return newUid;
@@ -163,13 +174,13 @@ function ViewManager(props: Props) {
         return false;
     }, [trackedWidgets])
 
-    const trackerActions: WidgetTrackerActions = {
+    const trackerActions: WidgetTrackerActions = React.useMemo(() => ({
         killWidget: killWidget,
         spawnWidget: spawnWidget,
         getWidgetTracker: getWidgetTracker,
         setWidgetTracker: setWidgetTracker,
         updateWidgetTracker: updateWidgetTracker,
-    }
+    }), [getWidgetTracker, killWidget, setWidgetTracker, spawnWidget, updateWidgetTracker]);
 
     const [pointerPos, setPointerPos] = React.useState<Vector2d | null>(null);
     const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
@@ -226,40 +237,43 @@ function ViewManager(props: Props) {
     }, [updateWidgetTracker]);
 
     // TODO remove all constant functions to improve performance
+
+    const setDraggedPosition = React.useCallback((uid: String) => {
+        return (val: Vector2d) => { onWidgetDrag(uid, val) }
+    }, [onWidgetDrag])
+
+    const setDragComplete = React.useCallback((uid: String) => {
+        return (val: Vector2d) => { onWidgetDragComplete(uid, val) }
+    }, [onWidgetDragComplete])
+
     const renderWidgetFromTracker = React.useCallback((uid: String, widget: WidgetTracker) => {
-        const actions: WidgetManagerActions = {
-            killSelf: () => killWidget(uid),
-            setIsMaxamized: (isMaxamized: boolean) => setIsMaxamized(uid, isMaxamized),
-        }
-        const setDraggedPosition = (val: Vector2d) => { onWidgetDrag(uid, val) };
-        const setDragComplete = (val: Vector2d) => {
-            onWidgetDragComplete(uid, val);
-        };
         switch (widget.type) {
             case WidgetType.Piano:
                 return <Widget of={Piano}
-                    actions={actions}
+                    uid={uid}
+                    actions={trackerActions}
+                    tracker={widget}
                     key={`${uid}`}
                     isMaxamized={widget.isMaxamized ?? true}
                     initialPosition={widget.initialPosition}
                     draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
-                    // setDraggedPosition={setPointerPos}
-                    setDraggedPosition={setDraggedPosition}
-                    setDragComplete={setDragComplete}
+                    setDraggedPosition={setDraggedPosition(uid)}
+                    setDragComplete={setDragComplete(uid)}
                     contextMenuOffset={{ x: 0, y: -pianoHeight - 20 }}
-                    height={pianoHeight}
-                    width={pianoWidth}
-                    octaveCount={pianoOctaveCount}
-                />
+                    width={widget.width}
+                    height={widget.height}
+                    octaveCount={pianoOctaveCount} />
             case WidgetType.Wheel:
                 return <Widget of={Wheel}
-                    actions={actions}
+                    uid={uid}
+                    actions={trackerActions}
+                    tracker={widget}
                     key={`${uid}`}
                     isMaxamized={widget.isMaxamized ?? true}
                     initialPosition={widget.initialPosition}
                     draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
-                    setDraggedPosition={setDraggedPosition}
-                    setDragComplete={setDragComplete}
+                    setDraggedPosition={setDraggedPosition(uid)}
+                    setDragComplete={setDragComplete(uid)}
                     contextMenuOffset={{ x: 0, y: -40 - wheelRadius }}
                     subdivisionCount={12}
                     radius={wheelRadius}
@@ -267,13 +281,15 @@ function ViewManager(props: Props) {
             case WidgetType.Guitar:
                 const fretCount = 13;
                 return <Widget of={StringInstrument}
-                    actions={actions}
+                    uid={uid}
+                    actions={trackerActions}
+                    tracker={widget}
                     key={`${uid}`}
                     isMaxamized={widget.isMaxamized ?? true}
                     initialPosition={widget.initialPosition}
                     draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
-                    setDraggedPosition={setDraggedPosition}
-                    setDragComplete={setDragComplete}
+                    setDraggedPosition={setDraggedPosition(uid)}
+                    setDragComplete={setDragComplete(uid)}
                     contextMenuOffset={{ x: wheelRadius / 2, y: - guitarHeight / fretCount }}
                     height={guitarHeight}
                     width={wheelRadius}
@@ -282,19 +298,21 @@ function ViewManager(props: Props) {
                 />
             case WidgetType.Analyzer:
                 return <Widget of={HarmonyAnalyzer}
-                    actions={actions}
+                    uid={uid}
+                    actions={trackerActions}
+                    tracker={widget}
                     key={`${uid}`}
                     isMaxamized={widget.isMaxamized ?? true}
                     contextMenuOffset={{ x: (-(props.width / (2 * 8 / 3)) - 20), y: 20 }}
                     initialPosition={widget.initialPosition}
                     draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
-                    setDraggedPosition={setDraggedPosition}
-                    setDragComplete={setDragComplete}
+                    setDraggedPosition={setDraggedPosition(uid)}
+                    setDragComplete={setDragComplete(uid)}
                     subdivisionCount={12}
                     width={props.width / (8 / 3)}
                 />
         }
-    }, [guitarHeight, killWidget, onWidgetDrag, onWidgetDragComplete, pianoHeight, pianoOctaveCount, pianoWidth, props.width, setIsMaxamized, wheelRadius])
+    }, [guitarHeight, pianoHeight, pianoOctaveCount, props.width, setDragComplete, setDraggedPosition, trackerActions, wheelRadius])
 
     const widgetElements = React.useMemo(() => {
         const widgetArray = Array.from(trackedWidgets);
