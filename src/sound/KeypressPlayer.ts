@@ -27,45 +27,45 @@ const keyToNoteNumber = new Map<string, number>(
 );
 
 const keyToScaleDegreeLow = new Map<string, number>([
-        [' ', 0],
-        ['z', 0],
-        ['x', 1],
-        ['c', 2],
-        ['v', 3],
-        ['b', 4],
-        ['n', 5],
-        ['m', 6],
-        [',', 7],
-        ['.', 8],
-        ['/', 9],
+        [' ', 1],
+        ['z', 1],
+        ['x', 2],
+        ['c', 3],
+        ['v', 4],
+        ['b', 5],
+        ['n', 6],
+        ['m', 7],
+        [',', 8],
+        ['.', 9],
+        ['/', 10],
 ]);
 const keyToScaleDegreeMid = new Map<string, number>([
-        ['a', 0],
-        ['s', 1],
-        ['d', 2],
-        ['f', 3],
-        ['g', 4],
-        ['h', 5],
-        ['j', 6],
-        ['k', 7],
-        ['l', 8],
-        [';', 9],
-        ['\'', 10],
+        ['a', 1],
+        ['s', 2],
+        ['d', 3],
+        ['f', 4],
+        ['g', 5],
+        ['h', 6],
+        ['j', 7],
+        ['k', 8],
+        ['l', 9],
+        [';', 10],
+        ['\'', 11],
 ]);
 const keyToScaleDegreeHigh = new Map<string, number>([
-        ['q', 0],
-        ['w', 1],
-        ['e', 2],
-        ['r', 3],
-        ['t', 4],
-        ['y', 5],
-        ['u', 6],
-        ['i', 7],
-        ['o', 8],
-        ['p', 9],
-        ['[', 10],
-        [']', 11],
-        ['\\', 12],
+        ['q', 1],
+        ['w', 2],
+        ['e', 3],
+        ['r', 4],
+        ['t', 5],
+        ['y', 6],
+        ['u', 7],
+        ['i', 8],
+        ['o', 9],
+        ['p', 10],
+        ['[', 11],
+        [']', 12],
+        ['\\', 13],
 ]);
 const keyToScaleDegree = new Map<string, number>(
     [
@@ -103,39 +103,71 @@ function useKeypressPlayer() {
     const [mostRecentlyPressedNumberKey, setMostRecentlyPressedNumberKey] = React.useState("");
     const [mostRecentlyPlayedScaleDegree, setMostRecentlyPlayedScaleDegree] = React.useState<number | null>(null);
     const [singleNoteShift, setSingleNoteShift] = React.useState<SingleNoteShift | null>(null);
-    const mostRecentlyPlayedNote = mostRecentlyPlayedScaleDegree && normalizeToSingleOctave(getNoteFromScaleDegree(mostRecentlyPlayedScaleDegree-1));//todo figure out why -1
+    const mostRecentlyPlayedNote = mostRecentlyPlayedScaleDegree && normalizeToSingleOctave(getNoteFromScaleDegree(mostRecentlyPlayedScaleDegree));
+    const [isPlayingAnyNote, setIsPlayingAnyNote] = React.useState(false);
 
-    useExecuteOnPlayingNoteStateChange((notesTurnedOn, _notesTurnedOff) => {
+    useExecuteOnPlayingNoteStateChange((notesTurnedOn, _notesTurnedOff, playingNotes) => {
         if (notesTurnedOn.length === 1)
         {
             setMostRecentlyPlayedScaleDegree(getActiveShapeScaleDegree(normalizeToSingleOctave(notesTurnedOn[0])));
         }
+        setIsPlayingAnyNote(playingNotes.length > 0);
     });
     const handleKeyDownsWithoutRepeats = React.useCallback((key: string) => {
         switch (key) {
             case "Control":
+            case "Alt":
             case "Shift":
-                if (singleNoteShift == null && mostRecentlyPlayedNote != null) {
-                    const shiftAmount = key === "Shift" ? 1 : -1;
-                    if (activeNotes.has(normalizeToSingleOctave(mostRecentlyPlayedNote + shiftAmount))) {
-                        setSingleNoteShift({
-                            scaleDegree: mostRecentlyPlayedScaleDegree ?? 0,
-                            shiftAmount: shiftAmount,
-                            isDiatonic: true,
-                        });
-                    }
-                    else {
-                        modulateActiveNotes(shiftAmount, new Set([mostRecentlyPlayedNote]));
-                        setSingleNoteShift({
-                            scaleDegree: mostRecentlyPlayedScaleDegree ?? 0,
-                            shiftAmount: shiftAmount,
-                            isDiatonic: false,
-                        });
+                if (isPlayingAnyNote)
+                {
+                    if (singleNoteShift == null && mostRecentlyPlayedNote != null) {
+                        const shiftAmount = key === "Shift" ? 1 : -1;
+                        if (activeNotes.has(normalizeToSingleOctave(mostRecentlyPlayedNote + shiftAmount))) {
+                            setSingleNoteShift({
+                                scaleDegree: mostRecentlyPlayedScaleDegree ?? 0,
+                                shiftAmount: shiftAmount,
+                                isDiatonic: true,
+                            });
+                        }
+                        else {
+                            modulateActiveNotes(shiftAmount, new Set([mostRecentlyPlayedNote]));
+                            setSingleNoteShift({
+                                scaleDegree: mostRecentlyPlayedScaleDegree ?? 0,
+                                shiftAmount: shiftAmount,
+                                isDiatonic: false,
+                            });
+                        }
                     }
                 }
                 break;
         }
-    }, [activeNotes, modulateActiveNotes, mostRecentlyPlayedNote, mostRecentlyPlayedScaleDegree, singleNoteShift]);
+        const scaleDegree = keyToScaleDegree.get(key.toLocaleLowerCase());
+        if (scaleDegree !== undefined && !isPlayingAnyNote)
+        {
+            // If there is no note shift already active and a note shift key is being pressed
+            if (singleNoteShift == null && (keysPressed.has("shift") || keysPressed.has("control") || keysPressed.has("alt")))
+            {
+                const noteToShift = normalizeToSingleOctave(getNoteFromScaleDegree(scaleDegree));
+                // const scaleDegreeToShift = getActiveShapeScaleDegree(noteToShift);
+                const shiftAmount = keysPressed.has("shift") ? 1 : -1;
+                if (activeNotes.has(normalizeToSingleOctave(noteToShift + shiftAmount))) {
+                    setSingleNoteShift({
+                        scaleDegree: scaleDegree,
+                        shiftAmount: shiftAmount,
+                        isDiatonic: true,
+                    });
+                }
+                else {
+                    modulateActiveNotes(shiftAmount, new Set([noteToShift]));
+                    setSingleNoteShift({
+                        scaleDegree: scaleDegree ?? 0,
+                        shiftAmount: shiftAmount,
+                        isDiatonic: false,
+                    });
+                }
+            }
+        }
+    }, [activeNotes, getNoteFromScaleDegree, isPlayingAnyNote, keysPressed, modulateActiveNotes, mostRecentlyPlayedNote, mostRecentlyPlayedScaleDegree, singleNoteShift]);
 
     const handleKeyDownsWithRepeats = React.useCallback((key: string) => {
         switch (key) {
@@ -188,9 +220,10 @@ function useKeypressPlayer() {
                 setKeysPressed(new Set());
                 return;
             case "Control":
+            case "Alt":
             case "Shift":
                 if (singleNoteShift != null) {
-                    const shiftNoteBack = normalizeToSingleOctave(getNoteFromScaleDegree(singleNoteShift.scaleDegree-1));
+                    const shiftNoteBack = normalizeToSingleOctave(getNoteFromScaleDegree(singleNoteShift.scaleDegree));
                     if (!singleNoteShift.isDiatonic && !activeNotes.has(shiftNoteBack - singleNoteShift.shiftAmount)) {
                         modulateActiveNotes(-singleNoteShift.shiftAmount, new Set([shiftNoteBack]));
                     }
@@ -245,8 +278,8 @@ function useKeypressPlayer() {
         }, 0);
 
         const scaleDegreesPressed = Array.from(keysPressed).filter(key => keyToScaleDegree.get(key.toLocaleLowerCase()) !== undefined).map(key => {
-            var scaleDegree = (keyToScaleDegree.get(key.toLocaleLowerCase()) ?? 0) + numberKeyResult;
-            if (singleNoteShift != null && singleNoteShift.isDiatonic && normalizeToSingleOctave(scaleDegree) === normalizeToSingleOctave(singleNoteShift.scaleDegree-1)) {
+            var scaleDegree = (keyToScaleDegree.get(key.toLocaleLowerCase()) ?? 1) + numberKeyResult;
+            if (singleNoteShift != null && singleNoteShift.isDiatonic && scaleDegree === singleNoteShift.scaleDegree) {
                 scaleDegree += singleNoteShift.shiftAmount;
             }
 

@@ -25,7 +25,7 @@ function useSoundEngine() {
 }
 export default useSoundEngine;
 
-export function useExecuteOnPlayingNoteStateChange(callback: (notesTurnedOn: number[], notesTurnedOff: number[]) => void) {
+export function useExecuteOnPlayingNoteStateChange(callback: (notesTurnedOn: number[], notesTurnedOff: number[], playingNotes: number[]) => void) {
     const activeNotes = useNoteSet()(NoteSet.Active);
     const emphasizedNotes = useNoteSet()(NoteSet.Emphasized);
     const emphasizedNotesOctaveGnostic = useNoteSet()(NoteSet.Emphasized_OctaveGnostic);
@@ -36,6 +36,6 @@ export function useExecuteOnPlayingNoteStateChange(callback: (notesTurnedOn: num
     React.useEffect(() => {
         const notesturnedoff = previousPlayingNotes.filter(note => !playingNotes.includes(note));
         const notesturnedon = playingNotes.filter(note => !previousPlayingNotes.includes(note));
-        callback(notesturnedon, notesturnedoff);
+        callback(notesturnedon, notesturnedoff, playingNotes);
     }, [callback, playingNotes, previousPlayingNotes]);
 }
