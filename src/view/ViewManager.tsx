@@ -274,9 +274,11 @@ function ViewManager(props: Props) {
                     draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
                     setDraggedPosition={setDraggedPosition(uid)}
                     setDragComplete={setDragComplete(uid)}
-                    contextMenuOffset={{ x: 0, y: -40 - wheelRadius }}
+                    contextMenuOffset={{ x: wheelRadius, y: -40 }}
                     subdivisionCount={12}
-                    radius={wheelRadius}
+                    width={wheelRadius * 2}
+                    height={wheelRadius * 2}
+                    lockAspectRatio
                     isCircleOfFifths={false} />
             case WidgetType.Guitar:
                 const fretCount = 13;

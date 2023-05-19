@@ -8,12 +8,14 @@ import { getIntervalColor, getIntervalDistance, getNoteName } from '../utils/Uti
 import { NoteSet, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 type Props = {
-    radius: number
+    width: number,
+    height: number,
     subdivisionCount: number
     isCircleOfFifths: boolean
 } & WidgetComponentProps
 
 function Wheel(props: Props) {
+    const radius = Math.min(props.width, props.height) / 2;
     const activeNotes = useNoteSet()(NoteSet.Active);
 
     const emphasizedNotes = useGetCombinedModdedEmphasis()();;
@@ -54,10 +56,10 @@ function Wheel(props: Props) {
         }
         const radians = i * 2 * Math.PI / props.subdivisionCount;
         return {
-            x: Math.sin(radians) * props.radius,
-            y: -Math.cos(radians) * props.radius,
+            x: Math.sin(radians) * radius,
+            y: -Math.cos(radians) * radius,
         }
-    }, [isCircleOfFifths, props.radius, props.subdivisionCount])
+    }, [isCircleOfFifths, props.subdivisionCount, radius])
 
     const settingsMenuItems = [
         (<tr key={'tr0'}>
@@ -269,7 +271,7 @@ function Wheel(props: Props) {
     ) => {
         const centerpoint = (<Circle radius={1} fill="white"></Circle>);
         return (
-            <Group>
+            <Group x={radius} y={radius}>
                 <Group opacity={isRotating ? 0.125 : 1} key={"realGroup"}>
                     {notes.halos}
                     {intervals.emphasized}
@@ -290,7 +292,7 @@ function Wheel(props: Props) {
                 {notes.clickListeners}
             </Group>
         );
-    }, [intervals.emphasized, intervals.highlighted, intervals.line, isRotating, notes.clickListeners, notes.emphasized, notes.halos, notes.highlighted, notes.names, notes.values, rotation]);
+    }, [intervals.emphasized, intervals.highlighted, intervals.line, isRotating, notes.clickListeners, notes.emphasized, notes.halos, notes.highlighted, notes.names, notes.values, radius, rotation]);
 
     return (
         <Group>

@@ -31,13 +31,14 @@ type WidgetProps<TElem extends React.ElementType> = {
     isMaxamized: boolean;
     setDraggedPosition: (val: Vector2d) => void;
     setDragComplete: (val: Vector2d) => void;
+    lockAspectRatio?: boolean | undefined
     // width: number,
     // height: number,
     // setWidth: (w: number) => void,
     // trackerActions: WidgetTrackerActions,
 } & Omit<React.ComponentPropsWithoutRef<TElem>, keyof WidgetComponentProps>;
 
-function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, children, initialPosition, draggedPosition, contextMenuOffset, isMaxamized, setDraggedPosition, setDragComplete, ...otherProps }: WidgetProps<TElem>) {
+function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, children, initialPosition, draggedPosition, contextMenuOffset, isMaxamized, lockAspectRatio, setDraggedPosition, setDragComplete, ...otherProps }: WidgetProps<TElem>) {
     const Component = of || Group;
 
     const [isSettingsOverlayVisible, setIsSettingsOverlayVisible] = React.useState(false);
@@ -161,6 +162,10 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                                     // actions.setWidgetTracker(uid, { ...tracker, width: evt.currentTarget.position().x });
                                     evt.currentTarget.setPosition({ x: 0, y: evt.currentTarget.position().y })
                                     setTopBoundDragged(evt.currentTarget.position().y);
+                                    if (lockAspectRatio) {
+                                        setRightBoundDragged(-evt.currentTarget.position().y / 2);
+                                        setLeftBoundDragged(evt.currentTarget.position().y / 2);
+                                    }
                                 }}
                                 onDragEnd={resizeComplete}
                                 onMouseEnter={evt => setPointer(evt, "n-resize")}
@@ -175,6 +180,10 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                                 onDragMove={evt => {
                                     evt.currentTarget.setPosition({ x: 0, y: evt.currentTarget.position().y })
                                     setBottomBoundDragged(evt.currentTarget.position().y);
+                                    if (lockAspectRatio) {
+                                        setRightBoundDragged(evt.currentTarget.position().y / 2);
+                                        setLeftBoundDragged(-evt.currentTarget.position().y / 2);
+                                    }
                                 }}
                                 onDragEnd={resizeComplete}
                                 onMouseEnter={evt => setPointer(evt, "s-resize")}
@@ -189,7 +198,9 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                                 onDragMove={evt => {
                                     evt.currentTarget.setPosition({ x: evt.currentTarget.position().x, y: 0 })
                                     setLeftBoundDragged(evt.currentTarget.position().x);
-                                    console.log(evt.currentTarget.position().x);
+                                    if (lockAspectRatio) {
+                                        setBottomBoundDragged(-evt.currentTarget.position().x);
+                                    }
                                 }}
                                 onDragEnd={resizeComplete}
                                 onMouseEnter={evt => setPointer(evt, "w-resize")}
@@ -205,7 +216,9 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                                 onDragMove={evt => {
                                     evt.currentTarget.setPosition({ x: evt.currentTarget.position().x, y: 0 })
                                     setRightBoundDragged(evt.currentTarget.position().x);
-                                    console.log(evt.currentTarget.position().x);
+                                    if (lockAspectRatio) {
+                                        setBottomBoundDragged(evt.currentTarget.position().x);
+                                    }
                                 }}
                                 onDragEnd={resizeComplete}
                                 onMouseEnter={evt => setPointer(evt, "e-resize")}
@@ -218,6 +231,10 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                                 fill="orange"
                                 opacity={0}
                                 onDragMove={evt => {
+                                    if (lockAspectRatio) {
+                                        const lockToSquarePos = (evt.currentTarget.position().x + evt.currentTarget.position().y) / 2;
+                                        evt.currentTarget.setPosition({ x: lockToSquarePos, y: lockToSquarePos })
+                                    }
                                     setLeftBoundDragged(evt.currentTarget.position().x);
                                     setTopBoundDragged(evt.currentTarget.position().y);
                                 }}
@@ -232,6 +249,10 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                                 fill="lightblue"
                                 opacity={0}
                                 onDragMove={evt => {
+                                    if (lockAspectRatio) {
+                                        const lockToSquarePos = (evt.currentTarget.position().x - evt.currentTarget.position().y) / 2;
+                                        evt.currentTarget.setPosition({ x: lockToSquarePos, y: -lockToSquarePos })
+                                    }
                                     setRightBoundDragged(evt.currentTarget.position().x);
                                     setTopBoundDragged(evt.currentTarget.position().y);
                                 }}
@@ -246,6 +267,10 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                                 fill="lightgreen"
                                 opacity={0}
                                 onDragMove={evt => {
+                                    if (lockAspectRatio) {
+                                        const lockToSquarePos = (evt.currentTarget.position().x - evt.currentTarget.position().y) / 2;
+                                        evt.currentTarget.setPosition({ x: lockToSquarePos, y: -lockToSquarePos })
+                                    }
                                     setLeftBoundDragged(evt.currentTarget.position().x);
                                     setBottomBoundDragged(evt.currentTarget.position().y);
                                 }}
@@ -260,6 +285,10 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                                 fill="pink"
                                 opacity={0}
                                 onDragMove={evt => {
+                                    if (lockAspectRatio) {
+                                        const lockToSquarePos = (evt.currentTarget.position().x + evt.currentTarget.position().y) / 2;
+                                        evt.currentTarget.setPosition({ x: lockToSquarePos, y: lockToSquarePos })
+                                    }
                                     setRightBoundDragged(evt.currentTarget.position().x);
                                     setBottomBoundDragged(evt.currentTarget.position().y);
                                 }}
