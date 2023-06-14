@@ -76,7 +76,7 @@ function ViewManager(props: Props) {
             ['2', {
                 type: WidgetType.Piano,
                 initialPosition: { x: props.width / 2, y: props.height - pianoHeight - 21 },
-                width: pianoWidth,
+                width: props.width,
                 height: pianoHeight,
             }],
             ['3', {
@@ -259,7 +259,7 @@ function ViewManager(props: Props) {
                     draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
                     setDraggedPosition={setDraggedPosition(uid)}
                     setDragComplete={setDragComplete(uid)}
-                    contextMenuOffset={{ x: 0, y: -pianoHeight - 20 }}
+                    contextMenuOffset={{ x: widget.width / 2, y: -20 }}
                     width={widget.width}
                     height={widget.height}
                     octaveCount={pianoOctaveCount} />

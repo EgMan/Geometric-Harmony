@@ -22,6 +22,7 @@ function Piano(props: Props) {
     // Settings Storage
 
     const [octaveCount, setOctaveCount] = React.useState(props.octaveCount);
+    const octaveWidth = props.width / octaveCount;
 
     const [displayInterval, setDisplayIntervals] = React.useState([true, true, true, true, true, true]);
     const setDisplayInterval = (index: number, value: boolean) => {
@@ -103,10 +104,6 @@ function Piano(props: Props) {
         </tr>),
     ];
 
-    // offsets to make x, y in props dictate location of bottom center of full piano
-    const XglobalKeyOffset = (props.width * octaveCount / -2);
-    const YglobalKeyOffset = -props.height;
-
     const activeNotes = useNoteSet()(NoteSet.Active);
     const combinedEmphasis = useGetCombinedModdedEmphasis()();
     const emphasizedNotesOctaveGnostic = useNoteSet()(NoteSet.Emphasized_OctaveGnostic);
@@ -128,13 +125,13 @@ function Piano(props: Props) {
     }
 
     const getPropsForWhiteNote: (note: number, octave: number) => NoteProps = React.useCallback((note: number, octave: number) => {
-        const individualKeyOffset = XglobalKeyOffset + (octave * props.width);
-        const keyWidth = props.width / 7;
+        const individualKeyOffset = (octave * octaveWidth);
+        const keyWidth = octaveWidth / 7;
         const keyHeight = props.height;
         const individualActiveIndicaterOffset = individualKeyOffset + (keyWidth / 2);
         const activeIndicatorWidth = keyWidth / 3;
-        const activeIndicatorY = YglobalKeyOffset + 5 * keyHeight / 6;
-        const xpos = (noteToXOffsetFactor[note] * props.width / 7);
+        const activeIndicatorY = 5 * keyHeight / 6;
+        const xpos = (noteToXOffsetFactor[note] * octaveWidth / 7);
         const extraProps = { stroke: keyColor, strokeWidth: 2 }
         return {
             keyWidth,
@@ -146,16 +143,16 @@ function Piano(props: Props) {
             xpos,
             extraProps,
         }
-    }, [XglobalKeyOffset, YglobalKeyOffset, props.height, props.width]);
+    }, [props.height, octaveWidth]);
 
     const getPropsForBlackNote: (note: number, octave: number) => NoteProps = React.useCallback((note: number, octave: number) => {
-        const individualKeyOffset = XglobalKeyOffset + (octave * props.width) - props.width / 24 + 1;
-        const keyWidth = props.width / 14;
+        const individualKeyOffset = (octave * octaveWidth) - octaveWidth / 24 + 1;
+        const keyWidth = octaveWidth / 14;
         const keyHeight = props.height * 2 / 3;
         const individualActiveIndicaterOffset = individualKeyOffset + (keyWidth / 2);
         const activeIndicatorWidth = keyWidth * 2 / 3;
-        const activeIndicatorY = YglobalKeyOffset + 3 * keyHeight / 4;
-        const xpos = noteToXOffsetFactor[note] * props.width / 7;
+        const activeIndicatorY = 3 * keyHeight / 4;
+        const xpos = noteToXOffsetFactor[note] * octaveWidth / 7;
         const extraProps = { fill: keyColor }
         return {
             keyWidth,
@@ -167,7 +164,7 @@ function Piano(props: Props) {
             xpos,
             extraProps,
         }
-    }, [XglobalKeyOffset, YglobalKeyOffset, props.height, props.width]);
+    }, [props.height, octaveWidth]);
 
     const getPropsForNote: (note: number, octave: number) => NoteProps = React.useCallback((note: number, octave: number) => {
         if (blackKeyNums.includes(note)) {
@@ -205,7 +202,6 @@ function Piano(props: Props) {
                     <Rect
                         key={`key${i}-${note}`}
                         x={noteprops.xpos + noteprops.individualKeyOffset}
-                        y={YglobalKeyOffset}
                         width={noteprops.keyWidth}
                         height={noteprops.keyHeight}
                         {...noteprops.extraProps} />
@@ -235,7 +231,6 @@ function Piano(props: Props) {
                     <Rect
                         key={`keyHitbox${i}-${note}`}
                         x={noteprops.xpos + noteprops.individualKeyOffset}
-                        y={YglobalKeyOffset}
                         width={noteprops.keyWidth}
                         height={noteprops.keyHeight}
                         onClick={toggleActive}
@@ -270,7 +265,7 @@ function Piano(props: Props) {
             emphasized,
             clickListenersArr,
         };
-    }, [YglobalKeyOffset, activeNotes, checkEmphasis, getAbsoluteNoteNum, getPropsForNote, homeNote, octaveCount, setHomeNote, showNoteNames, updateNotes]);
+    }, [activeNotes, checkEmphasis, getAbsoluteNoteNum, getPropsForNote, homeNote, octaveCount, setHomeNote, showNoteNames, updateNotes]);
 
     const intervals = React.useMemo(() => {
         var intervalLines: JSX.Element[] = [];
@@ -397,7 +392,7 @@ function Piano(props: Props) {
                 {intervals.listeners}
             </Group>
         );
-    }, [intervals, keys]);
+    }, [intervals.emphasized, intervals.line, intervals.listeners, keys.activeNoteIndicators, keys.clickListenersArr, keys.emphasized, keys.keys, keys.noteNames]);
 
     return (
         <Group>
