@@ -63,7 +63,7 @@ function ViewManager(props: Props) {
     const pianoOctaveCount = limitingAxisIsHeight ? 4 : 2;
     const pianoHeight = ((props.height / 2) - wheelRadius) * 2 / 3;
     const guitarHeight = props.height - 200;
-    const pianoWidth = (props.width / pianoOctaveCount) - .5;
+    const pianoWidth = (props.width) - .5;
 
     const [trackedWidgets, setTrackedWidgets] = React.useState<Map<String, WidgetTracker>>(
         new Map<String, WidgetTracker>([
@@ -259,9 +259,9 @@ function ViewManager(props: Props) {
                     draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
                     setDraggedPosition={setDraggedPosition(uid)}
                     setDragComplete={setDragComplete(uid)}
-                    contextMenuOffset={{ x: widget.width / 2, y: -20 }}
-                    width={widget.width}
-                    height={widget.height}
+                    contextMenuOffset={{ x: pianoWidth / 2, y: -20 }}
+                    width={pianoWidth}
+                    height={pianoHeight}
                     octaveCount={pianoOctaveCount} />
             case WidgetType.Wheel:
                 return <Widget of={Wheel}
@@ -314,7 +314,7 @@ function ViewManager(props: Props) {
                     width={props.width / (8 / 3)}
                 />
         }
-    }, [guitarHeight, pianoHeight, pianoOctaveCount, props.width, setDragComplete, setDraggedPosition, trackerActions, wheelRadius])
+    }, [guitarHeight, pianoHeight, pianoOctaveCount, pianoWidth, props.width, setDragComplete, setDraggedPosition, trackerActions, wheelRadius])
 
     const widgetElements = React.useMemo(() => {
         const widgetArray = Array.from(trackedWidgets);
