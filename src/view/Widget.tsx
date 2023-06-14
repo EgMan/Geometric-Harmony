@@ -61,14 +61,57 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
     const widgetRef = React.useRef<Konva.Group>(null);
 
     const [mainButtonHover, setMainButtonHover] = React.useState(false);
-    const mainButtonProps = useSpring({ opacity: (!isMaxamized && 0.3) || (mainButtonHover && 0.1) || 0, radius: ((!isMaxamized) && 12) || (mainButtonHover ? 15 : 10), fill: isMaxamized ? "white" : "black" });
-    const mainButtonTextProps = useSpring(
-        {
-            text: isMaxamized ? (resizeMenuOpen ? "✓" : (fullContextMenuOpen ? "⚙" : "…")) : "•",
-            y: (!isMaxamized && -19) || (fullContextMenuOpen && -19) || -22,
-            fill: isMaxamized || mainButtonHover ? "white" : "grey",
+    const mainButtonAttr = React.useMemo(() => {
+        if (isMaxamized) {
+            return {
+                buttonAttr: {
+                    radius: mainButtonHover ? 15 : 10,
+                    opacity: mainButtonHover ? 0.1 : 0,
+                    fill: "white",
+                },
+                textAttr: {
+                    text: (resizeMenuOpen ? "✓" : (fullContextMenuOpen ? "⚙" : "…")),
+                    y: (resizeMenuOpen ? -19 : (fullContextMenuOpen ? -19 : -22)),
+                    fill: "white",
+                },
+                onSelect: () => {
+                    if (fullContextMenuOpen) {
+                        setIsSettingsOverlayVisible(true);
+                        setFullContextMenuOpen(false)
+                    }
+                    else if (resizeMenuOpen) {
+                        setResizeMenuOpen(false);
+                    }
+                    else {
+                        setFullContextMenuOpen(true);
+                    }
+                }
+            }
         }
-    );
+        else return {
+            buttonAttr: {
+                radius: 12,
+                opacity: 0.3,
+                fill: "black",
+            },
+            textAttr: {
+                text: "•",
+                y: -19,
+                fill: mainButtonHover ? "white" : "grey",
+            },
+            onSelect: () => {
+                actions.updateWidgetTracker(uid, widget => ({ ...widget, isMaxamized: true }))
+            },
+        }
+    }, [actions, fullContextMenuOpen, isMaxamized, mainButtonHover, resizeMenuOpen, uid]);
+
+    const mainButtonProps = useSpring({
+        ...mainButtonAttr.buttonAttr,
+    });
+
+    const mainButtonTextProps = useSpring({
+        ...mainButtonAttr.textAttr,
+    });
 
     const fromWidget = {
         isOverlayVisible: isSettingsOverlayVisible,
@@ -350,8 +393,8 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                             opacity={0}
                             onMouseEnter={() => { setMainButtonHover(true) }}
                             onMouseLeave={() => { setMainButtonHover(false) }}
-                            onTouchStart={isMaxamized ? (fullContextMenuOpen ? () => { setIsSettingsOverlayVisible(true); setFullContextMenuOpen(false) } : () => setFullContextMenuOpen(true)) : () => actions.updateWidgetTracker(uid, widget => ({ ...widget, isMaxamized: true }))}
-                            onClick={isMaxamized ? (fullContextMenuOpen ? () => { setIsSettingsOverlayVisible(true); setFullContextMenuOpen(false) } : () => setFullContextMenuOpen(true)) : () => actions.updateWidgetTracker(uid, widget => ({ ...widget, isMaxamized: true }))}
+                            onTouchStart={mainButtonAttr.onSelect}
+                            onClick={mainButtonAttr.onSelect}
                             onContextMenu={(e) => { setIsSettingsOverlayVisible(true); e.currentTarget.preventDefault() }} />
                         <animated.Text
                             {...mainButtonTextProps}
