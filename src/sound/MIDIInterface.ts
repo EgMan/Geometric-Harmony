@@ -2,7 +2,7 @@ import React from "react";
 import { WebMidi } from "webmidi";
 import { BrowserType, useBrowserVersion } from "../utils/Utils";
 
-export function useConnectToMidi() {
+export function useConnectToMidi(onReady: () => void) {
     const browserType = useBrowserVersion();
     React.useEffect(() => {
         switch (browserType) {
@@ -23,6 +23,9 @@ export function useConnectToMidi() {
 
             // Outputs
             WebMidi.outputs.forEach(output => console.log("Midi output found: ", output.manufacturer, output.name));
+
+            onReady();
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [browserType]);
 }

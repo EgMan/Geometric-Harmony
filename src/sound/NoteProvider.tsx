@@ -2,7 +2,7 @@ import React from "react";
 
 const homeNoteContext = React.createContext<number | null>(null);
 const setHomeNoteContext = React.createContext((note: number | null) => { });
-const noteSetContext = React.createContext((noteSet: NoteSet) => { return new Set<number>() });
+const noteSetContext = React.createContext((noteSet: NoteSet, normalizeToOneOctave?: boolean) => { return new Set<number>() });
 const updateNoteSetContext = React.createContext((noteSet: NoteSet[] | NoteSet, nums: Array<number>, areEnabled: boolean, overwriteExisting: boolean = false) => { });
 
 type Props = {
@@ -14,6 +14,7 @@ export enum NoteSet {
     Highlighted,
     Emphasized,
     Emphasized_OctaveGnostic,
+    PlayingInput,
 }
 
 const octaveAgnosticNoteSets = new Set([NoteSet.Active, NoteSet.Emphasized, NoteSet.Highlighted]);
@@ -24,6 +25,7 @@ function NoteProvider(props: Props) {
         [NoteSet.Emphasized]: new Set<number>(),
         [NoteSet.Highlighted]: new Set<number>(),
         [NoteSet.Emphasized_OctaveGnostic]: new Set<number>(),
+        [NoteSet.PlayingInput]: new Set<number>(),
     });
     const [homeNoteRaw, setHomeNoteRaw] = React.useState<number | null>(10);
     const homeNote = homeNoteRaw !== null && noteSets[NoteSet.Active].has(homeNoteRaw) ? homeNoteRaw : null;
@@ -40,7 +42,10 @@ function NoteProvider(props: Props) {
         }
     }, [homeNote, homeNoteRaw, noteSets]);
 
-    const getNoteSet = React.useCallback((noteSet: NoteSet) => {
+    const getNoteSet = React.useCallback((noteSet: NoteSet, normalizeToOneOctave?: boolean) => {
+        if (normalizeToOneOctave) {
+            return new Set(Array.from(noteSets[noteSet]).map(elem => normalizeToSingleOctave(elem)));
+        }
         return noteSets[noteSet];
         // return new Set(Array.from(noteSets[noteSet]).map(elem => {
         //     return ((12 * 12) + elem) % 12;
@@ -54,23 +59,21 @@ function NoteProvider(props: Props) {
                 return ((12 * 12) + elem) % 12;
             });
 
-            if (areEnabled) {
-                setNoteSets(prevState => {
+            setNoteSets(prevState => {
+                if (areEnabled) {
                     return {
                         ...prevState,
                         [noteSet]: new Set(Array.from(startingPoint).concat(maybeModdedNums))
                     }
-                });
-            }
-            else {
-                const numsSet = new Set(maybeModdedNums);
-                setNoteSets(prevState => {
+                }
+                else {
+                    const numsSet = new Set(maybeModdedNums);
                     return {
                         ...prevState,
                         [noteSet]: new Set(Array.from(startingPoint).filter(elem => !numsSet.has(elem)))
                     }
-                });
-            }
+                }
+            });
         };
         if (noteSetsToUpdate instanceof Array) {
             noteSetsToUpdate.forEach(writeToNoteSet);
