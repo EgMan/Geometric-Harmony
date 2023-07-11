@@ -268,6 +268,7 @@ function Tonnetz(props: Props) {
 
         return (
             <Group
+                x={radius} y={radius}
                 clipFunc={(ctx) => ctx.arc(0, 0, radius, 0, Math.PI * 2, false)}
             >
                 {/* <Circle radius={radius} stroke="rgba(255,255,255,0.1)"></Circle> */}

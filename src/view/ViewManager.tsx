@@ -332,11 +332,10 @@ function ViewManager(props: Props) {
                     draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
                     setDraggedPosition={setDraggedPosition(uid)}
                     setDragComplete={setDragComplete(uid)}
-                    contextMenuOffset={{ x: 0, y: -40 - wheelRadius }}
-                    // subdivisionCount={12}
+                    lockAspectRatio
+                    contextMenuOffset={{ x: ((props.width / (2 * 8 / 3)) - 20), y: -20 }}
                     width={wheelRadius * 2}
                     height={wheelRadius * 2}
-                // isCircleOfFifths={false} 
                 />
         }
     }, [guitarHeight, pianoHeight, pianoOctaveCount, pianoWidth, props.width, setDragComplete, setDraggedPosition, trackerActions, wheelRadius])
