@@ -31,7 +31,7 @@ function Piano(props: Props) {
         setDisplayIntervals(newDisplayInterval);
     }
 
-    const [showNoteNames, setShowNoteNames] = React.useState(true);
+    const [showNoteNames, setShowNoteNames] = React.useState(false);
 
     const [onlyShowIntervalsOnHover, setOnlyShowIntervalsOnHover] = React.useState(true);
 

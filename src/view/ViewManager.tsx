@@ -67,7 +67,8 @@ function ViewManager(props: Props) {
     const pianoOctaveCount = limitingAxisIsHeight ? 4 : 2;
     const pianoHeight = ((props.height / 2) - wheelRadius) * 2 / 3;
     const guitarHeight = props.height - 200;
-    const pianoWidth = (props.width) - .5;
+    // const pianoWidth = (props.width) - .5;
+    const pianoWidth = (props.width) + 1.5;
 
     const [trackedWidgets, setTrackedWidgets] = React.useState<Map<String, WidgetTracker>>(
         new Map<String, WidgetTracker>([
@@ -79,7 +80,7 @@ function ViewManager(props: Props) {
             }],
             ['2', {
                 type: WidgetType.Piano,
-                initialPosition: { x: props.width / 2, y: props.height - pianoHeight - 21 },
+                initialPosition: { x: props.width / 2, y: props.height - pianoHeight - 19 },
                 width: props.width,
                 height: pianoHeight,
             }],
