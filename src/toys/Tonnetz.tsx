@@ -24,6 +24,7 @@ function Tonnetz(props: Props) {
     // const updateNotes = useUpdateNoteSet();
     // const getNotesInCommon = useGetActiveNotesInCommonWithModulation();
     const homeNote = useHomeNote();
+    const updateNotes = useUpdateNoteSet();
     // const setHomeNote = useSetHomeNote();
 
 
@@ -134,15 +135,16 @@ function Tonnetz(props: Props) {
                 const cord = { x: x, y: y };
                 const { x: xPos, y: yPos } = cordsToPosition(cord);
                 const note = cordsToNote(cord);
+
                 const normalizedNote = normalizeToSingleOctave(note);
                 if (activeNotes.has(normalizedNote)) {
 
                     // interval lines
 
                     // Right, up one fifth
+                    const rightNoteCord = { x: x + 1, y: y };
+                    const rightNote = cordsToNote(rightNoteCord);
                     if (displayInterval[4]) {
-                        const rightNoteCord = { x: x + 1, y: y };
-                        const rightNote = cordsToNote(rightNoteCord);
                         if (activeNotes.has(normalizeToSingleOctave(rightNote))) {
                             const { opacity, strokeWidth } = intervalEmphasis(note, rightNote);
                             const rightNotePos = cordsToPosition(rightNoteCord);
@@ -151,9 +153,9 @@ function Tonnetz(props: Props) {
                     }
 
                     // Up-Right, up one minor third
+                    const upRightNoteCord = { x: x, y: y - 1 };
+                    const upRightNote = cordsToNote(upRightNoteCord);
                     if (displayInterval[2]) {
-                        const upRightNoteCord = { x: x, y: y - 1 };
-                        const upRightNote = cordsToNote(upRightNoteCord);
                         if (activeNotes.has(normalizeToSingleOctave(upRightNote))) {
                             const { opacity, strokeWidth } = intervalEmphasis(note, upRightNote);
                             const upRightNotePos = cordsToPosition(upRightNoteCord);
@@ -162,9 +164,9 @@ function Tonnetz(props: Props) {
                     }
 
                     // Down-Right, up one major third
+                    const downRightCord = { x: x + 1, y: y + 1 };
+                    const downRightNote = cordsToNote(downRightCord);
                     if (displayInterval[3]) {
-                        const downRightCord = { x: x + 1, y: y + 1 };
-                        const downRightNote = cordsToNote(downRightCord);
                         if (activeNotes.has(normalizeToSingleOctave(downRightNote))) {
                             const { opacity, strokeWidth } = intervalEmphasis(note, downRightNote);
                             const downRightNotePos = cordsToPosition(downRightCord);
@@ -238,13 +240,40 @@ function Tonnetz(props: Props) {
                         }
                     }
 
+
+                    const emphasize = (notenums: number[]) => {
+                        updateNotes(NoteSet.Emphasized_OctaveGnostic, notenums, true, true);
+                    };
+
+                    const unemphasize = (notenums: number[]) => {
+                        updateNotes(NoteSet.Emphasized_OctaveGnostic, notenums, false);
+                    };
+
+                    const hoverEmphasizeProps = { onTouchStart: () => emphasize([note]), onTouchEnd: () => unemphasize([note]), onMouseOver: () => emphasize([note]), onMouseOut: () => unemphasize([note]) }
+                    const minorTriadEmphasizeProps = { onTouchStart: () => emphasize([note, upRightNote, rightNote]), onTouchEnd: () => unemphasize([note, upRightNote, rightNote]), onMouseOver: () => emphasize([note, upRightNote, rightNote]), onMouseOut: () => unemphasize([note, upRightNote, rightNote]) }
+                    const majorTriadEmphasizeProps = { onTouchStart: () => emphasize([note, downRightNote, rightNote]), onTouchEnd: () => unemphasize([note, downRightNote, rightNote]), onMouseOver: () => emphasize([note, downRightNote, rightNote]), onMouseOut: () => unemphasize([note, downRightNote, rightNote]) }
+
                     // Note
                     const color = emphasizedNotes.has(normalizedNote) ? "red" : (homeNote === normalizedNote ? "yellow" : "white");
                     notes.push(<Circle key={`${x}-${y}`} x={xPos} y={yPos} fill={color} radius={10} />);
+
+                    // Triad triangle listeners
+                    if (activeNotes.has(normalizeToSingleOctave(rightNote))) {
+                        if (activeNotes.has(normalizeToSingleOctave(downRightNote))) {
+                            notes.push(<Line key={`majorTriadListener${x}-${y}`} closed={true} x={xPos} y={yPos} points={[0, 0, spacing * 0.5, spacing * sqrt3over2, spacing, 0]} {...majorTriadEmphasizeProps} />);
+                        }
+                        if (activeNotes.has(normalizeToSingleOctave(upRightNote))) {
+                            notes.push(<Line key={`minorTriadListener${x}-${y}`} closed={true} x={xPos} y={yPos} points={[0, 0, spacing * 0.5, -spacing * sqrt3over2, spacing, 0]} {...minorTriadEmphasizeProps} />);
+                        }
+
+                    }
+
+                    // Note listener
+                    notes.push(<Circle key={`listener${x}-${y}`} x={xPos} y={yPos} radius={20} {...hoverEmphasizeProps} />);
                 }
-                notes.push(<Text key={`noteName${x}-${y}`} width={40} height={40} x={xPos - 20} y={yPos - 20} text={getNoteName(normalizedNote, activeNotes)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(note) ? "rgb(37,37,37)" : "grey"} align="center" verticalAlign="middle" />);
+                notes.push(<Text key={`noteName${x}-${y}`} width={40} height={40} x={xPos - 20} y={yPos - 20} text={getNoteName(normalizedNote, activeNotes)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(note) ? "rgb(37,37,37)" : "grey"} align="center" verticalAlign="middle" listening={false} />);
                 // notes.push(<Text key={`noteName${x}-${y}`} width={40} height={40} x={xPos - 20} y={yPos - 20} text={"" + note} fontSize={14} fontFamily='monospace' fill={activeNotes.has(note) ? "rgb(37,37,37)" : "grey"} align="center" verticalAlign="middle" />);
-                notes.push(<Circle key={`halo${x}-${y}`} x={xPos} y={yPos} stroke="rgba(255,255,255,0.1)" radius={20} />);
+                notes.push(<Circle key={`halo${x}-${y}`} x={xPos} y={yPos} stroke="rgba(255,255,255,0.1)" radius={20} listening={false} />);
 
                 // notes.push(<Line key={`3-${noteA}-${noteB}`} stroke={discColor} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} opacity={0.25} />);
                 // for (let i = 0; i < 6; i++) {
@@ -259,7 +288,7 @@ function Tonnetz(props: Props) {
         return {
             notes, intervals
         }
-    }, [activeNotes, cordsToNote, cordsToPosition, displayInterval, emphasizedNotes, homeNote, intervalEmphasis]);
+    }, [activeNotes, cordsToNote, cordsToPosition, displayInterval, emphasizedNotes, homeNote, intervalEmphasis, updateNotes]);
 
     const fullRender = React.useMemo((
     ) => {
