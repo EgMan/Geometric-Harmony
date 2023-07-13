@@ -333,7 +333,7 @@ function ViewManager(props: Props) {
                     setDraggedPosition={setDraggedPosition(uid)}
                     setDragComplete={setDragComplete(uid)}
                     lockAspectRatio
-                    contextMenuOffset={{ x: ((props.width / (2 * 8 / 3)) - 20), y: -20 }}
+                    contextMenuOffset={{ x: wheelRadius, y: -40 }}
                     width={wheelRadius * 2}
                     height={wheelRadius * 2}
                 />

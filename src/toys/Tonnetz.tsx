@@ -1,10 +1,8 @@
 import React from 'react';
 import { Circle, Group, Line, Shape, Text } from 'react-konva';
 import { WidgetComponentProps } from '../view/Widget';
-import { MenuItem, Select, Switch } from '@mui/material';
-import { KonvaEventObject } from 'konva/lib/Node';
-import { useGetActiveNotesInCommonWithModulation, useModulateActiveNotes } from '../sound/HarmonicModulation';
-import { getIntervalColor, getIntervalDistance, getNoteName } from '../utils/Utils';
+import { Switch } from '@mui/material';
+import { getIntervalColor, getNoteName } from '../utils/Utils';
 import { NoteSet, normalizeToSingleOctave, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import { Vector2d } from 'konva/lib/types';
@@ -34,7 +32,7 @@ function Tonnetz(props: Props) {
 
     // Settings Storage
 
-    const [displayInterval, setDisplayIntervals] = React.useState([true, true, true, true, true, true]);
+    const [displayInterval, setDisplayIntervals] = React.useState([true, true, true, true, true, false]);
     const setDisplayInterval = (index: number, value: boolean) => {
         const newDisplayInterval = displayInterval.slice();
         newDisplayInterval[index] = value;
@@ -108,12 +106,6 @@ function Tonnetz(props: Props) {
         return { x: xPos, y: yPos };
     }, []);
 
-    const noteEmphasis = React.useCallback((note: number) => {
-        const isEmphasized = emphasizedNotes.has(normalizeToSingleOctave(note))
-        return {
-            color: isEmphasized ? "red" : "white"
-        }
-    }, [emphasizedNotes]);
     const intervalEmphasis = React.useCallback((noteA: number, noteB: number) => {
         const isIntervalEmphasized = emphasizedNotes.has(normalizeToSingleOctave(noteA)) && emphasizedNotes.has(normalizeToSingleOctave(noteB));
         return {
@@ -196,18 +188,18 @@ function Tonnetz(props: Props) {
                         }
                     }
 
-                    // Down-Right3, down one tritone
-                    if (displayInterval[5]) {
-                        const downRight3Cord = { x: x + 3, y: y + 1 };
-                        const downRight3Note = cordsToNote(downRight3Cord);
-                        if (activeNotes.has(normalizeToSingleOctave(downRight3Note))) {
-                            const { opacity, strokeWidth } = intervalEmphasis(note, downRight3Note);
-                            const downRight3NotePos = cordsToPosition(downRight3Cord);
-                            // intervals.push(<Line key={`downright3-${x}-${y}`} stroke={getIntervalColor(6)} strokeWidth={strokeWidth} points={[xPos, yPos, downRight3NotePos.x, downRight3NotePos.y]} opacity={opacity} />);
-                        }
-                    }
+                    // Down-Right3, down one tritone (straight line)
+                    // if (displayInterval[5]) {
+                    //     const downRight3Cord = { x: x + 3, y: y + 1 };
+                    //     const downRight3Note = cordsToNote(downRight3Cord);
+                    //     if (activeNotes.has(normalizeToSingleOctave(downRight3Note))) {
+                    //         const { opacity, strokeWidth } = intervalEmphasis(note, downRight3Note);
+                    //         const downRight3NotePos = cordsToPosition(downRight3Cord);
+                    //         intervals.push(<Line key={`downright3-${x}-${y}`} stroke={getIntervalColor(6)} strokeWidth={strokeWidth} points={[xPos, yPos, downRight3NotePos.x, downRight3NotePos.y]} opacity={opacity} />);
+                    //     }
+                    // }
 
-                    // Up2, up one tritone
+                    // Up2, up one tritone (curved line)
                     if (displayInterval[5]) {
                         const up2Cord = { x: x, y: y - 2 };
                         const up2Note = cordsToNote(up2Cord);
@@ -274,16 +266,8 @@ function Tonnetz(props: Props) {
                 notes.push(<Text key={`noteName${x}-${y}`} width={40} height={40} x={xPos - 20} y={yPos - 20} text={getNoteName(normalizedNote, activeNotes)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(note) ? "rgb(37,37,37)" : "grey"} align="center" verticalAlign="middle" listening={false} />);
                 // notes.push(<Text key={`noteName${x}-${y}`} width={40} height={40} x={xPos - 20} y={yPos - 20} text={"" + note} fontSize={14} fontFamily='monospace' fill={activeNotes.has(note) ? "rgb(37,37,37)" : "grey"} align="center" verticalAlign="middle" />);
                 notes.push(<Circle key={`halo${x}-${y}`} x={xPos} y={yPos} stroke="rgba(255,255,255,0.1)" radius={20} listening={false} />);
-
-                // notes.push(<Line key={`3-${noteA}-${noteB}`} stroke={discColor} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} opacity={0.25} />);
-                // for (let i = 0; i < 6; i++) {
-
-                // }
-
             }
         }
-
-        const centerpoint = (<Circle radius={1} fill="white"></Circle>);
 
         return {
             notes, intervals
@@ -292,15 +276,12 @@ function Tonnetz(props: Props) {
 
     const fullRender = React.useMemo((
     ) => {
-        const centerpoint = (<Circle radius={1} fill="white"></Circle>);
-
-
         return (
             <Group
                 x={radius} y={radius}
                 clipFunc={(ctx) => ctx.arc(0, 0, radius, 0, Math.PI * 2, false)}
             >
-                {/* <Circle radius={radius} stroke="rgba(255,255,255,0.1)"></Circle> */}
+                <Circle radius={radius} stroke="rgba(255,255,255,0.1)"></Circle>
                 {elements.intervals}
                 {elements.notes}
             </Group>
