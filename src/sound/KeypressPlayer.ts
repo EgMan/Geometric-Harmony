@@ -85,6 +85,14 @@ const keyToScaleDegree = new Map<string, number>(
     ]
 );
 
+const preventDefault = [
+    "ArrowUp",
+    "ArrowDown",
+    "ArrowRight",
+    "ArrowLeft",
+    "space",
+    ];
+
 type SingleNoteShift =
     {
         scaleDegree: number,
@@ -209,6 +217,9 @@ function useKeypressPlayer() {
                     handleKeyDownsWithoutRepeats(event.key);
                 }
                 handleKeyDownsWithRepeats(event.key);
+            }
+            if (preventDefault.includes(event.key)) {
+                event.preventDefault();
             }
         }
 
