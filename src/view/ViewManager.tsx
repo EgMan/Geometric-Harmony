@@ -357,29 +357,55 @@ function ViewManager(props: Props) {
         };
     }, [renderWidgetFromTracker, trackedWidgets]);
 
+    const stageRef = React.useRef<Konva.Stage>(null);
+
+    const SCROLL_PADDING = 100;
+    const onContainerScroll = React.useCallback(() => {
+        var scrollContainer = document.getElementById('stage-scroll-container');
+        var stageContainer = document.getElementById('stage-container');
+        if (scrollContainer && stageContainer) {
+            var dx = scrollContainer.scrollLeft - SCROLL_PADDING;
+            var dy = scrollContainer.scrollTop - SCROLL_PADDING;
+            stageContainer.style.transform = 'translate(' + dx + 'px, ' + dy + 'px)';
+            stageRef.current?.position({ x: -dx, y: -dy });
+        }
+    }, [SCROLL_PADDING]);
+
     return (
-        <Stage
-            width={props.width}
-            height={props.height}
-            onContextMenu={(e) => { e.evt.preventDefault() }}
-            onMouseMove={handleMouseMove}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-        >
-            <Layer>
-                <BackPlate width={props.width} height={props.height} />
-                {widgetElements.real}
-                <NewWidgetDropdown
-                    x={30}
-                    y={30}
-                    width={100}
-                    icon={'+'}
-                    widgetTrackerActions={trackerActions}
-                    pointerPosition={pointerPos} />
-                {widgetElements.tray}
-            </Layer>
-        </Stage>
+        <div id="stage-scroll-container" onScroll={onContainerScroll}>
+            <div id="spaces-container">
+                <div className="desktop-space" >
+                    <div id="stage-container">
+                        <Stage
+                            ref={stageRef}
+                            width={props.width + SCROLL_PADDING * 2}
+                            height={props.height + SCROLL_PADDING * 2}
+                            onContextMenu={(e) => { e.evt.preventDefault() }}
+                            onMouseMove={handleMouseMove}
+                            onTouchStart={handleTouchStart}
+                            onTouchMove={handleTouchMove}
+                            onTouchEnd={handleTouchEnd}
+                        >
+                            <Layer>
+                                <BackPlate width={props.width} height={props.height} />
+                                {widgetElements.real}
+                                <NewWidgetDropdown
+                                    x={30}
+                                    y={30}
+                                    width={100}
+                                    icon={'+'}
+                                    widgetTrackerActions={trackerActions}
+                                    pointerPosition={pointerPos} />
+                                {widgetElements.tray}
+                            </Layer>
+                        </Stage>
+                    </div>
+                </div>
+                <div className="desktop-space" />
+                <div className="desktop-space" />
+                <div className="desktop-space" />
+            </div>
+        </div>
     );
 }
 

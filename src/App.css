@@ -14,7 +14,6 @@
 }
 
 .App-header {
-  background-color: #373737;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -36,6 +35,50 @@
     transform: rotate(360deg);
   }
 }
+
+body {
+  /* margin: 0; prevents a double scroll bar */
+  background-color: #373737;
+}
+
+#stage-scroll-container {
+  width: calc(100vw);
+  height: calc(100vh);
+  overflow: auto;
+  scrollbar-color: light;
+  overflow: scroll;
+
+  scroll-snap-type: both mandatory;
+}
+
+#stage-large-container {
+  width: 200vw;
+  height: 200vh;
+  overflow: hidden;
+  /* scroll-snap-align: start; */
+  /* background: linear-gradient(45deg, #4d0000, #0a0048); */
+  background-color: #373737;
+}
+
+#spaces-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.desktop-space {
+  /* display: inline-block; */
+  /* margin: 5px; */
+  border: 1px dashed #ffffff2a;
+  width: 100vw;
+  height: 100vh;
+  scroll-snap-align: center;
+  /* background-color: #373737;
+  color: #373737; */
+}
+
+/* * {
+  outline: 1px solid red;
+} */
 
 #overlay {
   position: fixed;
