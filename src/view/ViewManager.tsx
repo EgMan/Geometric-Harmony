@@ -11,6 +11,8 @@ import { Vector2d } from "konva/lib/types";
 import Konva from "konva";
 import { Shape } from "konva/lib/Shape";
 import Tonnetz from "../toys/Tonnetz";
+import ShapeNavigationTool from "./ShapeNavigationTool";
+import ToolBar from "./ToolBar";
 
 export type WidgetTracker = {
     type: WidgetType,
@@ -72,12 +74,12 @@ function ViewManager(props: Props) {
 
     const [trackedWidgets, setTrackedWidgets] = React.useState<Map<String, WidgetTracker>>(
         new Map<String, WidgetTracker>([
-            ['1', {
-                type: WidgetType.Analyzer,
-                initialPosition: { x: (props.width / 2) + (-(props.width / (2 * 8 / 3)) - 20), y: 30 },
-                width: props.width / (8 / 3),
-                height: 0,
-            }],
+            // ['1', {
+            //     type: WidgetType.Analyzer,
+            //     initialPosition: { x: (props.width / 2) + (-(props.width / (2 * 8 / 3)) - 20), y: 30 },
+            //     width: props.width / (8 / 3),
+            //     height: 0,
+            // }],
             ['2', {
                 type: WidgetType.Piano,
                 initialPosition: { x: props.width / 2, y: props.height - pianoHeight - 19 },
@@ -372,38 +374,41 @@ function ViewManager(props: Props) {
     }, [SCROLL_PADDING]);
 
     return (
-        <div id="stage-scroll-container" onScroll={onContainerScroll}>
-            <div id="spaces-container">
-                <div className="desktop-space" >
-                    <div id="stage-container">
-                        <Stage
-                            ref={stageRef}
-                            width={props.width + SCROLL_PADDING * 2}
-                            height={props.height + SCROLL_PADDING * 2}
-                            onContextMenu={(e) => { e.evt.preventDefault() }}
-                            onMouseMove={handleMouseMove}
-                            onTouchStart={handleTouchStart}
-                            onTouchMove={handleTouchMove}
-                            onTouchEnd={handleTouchEnd}
-                        >
-                            <Layer>
-                                <BackPlate width={props.width} height={props.height} />
-                                {widgetElements.real}
-                                <NewWidgetDropdown
-                                    x={30}
-                                    y={30}
-                                    width={100}
-                                    icon={'+'}
-                                    widgetTrackerActions={trackerActions}
-                                    pointerPosition={pointerPos} />
-                                {widgetElements.tray}
-                            </Layer>
-                        </Stage>
+        <div>
+            <ToolBar />
+            <div id="stage-scroll-container" onScroll={onContainerScroll}>
+                <div id="spaces-container">
+                    <div className="desktop-space" >
+                        <div id="stage-container">
+                            <Stage
+                                ref={stageRef}
+                                width={props.width + SCROLL_PADDING * 2}
+                                height={props.height + SCROLL_PADDING * 2}
+                                onContextMenu={(e) => { e.evt.preventDefault() }}
+                                onMouseMove={handleMouseMove}
+                                onTouchStart={handleTouchStart}
+                                onTouchMove={handleTouchMove}
+                                onTouchEnd={handleTouchEnd}
+                            >
+                                <Layer>
+                                    <BackPlate width={props.width} height={props.height} />
+                                    {widgetElements.real}
+                                    {/* <NewWidgetDropdown
+                                        x={30}
+                                        y={30}
+                                        width={100}
+                                        icon={'+'}
+                                        widgetTrackerActions={trackerActions}
+                                        pointerPosition={pointerPos} />
+                                    {widgetElements.tray} */}
+                                </Layer>
+                            </Stage>
+                        </div>
                     </div>
+                    <div className="desktop-space" />
+                    <div className="desktop-space" />
+                    <div className="desktop-space" />
                 </div>
-                <div className="desktop-space" />
-                <div className="desktop-space" />
-                <div className="desktop-space" />
             </div>
         </div>
     );

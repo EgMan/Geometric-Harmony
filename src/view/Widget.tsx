@@ -72,7 +72,7 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                 textAttr: {
                     text: (resizeMenuOpen ? "✓" : (fullContextMenuOpen ? "⚙" : "…")),
                     y: (resizeMenuOpen ? -19 : (fullContextMenuOpen ? -19 : -22)),
-                    fill: "white",
+                    fill: mainButtonHover || fullContextMenuOpen || resizeMenuOpen ? "white" : "rgb(255,255,255,0.25)",
                 },
                 onSelect: () => {
                     if (fullContextMenuOpen) {

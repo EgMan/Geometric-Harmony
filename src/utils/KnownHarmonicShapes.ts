@@ -16,6 +16,12 @@ export type HarmonicShape =
         groupByOverride?: string,
     }
 
+export const SINGLE_NOTE: HarmonicShape = {
+    name: "",
+    notes: [[true]],
+    type: ShapeType.SCALE,
+};
+
 export const INTERVAL_MINORSECOND: HarmonicShape = {
     name: "Minor Second / Major Seventh",
     notes: [[true], [true]],
@@ -262,7 +268,7 @@ export const SCALE_CHROMATIC: HarmonicShape = {
 
 export const knownShapes: HarmonicShape[][] = [
     [], 
-    [],
+    [SINGLE_NOTE],
 
     //todo replace # and @ with ♯ and ♭
 

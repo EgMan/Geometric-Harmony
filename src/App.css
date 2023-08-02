@@ -191,3 +191,7 @@ tr, td {
   background-color: 'rgb(255,255,255,0.1)';
   border: '1px solid transparent';
 }
+
+#shape-tool-div {
+  /* z-index: 100; */
+}
