@@ -1,12 +1,9 @@
 import React from "react";
-import { Group, Text } from 'react-konva';
-import { HarmonicShape, SCALE_CHROMATIC, ShapeType, knownShapes } from "../utils/KnownHarmonicShapes";
+import { HarmonicShape, ShapeType, knownShapes } from "../utils/KnownHarmonicShapes";
 import { getNoteName, getNoteNum } from "../utils/Utils";
-import { NoteSet, normalizeToSingleOctave, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote } from "../sound/NoteProvider";
-import { Html } from "react-konva-utils";
-import { MenuItem, FormGroup, Select, Button, Autocomplete, TextField, } from "@mui/material";
+import { NoteSet, normalizeToSingleOctave, useHomeNote, useNoteSet, useSetHomeNote } from "../sound/NoteProvider";
+import { MenuItem, FormGroup, Select, Autocomplete, TextField, } from "@mui/material";
 import { useSetActiveShape } from "../sound/HarmonicModulation";
-import { WidgetComponentProps } from "./Widget";
 import { getModeNameInShape, useGetAllExactFits } from "../toys/HarmonyAnalyzer";
 
 const inputBoxNoteNameRegex = /^([aAbBcCdDeEfFgG][b#♭♯]?)\s/
@@ -29,9 +26,6 @@ type Props =
 
 function ShapeNavigationTool(props: Props) {
 
-    const [selectedShape, setSelectedShape] = React.useState<AutocompleteOptionType | null>(null);
-    const [selectedHomeNote, setSelectedHomeNote] = React.useState<number>(-1);
-
     const setActiveShape = useSetActiveShape();
     const setHomeNote = useSetHomeNote();
 
@@ -41,18 +35,12 @@ function ShapeNavigationTool(props: Props) {
     const activeExactFits = useGetAllExactFits(activeNotes);
     const activeExactFit = activeExactFits[0];
 
-    const resetSelectedShapeExplorerItems = () => {
-        setSelectedShape(null);
-        setSelectedHomeNote(-1);
-    }
-
     const keySelectorExplorerWidth = 70;
     const submitButtonExplorerWidth = 70;
     const autocompleteExplorerWidth = props.width - keySelectorExplorerWidth - submitButtonExplorerWidth;
-    const explorerWidth = keySelectorExplorerWidth + autocompleteExplorerWidth + submitButtonExplorerWidth;
 
     const getElemKey = React.useCallback((shape: HarmonicShape, note: number) => {
-        return `${shape.name}-${note}`;
+        return `${shape.name}-${normalizeToSingleOctave(note)}`;
     }, []);
 
     const explorerElementMap: Map<String, AutocompleteOptionType> = React.useMemo(() => {
@@ -73,7 +61,6 @@ function ShapeNavigationTool(props: Props) {
                         default:
                             hasExplicitName = startingNote.length >= 2;
                     }
-                    // if (label !== "") {
                     elems.set(getElemKey(shape, startingNoteNum), {
                         label,
                         noteCount,
@@ -83,7 +70,6 @@ function ShapeNavigationTool(props: Props) {
                         shape,
                         hasExplicitName,
                     });
-                    // }
                 });
                 return elems;
             });
@@ -102,39 +88,33 @@ function ShapeNavigationTool(props: Props) {
         }));
     }, []);
 
-    const dropdownValue = React.useMemo(() => {
+    const dropdownValue: AutocompleteOptionType | null = React.useMemo(() => {
         if (homeNote === null || activeExactFit === null) return null;
         return explorerElementMap.get(getElemKey(activeExactFit?.shape, homeNote + activeExactFit.noteToFirstNoteInShapeIdxOffset)) ?? null;
     }, [activeExactFit, explorerElementMap, getElemKey, homeNote]);
 
-    if (homeNote != null) {
-        console.log("exploerElementMap", explorerElementMap);
-        console.log("key", getElemKey(activeExactFit?.shape, homeNote + activeExactFit.noteToFirstNoteInShapeIdxOffset));
-    }
-
     return (
-        // <Html transform={true} divProps={{ id: "shape-tool-div" }}>
         <div id="shape-tool-div">
             <form onSubmit={evt => { evt.preventDefault() }}>
                 <FormGroup row sx={{ backgroundColor: 'rgb(255,255,255,0)', borderRadius: '0px' }}>
                     <Select
                         id="explorer-dropdown"
-                        // value={selectedHomeNote}
                         value={homeNote}
                         label="Note layout"
                         labelId="demo-simple-select-filled-label"
-                        // onChange={e => { setSelectedHomeNote(e.target.value as number) }}
                         onChange={e => {
                             if (e.target.value != null) {
                                 setHomeNote(e.target.value as number);
-                                setActiveShape(activeExactFit.shape, e.target.value as number + (dropdownValue?.startingNoteNum ?? 0));
+                                setActiveShape(activeExactFit.shape, e.target.value as number - (dropdownValue?.startingNoteNum ?? 0));
                             }
                         }}
-                        // sx={{ border: 0 }}
                         sx={{
                             width: keySelectorExplorerWidth,
                             color: "white",
                             // backgroundColor: "rbga(0,0,0,0.5)",
+                            // '.explorer-dropdown': {
+                            //     color: "yellow",
+                            // },
                             '.MuiInputBase-input': {
                                 fontFamily: "monospace",
                             },
@@ -163,27 +143,14 @@ function ShapeNavigationTool(props: Props) {
                         size="small"
                         inputMode="text"
                         groupBy={(option) => option.shape.groupByOverride ?? `${option.shapeName} (${option.noteCount} notes)`}
-                        // value={selectedShape}
-                        value={dropdownValue ?? explorerElements[0]}
-                        //getModeNameInShape(startingNoteNum, shape)
+                        value={dropdownValue}
                         autoHighlight={true}
                         blurOnSelect={true}
                         onChange={(event, value, reason) => {
                             if (value != null) {
-                                setActiveShape(value.shape, selectedHomeNote - value.startingNoteNum);
+                                setActiveShape(value.shape, (homeNote ?? 0) - value.startingNoteNum);
                             }
-                            if (selectedHomeNote === -1) {
-                                setSelectedHomeNote(homeNote ?? 0);
-                            }
-                            // setSelectedShape(value);
                         }}
-                        // onBlur={
-                        //     (event) => {
-                        //         if (selectedShape != null && selectedHomeNote !== -1) {
-                        //             setActiveShape(selectedShape.shape, selectedHomeNote - selectedShape.startingNoteNum);
-                        //         }
-                        //     }
-                        // }
                         options={explorerElements}
                         noOptionsText="¯\_(ツ)_/¯"
                         onInputChange={(event, value, reason) => {
@@ -191,15 +158,10 @@ function ShapeNavigationTool(props: Props) {
                             if (leadingNoteName !== null) {
                                 var noteNum = getNoteNum(leadingNoteName[1]);
                                 if (noteNum !== -1) {
-                                    setSelectedHomeNote(noteNum);
+                                    setHomeNote(noteNum);
                                 }
                             }
                         }}
-                        // onChange={(event, value, reason) => {
-                        //     if (value != null && selectedShape != null) {
-                        //         setActiveShape(selectedShape.shape, selectedHomeNote - selectedShape.startingNoteNum);
-                        //     }
-                        // }}
                         filterOptions={(options, state) => {
                             var filteredOptions: AutocompleteOptionType[] = [];
                             const inputVal = state.inputValue.replace(inputBoxNoteNameRegex, "").toUpperCase().replace(/^(.)#/g, "$1").replace(/^(.)b/g, "$1");
@@ -228,40 +190,16 @@ function ShapeNavigationTool(props: Props) {
                                 fill: "white !important",
                             },
                             '.MuiAutocomplete-inputRoot': {
-                                color: "white",
+                                color: "yellow",
                                 fontFamily: "monospace",
                                 border: '1px solid transparent',
                             },
                         }}
                         renderInput={(params) => <TextField {...params} label="" />}
                     />
-                    {/* <Button type="submit" variant="contained"
-                        sx={{
-                            color: 'white',
-                            backgroundColor: 'transparent',
-                            boxShadow: 'none',
-                            '&:hover': {
-                                borderRadius: '9px',
-                                backgroundColor: 'rgb(255,255,255,0.1)',
-                            },
-                            "&.Mui-disabled": {
-                                background: 'transparent',
-                                color: "grey"
-                            }
-                        }}
-                        disabled={selectedShape == null || selectedHomeNote === -1}
-                        onClick={() => {
-                            if (selectedShape != null && selectedHomeNote !== -1) {
-                                setActiveShape(selectedShape.shape, selectedHomeNote - selectedShape.startingNoteNum);
-                                resetSelectedShapeExplorerItems();
-                                setHomeNote(selectedHomeNote);
-                            }
-                            (document.activeElement as HTMLElement).blur();
-                        }}>➔</Button> */}
                 </FormGroup>
             </form>
         </div >
-        // </Html>
     );
 }
 export default ShapeNavigationTool;

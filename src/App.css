@@ -168,10 +168,8 @@ tr, td {
 }
 
 #explorer-dropdown {
-  /* background-color: 'white'; */
-  /* background-color: rgb(255, 255, 255); */
-  /* background-color: grey; */
-  color: rgb(255, 255, 255); 
+  /* color: rgb(255, 255, 255);  */
+  color: yellow; 
   padding: 8px;
   padding-right: 32px;
   border-radius: 9px 0 0 9px;

@@ -1,13 +1,5 @@
 import React from "react";
-import { Group, Text } from 'react-konva';
-import { HarmonicShape, SCALE_CHROMATIC, ShapeType, knownShapes } from "../utils/KnownHarmonicShapes";
-import { getNoteName, getNoteNum } from "../utils/Utils";
-import { NoteSet, normalizeToSingleOctave, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote } from "../sound/NoteProvider";
-import { Html } from "react-konva-utils";
-import { MenuItem, FormGroup, Select, Button, Autocomplete, TextField, } from "@mui/material";
-import { useSetActiveShape } from "../sound/HarmonicModulation";
-import { WidgetComponentProps } from "./Widget";
-import { getModeNameInShape } from "../toys/HarmonyAnalyzer";
+import { Button } from "@mui/material";
 import ShapeNavigationTool from "./ShapeNavigationTool";
 
 type Props =
@@ -46,7 +38,7 @@ function ToolBar(props: Props) {
                 //     (document.activeElement as HTMLElement).blur();
                 // }}
                 >+</Button>
-                <Button type="submit" variant="contained"
+                {/* <Button type="submit" variant="contained"
                     sx={{
                         fontSize: "0.7em",
                         color: 'white',
@@ -61,15 +53,6 @@ function ToolBar(props: Props) {
                             color: "grey"
                         }
                     }}
-                // disabled={selectedShape == null || selectedHomeNote === -1}
-                // onClick={() => {
-                //     if (selectedShape != null && selectedHomeNote !== -1) {
-                //         setActiveShape(selectedShape.shape, selectedHomeNote - selectedShape.startingNoteNum);
-                //         resetSelectedShapeExplorerItems();
-                //         setHomeNote(selectedHomeNote);
-                //     }
-                //     (document.activeElement as HTMLElement).blur();
-                // }}
                 >⚙</Button>
                 <Button type="submit" variant="contained"
                     sx={{
@@ -86,15 +69,6 @@ function ToolBar(props: Props) {
                             color: "grey"
                         }
                     }}
-                // disabled={selectedShape == null || selectedHomeNote === -1}
-                // onClick={() => {
-                //     if (selectedShape != null && selectedHomeNote !== -1) {
-                //         setActiveShape(selectedShape.shape, selectedHomeNote - selectedShape.startingNoteNum);
-                //         resetSelectedShapeExplorerItems();
-                //         setHomeNote(selectedHomeNote);
-                //     }
-                //     (document.activeElement as HTMLElement).blur();
-                // }}
                 >?</Button>
                 <Button type="submit" variant="contained"
                     sx={{
@@ -111,15 +85,6 @@ function ToolBar(props: Props) {
                             color: "grey"
                         }
                     }}
-                // disabled={selectedShape == null || selectedHomeNote === -1}
-                // onClick={() => {
-                //     if (selectedShape != null && selectedHomeNote !== -1) {
-                //         setActiveShape(selectedShape.shape, selectedHomeNote - selectedShape.startingNoteNum);
-                //         resetSelectedShapeExplorerItems();
-                //         setHomeNote(selectedHomeNote);
-                //     }
-                //     (document.activeElement as HTMLElement).blur();
-                // }}
                 >🎹</Button>
                 <Button type="submit" variant="contained"
                     sx={{
@@ -193,11 +158,11 @@ function ToolBar(props: Props) {
                     }}
                     onClick={() => {
                     }}
-                >♬</Button>
+                >♬</Button> */}
             </div>
             <ShapeNavigationTool width={600} subdivisionCount={12} />
             <div>
-                <Button type="submit" variant="contained"
+                {/* <Button type="submit" variant="contained"
                     sx={{
                         fontSize: "0.5em",
                         color: 'white',
@@ -212,15 +177,6 @@ function ToolBar(props: Props) {
                             color: "grey"
                         }
                     }}
-                // disabled={selectedShape == null || selectedHomeNote === -1}
-                // onClick={() => {
-                //     if (selectedShape != null && selectedHomeNote !== -1) {
-                //         setActiveShape(selectedShape.shape, selectedHomeNote - selectedShape.startingNoteNum);
-                //         resetSelectedShapeExplorerItems();
-                //         setHomeNote(selectedHomeNote);
-                //     }
-                //     (document.activeElement as HTMLElement).blur();
-                // }}
                 >♡</Button>
                 <Button type="submit" variant="contained"
                     sx={{
@@ -237,16 +193,7 @@ function ToolBar(props: Props) {
                             color: "grey"
                         }
                     }}
-                // disabled={selectedShape == null || selectedHomeNote === -1}
-                // onClick={() => {
-                //     if (selectedShape != null && selectedHomeNote !== -1) {
-                //         setActiveShape(selectedShape.shape, selectedHomeNote - selectedShape.startingNoteNum);
-                //         resetSelectedShapeExplorerItems();
-                //         setHomeNote(selectedHomeNote);
-                //     }
-                //     (document.activeElement as HTMLElement).blur();
-                // }}
-                >☮</Button>
+                >☮</Button> */}
             </div>
         </div>
     );
