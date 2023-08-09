@@ -115,6 +115,10 @@ function ShapeNavigationTool(props: Props) {
                             // '.explorer-dropdown': {
                             //     color: "yellow",
                             // },
+                            // "& .MuiSvgIcon-root": {
+                            //     right: "unset",
+                            //     left: "0px",
+                            // },
                             '.MuiInputBase-input': {
                                 fontFamily: "monospace",
                             },
