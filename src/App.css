@@ -66,14 +66,22 @@ body {
 }
 
 .desktop-space {
-  /* display: inline-block; */
-  /* margin: 5px; */
-  border: 1px dashed #ffffff2a;
   width: 100vw;
   height: 100vh;
   scroll-snap-align: center;
-  /* background-color: #373737;
-  color: #373737; */
+}
+
+.space1 {
+  border-right: 1px dashed #ffffff48;
+}
+.space2 {
+  border-bottom: 1px dashed #ffffff48;
+}
+.space3 {
+  border-top: 1px dashed #ffffff48;
+}
+.space4 {
+  border-left: 1px dashed #ffffff48;
 }
 
 /* * {

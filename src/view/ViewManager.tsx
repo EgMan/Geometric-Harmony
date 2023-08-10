@@ -389,7 +389,7 @@ function ViewManager(props: Props) {
             <ToolBar />
             <div id="stage-scroll-container" onScroll={onContainerScroll}>
                 <div id="spaces-container">
-                    <div className="desktop-space" >
+                    <div className="desktop-space space1" >
                         <div id="stage-container">
                             <Stage
                                 ref={stageRef}
@@ -416,9 +416,9 @@ function ViewManager(props: Props) {
                             </Stage>
                         </div>
                     </div>
-                    <div className="desktop-space" />
-                    <div className="desktop-space" />
-                    <div className="desktop-space" />
+                    <div className="desktop-space space2" />
+                    <div className="desktop-space space3" />
+                    <div className="desktop-space space4" />
                 </div>
             </div>
         </div>
