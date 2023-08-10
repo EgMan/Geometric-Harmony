@@ -7,6 +7,7 @@ import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import { addVectors, setPointer, useShadowVector } from "../utils/Utils";
 import { WidgetTracker, WidgetTrackerActions } from "./ViewManager";
+import { getCurrentSpace, useGotoSpaceRateLimited } from "../utils/SpacesUtils";
 
 export type WidgetComponentProps = {
     fromWidget: {
@@ -59,6 +60,8 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
 
     const contextMenuRef = React.useRef<Konva.Group>(null);
     const widgetRef = React.useRef<Konva.Group>(null);
+
+    const gotoSpaceRateLimited = useGotoSpaceRateLimited();
 
     const [mainButtonHover, setMainButtonHover] = React.useState(false);
     const mainButtonAttr = React.useMemo(() => {
@@ -120,9 +123,33 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
         containerPosition: { x: - contextMenuOffset.x, y: - contextMenuOffset.y },
     }
 
+    const POINTER_DIST_TO_EDGE_NAVIGATE_SPACE = 20;
     const onDrag = React.useCallback((event: KonvaEventObject<DragEvent>) => {
         setDraggedPosition(event.currentTarget.position());
-    }, [setDraggedPosition]);
+        var stage = event.target.getStage();
+
+        // Scroll to adjacent space if dragging near edge
+        if (stage !== null) {
+            var pointerPos = stage.getPointerPosition();
+            if (pointerPos !== null) {
+                const { row, col } = getCurrentSpace();
+                pointerPos = stage.getAbsoluteTransform().copy().invert().point(pointerPos);
+                pointerPos = { x: pointerPos.x - (col * window.innerWidth), y: pointerPos.y - (row * window.innerHeight) };
+                if (pointerPos.y + POINTER_DIST_TO_EDGE_NAVIGATE_SPACE > window.innerHeight) {
+                    gotoSpaceRateLimited(row + 1, col);
+                }
+                if (pointerPos.y - POINTER_DIST_TO_EDGE_NAVIGATE_SPACE < 0) {
+                    gotoSpaceRateLimited(row - 1, col);
+                }
+                if (pointerPos.x + POINTER_DIST_TO_EDGE_NAVIGATE_SPACE > window.innerWidth) {
+                    gotoSpaceRateLimited(row, col + 1);
+                }
+                if (pointerPos.x - POINTER_DIST_TO_EDGE_NAVIGATE_SPACE < 0) {
+                    gotoSpaceRateLimited(row, col - 1);
+                }
+            }
+        }
+    }, [gotoSpaceRateLimited, setDraggedPosition]);
 
     const onDragEnd = React.useCallback((event: KonvaEventObject<DragEvent>) => {
         setDragComplete({ x: event.currentTarget.x() + initialPosition.x, y: event.currentTarget.y() + initialPosition.y });

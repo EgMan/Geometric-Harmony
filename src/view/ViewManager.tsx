@@ -13,6 +13,7 @@ import { Shape } from "konva/lib/Shape";
 import Tonnetz from "../toys/Tonnetz";
 import ShapeNavigationTool from "./ShapeNavigationTool";
 import ToolBar from "./ToolBar";
+import gotoSpace, { getCurrentSpace, realignSpaces } from "../utils/SpacesUtils";
 
 export type WidgetTracker = {
     type: WidgetType,
@@ -361,6 +362,8 @@ function ViewManager(props: Props) {
 
     const stageRef = React.useRef<Konva.Stage>(null);
 
+    const timeout = React.useRef<number | null>(null);
+
     const SCROLL_PADDING = 100;
     const onContainerScroll = React.useCallback(() => {
         var scrollContainer = document.getElementById('stage-scroll-container');
@@ -371,7 +374,15 @@ function ViewManager(props: Props) {
             stageContainer.style.transform = 'translate(' + dx + 'px, ' + dy + 'px)';
             stageRef.current?.position({ x: -dx, y: -dy });
         }
-    }, [SCROLL_PADDING]);
+
+        // If it has been 750ms since the last scroll event, realign the spaces
+        if (timeout.current !== null) {
+            window.clearTimeout(timeout.current);
+        }
+        timeout.current = window.setTimeout(function () {
+            realignSpaces();
+        }, 750)
+    }, []);
 
     return (
         <div>
