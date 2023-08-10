@@ -1,40 +1,37 @@
 import React from "react";
-import { Button, ClickAwayListener, Divider, ListItemIcon, ListItemText, Menu, MenuItem, MenuList, Paper, Popover, Popper, ThemeProvider, Typography, createTheme } from "@mui/material";
+import { Button, ClickAwayListener, Divider, ListItemIcon, ListItemText, Menu, MenuItem, MenuList, Paper, Popover, Popper, ThemeProvider, Typography, colors, createTheme } from "@mui/material";
 import ShapeNavigationTool from "./ShapeNavigationTool";
-import ContentCut from '@mui/icons-material/ContentCut';
-import ContentCopy from '@mui/icons-material/ContentCopy';
-import ContentPaste from '@mui/icons-material/ContentPaste';
 import PianoRoundedIcon from '@mui/icons-material/PianoRounded';
-import Cloud from '@mui/icons-material/Cloud';
-
 
 type Props =
     {
-        // width: number
-        // subdivisionCount: number
     }
-
-function ToolBar(props: Props) {
-    const [muted, setIsMuted] = React.useState(true);
-    const addButtonRef = React.useRef(null);
-    const [addDropdownOpen, setAddDropdownOpen] = React.useState(false);
-    const theme = createTheme({
-        components: {
-            MuiPaper: {
-                styleOverrides: {
-                    root: {
-                        backgroundColor: 'rgb(255,255,255,0.04)',
-                        backdropFilter: 'blur(13px)',
-                        color: "white",
-                        boxShadow: 'none',
-                    },
+export const toolbarTheme = createTheme({
+    palette: {
+        primary: {
+            main: colors.yellow[400],
+        },
+    },
+    components: {
+        MuiPaper: {
+            styleOverrides: {
+                root: {
+                    backgroundColor: 'rgb(255,255,255,0.04)',
+                    backdropFilter: 'blur(13px)',
+                    color: "white",
+                    boxShadow: 'none',
                 },
             },
         },
-    });
+    },
+});
+
+function ToolBar(props: Props) {
+    const addButtonRef = React.useRef(null);
+    const [addDropdownOpen, setAddDropdownOpen] = React.useState(false);
     return (
         <div>
-            <div ref={addButtonRef} style={{ position: "fixed", transform: "translate(0, -5px)", zIndex: 1, width: "100vw", backgroundColor: "rgb(255,255,255,0.04)", borderRadius: "9px", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <div ref={addButtonRef} style={{ position: "fixed", transform: "translate(0, 0px)", zIndex: 1, width: "100vw", backgroundColor: "rgb(255,255,255,0.04)", borderRadius: "9px", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                 <div>
                     <Button type="submit" variant="contained"
                         sx={{
@@ -214,7 +211,7 @@ function ToolBar(props: Props) {
                 </div>
             </div>
             <div style={{ width: 320, maxWidth: '100%', zIndex: 1 }}>
-                <ThemeProvider theme={theme}>
+                <ThemeProvider theme={toolbarTheme}>
                     <Popover
                         sx={{ boxShadow: 0 }}
                         open={addDropdownOpen}

@@ -2,9 +2,10 @@ import React from "react";
 import { HarmonicShape, ShapeType, knownShapes } from "../utils/KnownHarmonicShapes";
 import { getNoteName, getNoteNum } from "../utils/Utils";
 import { NoteSet, normalizeToSingleOctave, useHomeNote, useNoteSet, useSetHomeNote } from "../sound/NoteProvider";
-import { MenuItem, FormGroup, Select, Autocomplete, TextField, } from "@mui/material";
+import { MenuItem, FormGroup, Select, Autocomplete, TextField, ThemeProvider, styled, } from "@mui/material";
 import { useSetActiveShape } from "../sound/HarmonicModulation";
 import { getModeNameInShape, useGetAllExactFits } from "../toys/HarmonyAnalyzer";
+import { toolbarTheme } from "./ToolBar";
 
 const inputBoxNoteNameRegex = /^([aAbBcCdDeEfFgG][b#♭♯]?)\s/
 
@@ -23,6 +24,20 @@ type Props =
         width: number
         subdivisionCount: number
     }
+
+const AutocompleteGroupHeader = styled('div')(({ theme }) => ({
+    position: 'sticky',
+    top: '-8px',
+    padding: '4px 10px',
+    color: 'white',
+    backgroundColor: 'rgb(48,48,48,0.85)',
+    fontStyle: 'bold',
+}));
+
+const AutocompleteGroupItems = styled('ul')({
+    fontFamily: 'monospace',
+    padding: 0,
+});
 
 function ShapeNavigationTool(props: Props) {
 
@@ -96,112 +111,126 @@ function ShapeNavigationTool(props: Props) {
     return (
         <div id="shape-tool-div">
             <form onSubmit={evt => { evt.preventDefault() }}>
-                <FormGroup row sx={{ backgroundColor: 'rgb(255,255,255,0)', borderRadius: '0px' }}>
-                    <Select
-                        id="explorer-dropdown"
-                        value={homeNote}
-                        label="Note layout"
-                        labelId="demo-simple-select-filled-label"
-                        onChange={e => {
-                            if (e.target.value != null) {
-                                setHomeNote(e.target.value as number);
-                                setActiveShape(activeExactFit.shape, e.target.value as number - (dropdownValue?.startingNoteNum ?? 0));
-                            }
-                        }}
-                        sx={{
-                            width: keySelectorExplorerWidth,
-                            color: "white",
-                            // backgroundColor: "rbga(0,0,0,0.5)",
-                            // '.explorer-dropdown': {
-                            //     color: "yellow",
-                            // },
-                            // "& .MuiSvgIcon-root": {
-                            //     right: "unset",
-                            //     left: "0px",
-                            // },
-                            '.MuiInputBase-input': {
-                                fontFamily: "monospace",
-                            },
-                            '.MuiOutlinedInput-notchedOutline': {
-                                borderColor: 'transparent',
-                                borderRadius: '9px',
-                            },
-                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                border: '1px solid transparent',
-                            },
-                            '&:hover .MuiOutlinedInput-notchedOutline': {
-                                borderRadius: '9px',
-                                backgroundColor: 'rgb(255,255,255,0.1)',
-                                border: '1px solid transparent',
-                            },
-                            '.MuiSvgIcon-root ': {
-                                fill: "white !important",
-                            }
-                        }}
-                    >
-                        {keySelectors}
-                    </Select>
-                    <Autocomplete
-                        disablePortal
-                        id="explorerinput"
-                        size="small"
-                        inputMode="text"
-                        groupBy={(option) => option.shape.groupByOverride ?? `${option.shapeName} (${option.noteCount} notes)`}
-                        value={dropdownValue}
-                        autoHighlight={true}
-                        blurOnSelect={true}
-                        onChange={(event, value, reason) => {
-                            if (value != null) {
-                                setActiveShape(value.shape, (homeNote ?? 0) - value.startingNoteNum);
-                            }
-                        }}
-                        options={explorerElements}
-                        noOptionsText="¯\_(ツ)_/¯"
-                        onInputChange={(event, value, reason) => {
-                            var leadingNoteName = value.match(inputBoxNoteNameRegex);
-                            if (leadingNoteName !== null) {
-                                var noteNum = getNoteNum(leadingNoteName[1]);
-                                if (noteNum !== -1) {
-                                    setHomeNote(noteNum);
+                <ThemeProvider theme={toolbarTheme}>
+                    <FormGroup row sx={{ backgroundColor: 'rgb(255,255,255,0)', borderRadius: '0px' }}>
+                        <Select
+                            id="explorer-dropdown"
+                            value={homeNote}
+                            label="Note layout"
+                            labelId="demo-simple-select-filled-label"
+                            onChange={e => {
+                                if (e.target.value != null) {
+                                    setHomeNote(e.target.value as number);
+                                    setActiveShape(activeExactFit.shape, e.target.value as number - (dropdownValue?.startingNoteNum ?? 0));
                                 }
-                            }
-                        }}
-                        filterOptions={(options, state) => {
-                            var filteredOptions: AutocompleteOptionType[] = [];
-                            const inputVal = state.inputValue.replace(inputBoxNoteNameRegex, "").toUpperCase().replace(/^(.)#/g, "$1").replace(/^(.)b/g, "$1");
-                            options.forEach((option) => {
-                                if ((!option.hasExplicitName) && (!inputVal.match(/(M$)|(MO$)|(MOD$)|(MODE[^A-Z]?)/g))) return;
-                                if (option.label.toUpperCase().includes(inputVal)) filteredOptions.push(option);
-                                else if (option.shapeName.toUpperCase().includes(inputVal)) filteredOptions.push(option);
-                            });
-                            return filteredOptions;
-                        }}
-                        sx={{
-                            minWidth: autocompleteExplorerWidth, display: 'inline-block', bgcolor: 'transparent', color: 'red',
-                            '.MuiOutlinedInput-notchedOutline': {
-                                borderColor: 'transparent',
-                                borderRadius: '9px',
-                            },
-                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                border: '1px solid transparent',
-                            },
-                            '&:hover .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline': {
-                                borderRadius: '9px',
-                                backgroundColor: 'rgb(255,255,255,0.1)',
-                                border: '1px solid transparent',
-                            },
-                            '.MuiSvgIcon-root ': {
-                                fill: "white !important",
-                            },
-                            '.MuiAutocomplete-inputRoot': {
-                                color: "yellow",
-                                fontFamily: "monospace",
-                                border: '1px solid transparent',
-                            },
-                        }}
-                        renderInput={(params) => <TextField {...params} label="" />}
-                    />
-                </FormGroup>
+                            }}
+                            sx={{
+                                width: keySelectorExplorerWidth,
+                                color: "white",
+                                // backgroundColor: "rbga(0,0,0,0.5)",
+                                // '.explorer-dropdown': {
+                                //     color: "yellow",
+                                // },
+                                // "& .MuiSvgIcon-root": {
+                                //     right: "unset",
+                                //     left: "0px",
+                                // },
+                                '.MuiInputBase-input': {
+                                    fontFamily: "monospace",
+                                },
+                                '.MuiOutlinedInput-notchedOutline': {
+                                    borderColor: 'transparent',
+                                    borderRadius: '9px',
+                                },
+                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                    border: '1px solid transparent',
+                                },
+                                '&:hover .MuiOutlinedInput-notchedOutline': {
+                                    borderRadius: '9px',
+                                    backgroundColor: 'rgb(255,255,255,0.1)',
+                                    border: '1px solid transparent',
+                                },
+                                '.MuiSvgIcon-root ': {
+                                    fill: "white !important",
+                                }
+                            }}
+                        >
+                            {keySelectors}
+                        </Select>
+                        <Autocomplete
+                            disablePortal
+                            id="explorerinput"
+                            size="small"
+                            inputMode="text"
+                            groupBy={(option) => option.shape.groupByOverride ?? `${option.shapeName} (${option.noteCount} notes)`}
+                            value={dropdownValue}
+                            autoHighlight={true}
+                            blurOnSelect={true}
+                            onChange={(event, value, reason) => {
+                                if (value != null) {
+                                    setActiveShape(value.shape, (homeNote ?? 0) - value.startingNoteNum);
+                                }
+                            }}
+                            options={explorerElements}
+                            noOptionsText="¯\_(ツ)_/¯"
+                            onInputChange={(event, value, reason) => {
+                                var leadingNoteName = value.match(inputBoxNoteNameRegex);
+                                if (leadingNoteName !== null) {
+                                    var noteNum = getNoteNum(leadingNoteName[1]);
+                                    if (noteNum !== -1) {
+                                        setHomeNote(noteNum);
+                                    }
+                                }
+                            }}
+                            filterOptions={(options, state) => {
+                                var filteredOptions: AutocompleteOptionType[] = [];
+                                const inputVal = state.inputValue.replace(inputBoxNoteNameRegex, "").toUpperCase().replace(/^(.)#/g, "$1").replace(/^(.)b/g, "$1");
+                                options.forEach((option) => {
+                                    if ((!option.hasExplicitName) && (!inputVal.match(/(M$)|(MO$)|(MOD$)|(MODE[^A-Z]?)/g))) return;
+                                    if (option.label.toUpperCase().includes(inputVal)) filteredOptions.push(option);
+                                    else if (option.shapeName.toUpperCase().includes(inputVal)) filteredOptions.push(option);
+                                });
+                                return filteredOptions;
+                            }}
+                            renderGroup={(params) => (
+                                <li key={params.key}>
+                                    <AutocompleteGroupHeader>{params.group}</AutocompleteGroupHeader>
+                                    <AutocompleteGroupItems>{params.children}</AutocompleteGroupItems>
+                                </li>
+                            )}
+                            sx={{
+                                minWidth: autocompleteExplorerWidth, display: 'inline-block', bgcolor: 'transparent', color: 'red',
+                                '.MuiOutlinedInput-notchedOutline': {
+                                    borderColor: 'transparent',
+                                    borderRadius: '9px',
+                                },
+                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                    border: '1px solid transparent',
+                                },
+                                '&:hover .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline': {
+                                    borderRadius: '9px',
+                                    backgroundColor: 'rgb(255,255,255,0.1)',
+                                    border: '1px solid transparent',
+                                },
+                                '.MuiSvgIcon-root ': {
+                                    fill: "white !important",
+                                },
+                                '.MuiAutocomplete-inputRoot': {
+                                    color: "yellow",
+                                    fontFamily: "monospace",
+                                    border: '1px solid transparent',
+                                },
+                                '.MuiAutocomplete-groupLabel': {
+                                    color: "yellow",
+                                    backgroundColor: "rgb(255,255,255,0.1)",
+                                    fontFamily: "monospace",
+                                    border: '1px solid transparent',
+                                },
+                            }}
+                            renderInput={(params) => <TextField {...params} label="" />}
+                        />
+                    </FormGroup>
+                </ThemeProvider>
             </form>
         </div >
     );
