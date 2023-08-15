@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, ClickAwayListener, Divider, ListItemIcon, ListItemText, Menu, MenuItem, MenuList, Paper, Popover, Popper, ThemeProvider, Typography, colors, createTheme } from "@mui/material";
+import { Button, ClickAwayListener, Divider, ListItemIcon, ListItemText, Menu, MenuItem, MenuList, Paper, Popover, Popper, ThemeProvider, Typography, colors, createTheme, makeStyles } from "@mui/material";
 import ShapeNavigationTool from "./ShapeNavigationTool";
 import PianoRoundedIcon from '@mui/icons-material/PianoRounded';
 
@@ -11,6 +11,9 @@ export const toolbarTheme = createTheme({
         primary: {
             main: colors.yellow[400],
         },
+    },
+    typography: {
+        fontFamily: 'monospace',
     },
     components: {
         MuiPaper: {
@@ -31,7 +34,7 @@ function ToolBar(props: Props) {
     const [addDropdownOpen, setAddDropdownOpen] = React.useState(false);
     return (
         <div>
-            <div ref={addButtonRef} style={{ position: "fixed", transform: "translate(0, 0px)", zIndex: 1, width: "100vw", backgroundColor: "rgb(255,255,255,0.04)", borderRadius: "9px", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <div ref={addButtonRef} style={{ position: "fixed", transform: "translate(0, 0px)", zIndex: 1, width: "100vw", backgroundColor: "rgb(255,255,255,0.04)", borderBottomLeftRadius: "9px", borderBottomRightRadius: "9px", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                 <div>
                     <Button type="submit" variant="contained"
                         sx={{
@@ -40,7 +43,10 @@ function ToolBar(props: Props) {
                             backgroundColor: 'transparent',
                             boxShadow: 'none',
                             '&:hover': {
-                                borderRadius: '9px',
+                                borderTopLeftRadius: '0px',
+                                borderTopRightRadius: '9px',
+                                borderBottomLeftRadius: '9px',
+                                borderBottomRightRadius: '9px',
                                 backgroundColor: 'rgb(255,255,255,0.1)',
                             },
                             "&.Mui-disabled": {
@@ -213,7 +219,6 @@ function ToolBar(props: Props) {
             <div style={{ width: 320, maxWidth: '100%', zIndex: 1 }}>
                 <ThemeProvider theme={toolbarTheme}>
                     <Popover
-                        sx={{ boxShadow: 0 }}
                         open={addDropdownOpen}
                         onClose={() => setAddDropdownOpen(false)}
                         anchorEl={addButtonRef.current}
@@ -227,9 +232,7 @@ function ToolBar(props: Props) {
                         // transition
                         disablePortal
                     >
-                        <Paper
-                            sx={{ boxShadow: 0 }}
-                        >
+                        <Paper>
                             <ClickAwayListener onClickAway={() => setAddDropdownOpen(false)}>
                                 <MenuList
                                 // open={addDropdownOpen}

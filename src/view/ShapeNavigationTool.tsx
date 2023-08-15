@@ -32,6 +32,7 @@ const AutocompleteGroupHeader = styled('div')(({ theme }) => ({
     color: 'white',
     backgroundColor: 'rgb(48,48,48,0.85)',
     fontStyle: 'bold',
+    fontFamily: 'sans-serif',
 }));
 
 const AutocompleteGroupItems = styled('ul')({
