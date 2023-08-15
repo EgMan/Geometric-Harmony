@@ -232,6 +232,9 @@ function ShapeNavigationTool(props: Props) {
                                     fontFamily: "monospace",
                                     border: '1px solid transparent',
                                 },
+                                "& .MuiOutlinedInput-root": {
+                                    paddingRight: "10px!important",
+                                },
                                 '.MuiAutocomplete-groupLabel': {
                                     color: "yellow",
                                     backgroundColor: "rgb(255,255,255,0.1)",
