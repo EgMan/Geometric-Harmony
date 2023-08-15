@@ -2,10 +2,12 @@ import React from "react";
 import { HarmonicShape, ShapeType, knownShapes } from "../utils/KnownHarmonicShapes";
 import { getNoteName, getNoteNum } from "../utils/Utils";
 import { NoteSet, normalizeToSingleOctave, useHomeNote, useNoteSet, useSetHomeNote } from "../sound/NoteProvider";
-import { MenuItem, FormGroup, Select, Autocomplete, TextField, ThemeProvider, styled, } from "@mui/material";
+import { MenuItem, FormGroup, Select, Autocomplete, TextField, ThemeProvider, styled, InputAdornment, } from "@mui/material";
 import { useSetActiveShape } from "../sound/HarmonicModulation";
 import { getModeNameInShape, useGetAllExactFits } from "../toys/HarmonyAnalyzer";
 import { toolbarTheme } from "./ToolBar";
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 
 const inputBoxNoteNameRegex = /^([aAbBcCdDeEfFgG][b#♭♯]?)\s/
 
@@ -54,6 +56,11 @@ function ShapeNavigationTool(props: Props) {
     const keySelectorExplorerWidth = 70;
     const submitButtonExplorerWidth = 70;
     const autocompleteExplorerWidth = props.width - keySelectorExplorerWidth - submitButtonExplorerWidth;
+
+    const [autocompleteOpen, setAutocompleteOpen] = React.useState(false);
+    const closeAutocomplete = () => setAutocompleteOpen(false);
+    const openAutocomplete = () => setAutocompleteOpen(true);
+    const toggleAutocomplete = () => setAutocompleteOpen(val => !val);
 
     const getElemKey = React.useCallback((shape: HarmonicShape, note: number) => {
         return `${shape.name}-${normalizeToSingleOctave(note)}`;
@@ -132,10 +139,10 @@ function ShapeNavigationTool(props: Props) {
                                 // '.explorer-dropdown': {
                                 //     color: "yellow",
                                 // },
-                                // "& .MuiSvgIcon-root": {
-                                //     right: "unset",
-                                //     left: "0px",
-                                // },
+                                "& .MuiSvgIcon-root": {
+                                    right: "unset",
+                                    left: "6px",
+                                },
                                 '.MuiInputBase-input': {
                                     fontFamily: "monospace",
                                 },
@@ -159,6 +166,9 @@ function ShapeNavigationTool(props: Props) {
                             {keySelectors}
                         </Select>
                         <Autocomplete
+                            open={autocompleteOpen}
+                            onOpen={openAutocomplete}
+                            onClose={closeAutocomplete}
                             disablePortal
                             id="explorerinput"
                             size="small"
@@ -199,6 +209,7 @@ function ShapeNavigationTool(props: Props) {
                                     <AutocompleteGroupItems>{params.children}</AutocompleteGroupItems>
                                 </li>
                             )}
+                            popupIcon={null}
                             sx={{
                                 minWidth: autocompleteExplorerWidth, display: 'inline-block', bgcolor: 'transparent', color: 'red',
                                 '.MuiOutlinedInput-notchedOutline': {
@@ -228,11 +239,18 @@ function ShapeNavigationTool(props: Props) {
                                     border: '1px solid transparent',
                                 },
                             }}
-                            renderInput={(params) => <TextField {...params} label="" />}
+                            renderInput={(params) =>
+                                <TextField {...params}
+                                    InputProps={{
+                                        ...params.InputProps,
+                                        startAdornment: <InputAdornment position="start" onClick={toggleAutocomplete}> {autocompleteOpen ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />
+                                        }</InputAdornment>,
+                                    }}
+                                    label="" />}
                         />
                     </FormGroup>
                 </ThemeProvider>
-            </form>
+            </form >
         </div >
     );
 }

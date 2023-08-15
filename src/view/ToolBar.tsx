@@ -193,7 +193,10 @@ function ToolBar(props: Props) {
                     }}
                 >♬</Button> */}
                 </div>
-                <ShapeNavigationTool width={600} subdivisionCount={12} />
+                <div style={{ marginLeft: "200px" }}>
+                    {/* TODO get rid of this spacing and auto resize nav tool*/}
+                    <ShapeNavigationTool width={600} subdivisionCount={12} />
+                </div>
                 <div>
                     {/* <Button type="submit" variant="contained"
                     sx={{
