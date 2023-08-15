@@ -4,6 +4,8 @@ import ShapeNavigationTool from "./ShapeNavigationTool";
 import { WidgetTrackerActions, WidgetType } from "./ViewManager";
 import { Stage } from "konva/lib/Stage";
 import { getCurrentSpace } from "../utils/SpacesUtils";
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import ConstructionIcon from '@mui/icons-material/Construction';
 
 type Props =
     {
@@ -251,28 +253,40 @@ function ToolBar(props: Props) {
                                 // anchorEl={addButtonRef.current}
                                 >
                                     <MenuItem onClick={() => addNewWidget(WidgetType.Piano)}>
+                                        <ListItemIcon>
+                                            <MusicNoteIcon style={{ color: "white" }} fontSize="small" />
+                                        </ListItemIcon>
                                         <ListItemText>Piano</ListItemText>
-                                        {/* <ListItemIcon>
-                                            <PianoRoundedIcon style={{ color: "white" }} fontSize="small" />
-                                        </ListItemIcon> */}
                                         {/* <Typography variant="body2">
                                             ⌘X
                                         </Typography> */}
                                     </MenuItem>
                                     <MenuItem onClick={() => addNewWidget(WidgetType.Guitar)}>
+                                        <ListItemIcon>
+                                            <MusicNoteIcon style={{ color: "white" }} fontSize="small" />
+                                        </ListItemIcon>
                                         <ListItemText>Guitar</ListItemText>
                                     </MenuItem>
-                                    <MenuItem onClick={() => addNewWidget(WidgetType.Analyzer)}>
-                                        <ListItemText>Anayzer</ListItemText>
-                                    </MenuItem>
                                     <MenuItem onClick={() => addNewWidget(WidgetType.Tonnetz)}>
+                                        <ListItemIcon>
+                                            <ConstructionIcon style={{ color: "white" }} fontSize="small" />
+                                        </ListItemIcon>
                                         <ListItemText>Tonnetz Diagram</ListItemText>
                                     </MenuItem>
                                     {/* <MenuItem onClick={() => addNewWidget(WidgetType.Wheel)}>
                                         <ListItemText>Wheel of Fifths</ListItemText>
                                     </MenuItem> */}
                                     <MenuItem onClick={() => addNewWidget(WidgetType.Wheel)}>
+                                        <ListItemIcon>
+                                            <ConstructionIcon style={{ color: "white" }} fontSize="small" />
+                                        </ListItemIcon>
                                         <ListItemText>Wheel of Semitones</ListItemText>
+                                    </MenuItem>
+                                    <MenuItem onClick={() => addNewWidget(WidgetType.Analyzer)}>
+                                        <ListItemIcon>
+                                            <ConstructionIcon style={{ color: "white" }} fontSize="small" />
+                                        </ListItemIcon>
+                                        <ListItemText>Harmonic Analyzer</ListItemText>
                                     </MenuItem>
                                 </MenuList>
                             </ClickAwayListener>
