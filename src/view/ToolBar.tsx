@@ -3,6 +3,7 @@ import { Button, ClickAwayListener, Divider, ListItemIcon, ListItemText, Menu, M
 import ShapeNavigationTool from "./ShapeNavigationTool";
 import { WidgetTrackerActions, WidgetType } from "./ViewManager";
 import { Stage } from "konva/lib/Stage";
+import { getCurrentSpace } from "../utils/SpacesUtils";
 
 type Props =
     {
@@ -37,7 +38,8 @@ function ToolBar(props: Props) {
     const [addDropdownOpen, setAddDropdownOpen] = React.useState(false);
     const addNewWidget = React.useCallback((widgetType: WidgetType) => {
         // const pos = props.stageRef.current?.getPointerPosition() ?? undefined;
-        const pos = { x: window.innerWidth / 2, y: window.innerHeight / 7 };
+        const space = getCurrentSpace();
+        const pos = { x: (space.col + 0.5) * window.innerWidth, y: (space.row + 0.15) * window.innerHeight };
         props.widgetTrackerActions.spawnWidget(widgetType, pos);
         setAddDropdownOpen(false);
     }, [props.widgetTrackerActions]);
