@@ -4,16 +4,14 @@ import HarmonyAnalyzer from "../toys/HarmonyAnalyzer";
 import Wheel from "../toys/Wheel";
 import Piano from "../toys/Piano";
 import StringInstrument from "../toys/StringInstrument";
-import NewWidgetDropdown from "./NewWidgetDropdown";
 import React from "react";
 import Widget from "./Widget";
 import { Vector2d } from "konva/lib/types";
 import Konva from "konva";
 import { Shape } from "konva/lib/Shape";
 import Tonnetz from "../toys/Tonnetz";
-import ShapeNavigationTool from "./ShapeNavigationTool";
 import ToolBar from "./ToolBar";
-import gotoSpace, { getCurrentSpace, realignSpaces } from "../utils/SpacesUtils";
+import { realignSpaces } from "../utils/SpacesUtils";
 
 export type WidgetTracker = {
     type: WidgetType,
