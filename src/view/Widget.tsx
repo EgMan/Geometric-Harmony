@@ -31,7 +31,7 @@ type WidgetProps<TElem extends React.ElementType> = {
     contextMenuOffset: Vector2d;
     isMaxamized: boolean;
     setDraggedPosition: (val: Vector2d) => void;
-    setDragComplete: (val: Vector2d) => void;
+    setDragComplete?: (val: Vector2d) => void;
     lockAspectRatio?: boolean | undefined
     // width: number,
     // height: number,
@@ -152,7 +152,7 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
     }, [gotoSpaceRateLimited, setDraggedPosition]);
 
     const onDragEnd = React.useCallback((event: KonvaEventObject<DragEvent>) => {
-        setDragComplete({ x: event.currentTarget.x() + initialPosition.x, y: event.currentTarget.y() + initialPosition.y });
+        setDragComplete?.({ x: event.currentTarget.x() + initialPosition.x, y: event.currentTarget.y() + initialPosition.y });
     }, [initialPosition.x, initialPosition.y, setDragComplete]);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
