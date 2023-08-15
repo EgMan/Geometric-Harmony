@@ -1,10 +1,13 @@
 import React from "react";
 import { Button, ClickAwayListener, Divider, ListItemIcon, ListItemText, Menu, MenuItem, MenuList, Paper, Popover, Popper, ThemeProvider, Typography, colors, createTheme, makeStyles } from "@mui/material";
 import ShapeNavigationTool from "./ShapeNavigationTool";
-import PianoRoundedIcon from '@mui/icons-material/PianoRounded';
+import { WidgetTrackerActions, WidgetType } from "./ViewManager";
+import { Stage } from "konva/lib/Stage";
 
 type Props =
     {
+        widgetTrackerActions: WidgetTrackerActions,
+        stageRef: React.RefObject<Stage>,
     }
 export const toolbarTheme = createTheme({
     palette: {
@@ -32,6 +35,12 @@ export const toolbarTheme = createTheme({
 function ToolBar(props: Props) {
     const addButtonRef = React.useRef(null);
     const [addDropdownOpen, setAddDropdownOpen] = React.useState(false);
+    const addNewWidget = React.useCallback((widgetType: WidgetType) => {
+        // const pos = props.stageRef.current?.getPointerPosition() ?? undefined;
+        const pos = { x: window.innerWidth / 2, y: window.innerHeight / 7 };
+        props.widgetTrackerActions.spawnWidget(widgetType, pos);
+        setAddDropdownOpen(false);
+    }, [props.widgetTrackerActions]);
     return (
         <div>
             <div ref={addButtonRef} style={{ position: "fixed", transform: "translate(0, 0px)", zIndex: 1, width: "100vw", backgroundColor: "rgb(255,255,255,0.04)", borderBottomLeftRadius: "9px", borderBottomRightRadius: "9px", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
@@ -239,55 +248,35 @@ function ToolBar(props: Props) {
                                 // onClose={() => setAddDropdownOpen(false)}
                                 // anchorEl={addButtonRef.current}
                                 >
-                                    <MenuItem>
+                                    <MenuItem onClick={() => addNewWidget(WidgetType.Piano)}>
                                         <ListItemText>Piano</ListItemText>
-                                        <ListItemIcon>
+                                        {/* <ListItemIcon>
                                             <PianoRoundedIcon style={{ color: "white" }} fontSize="small" />
-                                        </ListItemIcon>
+                                        </ListItemIcon> */}
                                         {/* <Typography variant="body2">
                                             ⌘X
                                         </Typography> */}
                                     </MenuItem>
-                                    <MenuItem>
+                                    <MenuItem onClick={() => addNewWidget(WidgetType.Guitar)}>
                                         <ListItemText>Guitar</ListItemText>
-                                        <ListItemIcon>
-                                            <PianoRoundedIcon style={{ color: "white" }} fontSize="small" />
-                                        </ListItemIcon>
-                                        {/* <Typography variant="body2">
-                                            ⌘X
-                                        </Typography> */}
                                     </MenuItem>
-                                    {/* <MenuItem>
-                                        <ListItemIcon>
-                                            <ContentCopy style={{ color: "white" }} fontSize="small" />
-                                        </ListItemIcon>
-                                        <ListItemText>Copy</ListItemText>
-                                        <Typography variant="body2">
-                                            ⌘C
-                                        </Typography>
+                                    <MenuItem onClick={() => addNewWidget(WidgetType.Analyzer)}>
+                                        <ListItemText>Anayzer</ListItemText>
                                     </MenuItem>
-                                    <MenuItem>
-                                        <ListItemIcon>
-                                            <ContentPaste style={{ color: "white" }} fontSize="small" />
-                                        </ListItemIcon>
-                                        <ListItemText>Paste</ListItemText>
-                                        <Typography variant="body2">
-                                            ⌘V
-                                        </Typography>
+                                    <MenuItem onClick={() => addNewWidget(WidgetType.Tonnetz)}>
+                                        <ListItemText>Tonnetz Diagram</ListItemText>
                                     </MenuItem>
-                                    <Divider />
-                                    <MenuItem>
-                                        <ListItemIcon>
-                                            <Cloud style={{ color: "white" }} fontSize="small" />
-                                        </ListItemIcon>
-                                        <ListItemText>Web Clipboard</ListItemText>
+                                    {/* <MenuItem onClick={() => addNewWidget(WidgetType.Wheel)}>
+                                        <ListItemText>Wheel of Fifths</ListItemText>
                                     </MenuItem> */}
+                                    <MenuItem onClick={() => addNewWidget(WidgetType.Wheel)}>
+                                        <ListItemText>Wheel of Semitones</ListItemText>
+                                    </MenuItem>
                                 </MenuList>
                             </ClickAwayListener>
                         </Paper>
                     </Popover>
                 </ThemeProvider>
-                {/* </Paper> */}
             </div>
         </div >
     );

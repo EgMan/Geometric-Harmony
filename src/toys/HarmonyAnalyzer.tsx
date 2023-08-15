@@ -101,15 +101,10 @@ function HarmonyAnalyzer(props: Props) {
         });
     }, [activeExactFit, activeExactFitName, activeNotes, emphasizedExactFit, emphasizedNotes, explorerWidth, getNoteNameInExactFitShape, homeNote]);
 
-
-
-
-
-
     const fullRender = React.useMemo((
     ) => {
         return (
-            <Group x={- (explorerWidth / 2)}>
+            <Group x={- (explorerWidth)}>
                 {infoTextElems}
 
             </Group >

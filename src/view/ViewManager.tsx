@@ -123,11 +123,12 @@ function ViewManager(props: Props) {
     }, [trackedWidgets]);
 
     const spawnWidget = React.useCallback((type: WidgetType, position?: Vector2d) => {
+        console.log("Spawning widget of type:", type);
         const newUid = genUID();
         const newWidget: WidgetTracker = {
             type: type,
             initialPosition: position ?? { x: props.width / 2, y: props.height / 2 },
-            isMaxamized: false,
+            isMaxamized: true,
             isTrayWidget: true,
             width: 50,//TODO CHANGE THIS
             height: 50,
@@ -386,7 +387,7 @@ function ViewManager(props: Props) {
 
     return (
         <div>
-            <ToolBar />
+            <ToolBar widgetTrackerActions={trackerActions} stageRef={stageRef} />
             <div id="stage-scroll-container" onScroll={onContainerScroll}>
                 <div id="spaces-container">
                     <div className="desktop-space space1" >
@@ -410,8 +411,8 @@ function ViewManager(props: Props) {
                                         width={100}
                                         icon={'+'}
                                         widgetTrackerActions={trackerActions}
-                                        pointerPosition={pointerPos} />
-                                    {widgetElements.tray} */}
+                                        pointerPosition={pointerPos} /> */}
+                                    {widgetElements.tray}
                                 </Layer>
                             </Stage>
                         </div>
