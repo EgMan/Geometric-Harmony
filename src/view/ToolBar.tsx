@@ -55,6 +55,7 @@ function ToolBar(props: Props) {
                             color: 'white',
                             backgroundColor: 'transparent',
                             boxShadow: 'none',
+                            padding: "1.8px",
                             '&:hover': {
                                 borderTopLeftRadius: '0px',
                                 borderTopRightRadius: '9px',

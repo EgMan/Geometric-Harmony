@@ -132,6 +132,7 @@ function ShapeNavigationTool(props: Props) {
                                     setActiveShape(activeExactFit.shape, e.target.value as number - (dropdownValue?.startingNoteNum ?? 0));
                                 }
                             }}
+                            style={{ height: '33.5px' }}
                             sx={{
                                 width: keySelectorExplorerWidth,
                                 color: "white",
@@ -149,14 +150,15 @@ function ShapeNavigationTool(props: Props) {
                                 '.MuiOutlinedInput-notchedOutline': {
                                     borderColor: 'transparent',
                                     borderRadius: '9px',
+                                    border: '0px',
                                 },
                                 '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                    border: '1px solid transparent',
+                                    border: '0px solid transparent',
                                 },
                                 '&:hover .MuiOutlinedInput-notchedOutline': {
                                     borderRadius: '9px',
                                     backgroundColor: 'rgb(255,255,255,0.1)',
-                                    border: '1px solid transparent',
+                                    border: '0px solid transparent',
                                 },
                                 '.MuiSvgIcon-root ': {
                                     fill: "white !important",
@@ -210,11 +212,13 @@ function ShapeNavigationTool(props: Props) {
                                 </li>
                             )}
                             popupIcon={null}
+                            // ListboxProps={{ style: { maxHeight: window.innerHeight } }}
                             sx={{
                                 minWidth: autocompleteExplorerWidth, display: 'inline-block', bgcolor: 'transparent', color: 'red',
                                 '.MuiOutlinedInput-notchedOutline': {
                                     borderColor: 'transparent',
                                     borderRadius: '9px',
+                                    border: '0px',
                                 },
                                 '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                                     border: '1px solid transparent',
@@ -244,6 +248,7 @@ function ShapeNavigationTool(props: Props) {
                             }}
                             renderInput={(params) =>
                                 <TextField {...params}
+                                    size="small"
                                     InputProps={{
                                         ...params.InputProps,
                                         startAdornment: <InputAdornment position="start" onClick={toggleAutocomplete}> {autocompleteOpen ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />
