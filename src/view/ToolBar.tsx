@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, ClickAwayListener, Divider, ListItemIcon, ListItemText, Menu, MenuItem, MenuList, Paper, Popover, Popper, ThemeProvider, Typography, colors, createTheme, makeStyles } from "@mui/material";
+import { Button, ClickAwayListener, ListItemIcon, ListItemText, MenuItem, MenuList, Paper, Popover, ThemeProvider, colors, createTheme, } from "@mui/material";
 import ShapeNavigationTool from "./ShapeNavigationTool";
 import { WidgetTrackerActions, WidgetType } from "./ViewManager";
 import { Stage } from "konva/lib/Stage";
@@ -11,6 +11,8 @@ type Props =
     {
         widgetTrackerActions: WidgetTrackerActions,
         stageRef: React.RefObject<Stage>,
+        isPeaceModeEnabled: boolean,
+        setIsPeaceModeEnabled: React.Dispatch<React.SetStateAction<boolean>>,
     }
 export const toolbarTheme = createTheme({
     palette: {
@@ -47,20 +49,55 @@ function ToolBar(props: Props) {
     }, [props.widgetTrackerActions]);
     return (
         <div>
-            <div ref={addButtonRef} style={{ position: "fixed", transform: "translate(0, 0px)", zIndex: 1, width: "100vw", backgroundColor: "rgb(255,255,255,0.04)", borderBottomLeftRadius: "9px", borderBottomRightRadius: "9px", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <div ref={addButtonRef} style={{ position: "fixed", transform: "translate(0, 0px)", zIndex: 1, width: "100vw", backgroundColor: props.isPeaceModeEnabled ? "transparent" : "rgb(255,255,255,0.04)", borderBottomLeftRadius: "9px", borderBottomRightRadius: "9px", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                <div>
+                    {
+                        props.isPeaceModeEnabled ? null :
+                            <Button type="submit" variant="contained"
+                                sx={{
+                                    fontSize: "0.7em",
+                                    color: 'white',
+                                    backgroundColor: 'transparent',
+                                    boxShadow: 'none',
+                                    padding: "1.8px",
+                                    borderTopLeftRadius: '0px',
+                                    borderTopRightRadius: '9px',
+                                    borderBottomLeftRadius: '9px',
+                                    borderBottomRightRadius: '9px',
+                                    '&:hover': {
+                                        backgroundColor: 'rgb(255,255,255,0.1)',
+                                    },
+                                    "&.Mui-disabled": {
+                                        background: 'transparent',
+                                        color: "grey"
+                                    }
+                                }}
+                                onClick={() => {
+                                    setAddDropdownOpen(true);
+                                }}
+                            >+</Button>
+                    }
+                </div>
+                <div>
+                    {
+                        props.isPeaceModeEnabled ? null :
+                            <ShapeNavigationTool width={600} subdivisionCount={12} />
+                    }
+                </div>
                 <div>
                     <Button type="submit" variant="contained"
+                        onClick={() => props.setIsPeaceModeEnabled(enabled => !enabled)}
                         sx={{
                             fontSize: "0.7em",
                             color: 'white',
                             backgroundColor: 'transparent',
                             boxShadow: 'none',
                             padding: "1.8px",
+                            borderTopLeftRadius: '9px',
+                            borderTopRightRadius: '0px',
+                            borderBottomLeftRadius: '9px',
+                            borderBottomRightRadius: '9px',
                             '&:hover': {
-                                borderTopLeftRadius: '0px',
-                                borderTopRightRadius: '9px',
-                                borderBottomLeftRadius: '9px',
-                                borderBottomRightRadius: '9px',
                                 backgroundColor: 'rgb(255,255,255,0.1)',
                             },
                             "&.Mui-disabled": {
@@ -68,169 +105,7 @@ function ToolBar(props: Props) {
                                 color: "grey"
                             }
                         }}
-                        onClick={() => {
-                            setAddDropdownOpen(true);
-                        }}
-                    >+</Button>
-                    {/* <Button type="submit" variant="contained"
-                    sx={{
-                        fontSize: "0.7em",
-                        color: 'white',
-                        backgroundColor: 'transparent',
-                        boxShadow: 'none',
-                        '&:hover': {
-                            borderRadius: '9px',
-                            backgroundColor: 'rgb(255,255,255,0.1)',
-                        },
-                        "&.Mui-disabled": {
-                            background: 'transparent',
-                            color: "grey"
-                        }
-                    }}
-                >⚙</Button>
-                <Button type="submit" variant="contained"
-                    sx={{
-                        fontSize: "0.6em",
-                        color: 'white',
-                        backgroundColor: 'transparent',
-                        boxShadow: 'none',
-                        '&:hover': {
-                            borderRadius: '9px',
-                            backgroundColor: 'rgb(255,255,255,0.1)',
-                        },
-                        "&.Mui-disabled": {
-                            background: 'transparent',
-                            color: "grey"
-                        }
-                    }}
-                >?</Button>
-                <Button type="submit" variant="contained"
-                    sx={{
-                        fontSize: "0.6em",
-                        color: 'white',
-                        backgroundColor: 'transparent',
-                        boxShadow: 'none',
-                        '&:hover': {
-                            borderRadius: '9px',
-                            backgroundColor: 'rgb(255,255,255,0.1)',
-                        },
-                        "&.Mui-disabled": {
-                            background: 'transparent',
-                            color: "grey"
-                        }
-                    }}
-                >🎹</Button>
-                <Button type="submit" variant="contained"
-                    sx={{
-                        fontSize: "0.7em",
-                        color: 'white',
-                        backgroundColor: 'transparent',
-                        boxShadow: 'none',
-                        '&:hover': {
-                            borderRadius: '9px',
-                            backgroundColor: 'rgb(255,255,255,0.1)',
-                        },
-                        "&.Mui-disabled": {
-                            background: 'transparent',
-                            color: "grey"
-                        }
-                    }}
-                    onClick={() => {
-                        setIsMuted(muted => !muted);
-                    }}
-                >{muted ? "🔇" : "🔊"}</Button>
-                <Button type="submit" variant="contained"
-                    sx={{
-                        fontSize: "0.7em",
-                        color: 'white',
-                        backgroundColor: 'transparent',
-                        boxShadow: 'none',
-                        '&:hover': {
-                            borderRadius: '9px',
-                            backgroundColor: 'rgb(255,255,255,0.1)',
-                        },
-                        "&.Mui-disabled": {
-                            background: 'transparent',
-                            color: "grey"
-                        }
-                    }}
-                    onClick={() => {
-                    }}
-                >⏯</Button>
-                <Button type="submit" variant="contained"
-                    sx={{
-                        fontSize: "0.7em",
-                        color: 'white',
-                        backgroundColor: 'transparent',
-                        boxShadow: 'none',
-                        '&:hover': {
-                            borderRadius: '9px',
-                            backgroundColor: 'rgb(255,255,255,0.1)',
-                        },
-                        "&.Mui-disabled": {
-                            background: 'transparent',
-                            color: "grey"
-                        }
-                    }}
-                    onClick={() => {
-                    }}
-                >⧖</Button>
-                <Button type="submit" variant="contained"
-                    sx={{
-                        fontSize: "0.7em",
-                        color: 'white',
-                        backgroundColor: 'transparent',
-                        boxShadow: 'none',
-                        '&:hover': {
-                            borderRadius: '9px',
-                            backgroundColor: 'rgb(255,255,255,0.1)',
-                        },
-                        "&.Mui-disabled": {
-                            background: 'transparent',
-                            color: "grey"
-                        }
-                    }}
-                    onClick={() => {
-                    }}
-                >♬</Button> */}
-                </div>
-                <div style={{ marginLeft: "200px" }}>
-                    {/* TODO get rid of this spacing and auto resize nav tool*/}
-                    <ShapeNavigationTool width={600} subdivisionCount={12} />
-                </div>
-                <div>
-                    {/* <Button type="submit" variant="contained"
-                    sx={{
-                        fontSize: "0.5em",
-                        color: 'white',
-                        backgroundColor: 'transparent',
-                        boxShadow: 'none',
-                        '&:hover': {
-                            borderRadius: '9px',
-                            backgroundColor: 'rgb(255,255,255,0.1)',
-                        },
-                        "&.Mui-disabled": {
-                            background: 'transparent',
-                            color: "grey"
-                        }
-                    }}
-                >♡</Button>
-                <Button type="submit" variant="contained"
-                    sx={{
-                        fontSize: "0.7em",
-                        color: 'white',
-                        backgroundColor: 'transparent',
-                        boxShadow: 'none',
-                        '&:hover': {
-                            borderRadius: '9px',
-                            backgroundColor: 'rgb(255,255,255,0.1)',
-                        },
-                        "&.Mui-disabled": {
-                            background: 'transparent',
-                            color: "grey"
-                        }
-                    }}
-                >☮</Button> */}
+                    >☮</Button>
                 </div>
             </div>
             <div style={{ width: 320, maxWidth: '100%', zIndex: 1 }}>

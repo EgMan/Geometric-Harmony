@@ -69,6 +69,7 @@ function ViewManager(props: Props) {
     const guitarHeight = props.height - 200;
     // const pianoWidth = (props.width) - .5;
     const pianoWidth = (props.width) + 1.5;
+    const [isPeaceModeEnabled, setIsPeaceModeEnabled] = React.useState(false);
 
     const [trackedWidgets, setTrackedWidgets] = React.useState<Map<String, WidgetTracker>>(
         new Map<String, WidgetTracker>([
@@ -249,6 +250,7 @@ function ViewManager(props: Props) {
                     actions={trackerActions}
                     tracker={widget}
                     key={`${uid}`}
+                    isPeaceModeEnabled={isPeaceModeEnabled}
                     isMaxamized={widget.isMaxamized ?? true}
                     initialPosition={widget.initialPosition}
                     draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
@@ -263,6 +265,7 @@ function ViewManager(props: Props) {
                     actions={trackerActions}
                     tracker={widget}
                     key={`${uid}`}
+                    isPeaceModeEnabled={isPeaceModeEnabled}
                     isMaxamized={widget.isMaxamized ?? true}
                     initialPosition={widget.initialPosition}
                     draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
@@ -280,6 +283,7 @@ function ViewManager(props: Props) {
                     actions={trackerActions}
                     tracker={widget}
                     key={`${uid}`}
+                    isPeaceModeEnabled={isPeaceModeEnabled}
                     isMaxamized={widget.isMaxamized ?? true}
                     initialPosition={widget.initialPosition}
                     draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
@@ -296,6 +300,7 @@ function ViewManager(props: Props) {
                     actions={trackerActions}
                     tracker={widget}
                     key={`${uid}`}
+                    isPeaceModeEnabled={isPeaceModeEnabled}
                     isMaxamized={widget.isMaxamized ?? true}
                     contextMenuOffset={{ x: (-(props.width / (2 * 8 / 3)) - 20), y: 20 }}
                     initialPosition={widget.initialPosition}
@@ -310,6 +315,7 @@ function ViewManager(props: Props) {
                     actions={trackerActions}
                     tracker={widget}
                     key={`${uid}`}
+                    isPeaceModeEnabled={isPeaceModeEnabled}
                     isMaxamized={widget.isMaxamized ?? true}
                     initialPosition={widget.initialPosition}
                     draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
@@ -320,7 +326,7 @@ function ViewManager(props: Props) {
                     height={wheelRadius * 2}
                 />
         }
-    }, [guitarHeight, pianoHeight, pianoOctaveCount, pianoWidth, props.width, setDraggedPosition, trackerActions, wheelRadius])
+    }, [guitarHeight, isPeaceModeEnabled, pianoHeight, pianoOctaveCount, pianoWidth, props.width, setDraggedPosition, trackerActions, wheelRadius])
 
     const widgetElements = React.useMemo(() => {
         return Array.from(trackedWidgets).map(([uid, widget]) => renderWidgetFromTracker(uid, widget));
@@ -352,7 +358,7 @@ function ViewManager(props: Props) {
 
     return (
         <div>
-            <ToolBar widgetTrackerActions={trackerActions} stageRef={stageRef} />
+            <ToolBar widgetTrackerActions={trackerActions} stageRef={stageRef} isPeaceModeEnabled={isPeaceModeEnabled} setIsPeaceModeEnabled={setIsPeaceModeEnabled} />
             <div id="stage-scroll-container" onScroll={onContainerScroll}>
                 <div id="spaces-container">
                     <div className="desktop-space space1" >
