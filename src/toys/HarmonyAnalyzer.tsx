@@ -20,10 +20,10 @@ function HarmonyAnalyzer(props: Props) {
 
 
     // remove these?
-    const keySelectorExplorerWidth = 70;
-    const submitButtonExplorerWidth = 70;
-    const autocompleteExplorerWidth = props.width - keySelectorExplorerWidth - submitButtonExplorerWidth;
-    const explorerWidth = keySelectorExplorerWidth + autocompleteExplorerWidth + submitButtonExplorerWidth;
+    // const keySelectorExplorerWidth = 70;
+    // const submitButtonExplorerWidth = 70;
+    // const autocompleteExplorerWidth = props.width - keySelectorExplorerWidth - submitButtonExplorerWidth;
+    // const explorerWidth = keySelectorExplorerWidth + autocompleteExplorerWidth + submitButtonExplorerWidth;
 
 
 
@@ -97,19 +97,18 @@ function HarmonyAnalyzer(props: Props) {
         const infosYOffset = 50;
         const infosFontSize = 20;
         return infos.filter(info => info.text !== "").map((info) => {
-            return (<Text key={`info${info.text}${idx++}`} text={info.text} x={0} y={textelemoffset * (idx) + infosYOffset} fontSize={infosFontSize} fontFamily='monospace' fill={info.color} align="center" width={explorerWidth} />);
+            return (<Text key={`info${info.text}${idx++}`} text={info.text} x={0} y={textelemoffset * (idx) + infosYOffset} fontSize={infosFontSize} fontFamily='monospace' fill={info.color} align="center" width={props.width} />);
         });
-    }, [activeExactFit, activeExactFitName, activeNotes, emphasizedExactFit, emphasizedNotes, explorerWidth, getNoteNameInExactFitShape, homeNote]);
+    }, [activeExactFit, activeExactFitName, activeNotes, emphasizedExactFit, emphasizedNotes, getNoteNameInExactFitShape, homeNote, props.width]);
 
     const fullRender = React.useMemo((
     ) => {
         return (
-            <Group x={- (explorerWidth)}>
+            <Group>
                 {infoTextElems}
-
             </Group >
         );
-    }, [explorerWidth, infoTextElems]);
+    }, [infoTextElems]);
 
     return (
         <Group>
