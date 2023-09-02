@@ -1,9 +1,11 @@
 import React from "react";
 import { Group, Text } from 'react-konva';
 import { HarmonicShape, SCALE_CHROMATIC, ShapeType, knownShapes } from "../utils/KnownHarmonicShapes";
-import { getNoteName } from "../utils/Utils";
+import { getIntervalColor, getNoteName } from "../utils/Utils";
 import { NoteSet, normalizeToSingleOctave, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote } from "../sound/NoteProvider";
 import { WidgetComponentProps } from "../view/Widget";
+import SettingsMenuOverlay from "../view/SettingsMenuOverlay";
+import { Switch } from "@mui/material";
 
 const inputBoxNoteNameRegex = /^([aAbBcCdDeEfFgG][b#♭♯]?)\s/
 
@@ -18,21 +20,34 @@ function HarmonyAnalyzer(props: Props) {
     const emphasizedNotes = useGetCombinedModdedEmphasis()();
     const homeNote = useHomeNote();
 
-
-    // remove these?
-    // const keySelectorExplorerWidth = 70;
-    // const submitButtonExplorerWidth = 70;
-    // const autocompleteExplorerWidth = props.width - keySelectorExplorerWidth - submitButtonExplorerWidth;
-    // const explorerWidth = keySelectorExplorerWidth + autocompleteExplorerWidth + submitButtonExplorerWidth;
-
-
-
     const activeExactFits = useGetAllExactFits(activeNotes);
     const activeExactFit = activeExactFits[0];
     const activeExactFitName = activeExactFit ? activeExactFit.shape.name : "";
 
     const emphasizedExactFits = useGetAllExactFits(emphasizedNotes);
     const emphasizedExactFit = emphasizedExactFits[0];
+
+    const [showWhite, setShowWhite] = React.useState(false);
+    const [showYellow, setShowYellow] = React.useState(false);
+    const [showRed, setShowRed] = React.useState(true);
+
+    const settingsMenuItems = [
+        (<tr key={"tr1"}>
+            <td>Show active note scale/chord family</td>
+            <td style={{ color: "white", textAlign: "center" }}>■</td>
+            <td><Switch color={"primary"} checked={showWhite} onChange={e => setShowWhite(e.target.checked)} /></td>
+        </tr>),
+        (<tr key={"tr2"}>
+            <td>Show active note scale/chord</td>
+            <td style={{ color: "yellow", textAlign: "center" }}>■</td>
+            <td><Switch color={"primary"} checked={showYellow} onChange={e => setShowYellow(e.target.checked)} /></td>
+        </tr>),
+        (<tr key={"tr3"}>
+            <td>Show emphasized notes</td>
+            <td style={{ color: "red", textAlign: "center" }}>■</td>
+            <td><Switch color={"primary"} checked={showRed} onChange={e => setShowRed(e.target.checked)} /></td>
+        </tr>),
+    ];
 
     const getNoteNameInExactFitShape = React.useCallback((note: number, exactFit: ExactFit) => {
         if (exactFit === null || exactFit === undefined) return getNoteName(note, activeNotes);
@@ -67,18 +82,20 @@ function HarmonyAnalyzer(props: Props) {
             color: string;
         }
         var infos: Info[] = [];
-        infos.push({
-            text: activeExactFitName,
-            color: "white",
-        });
-        if (homeNote !== null) {
+        if (showWhite) {
+            infos.push({
+                text: activeExactFitName,
+                color: "white",
+            });
+        }
+        if (showYellow && homeNote !== null) {
             infos.push({
                 text: getNoteNameInExactFitShape(homeNote, activeExactFit),
                 color: "yellow",
             });
         }
 
-        if (emphasizedExactFit && emphasizedExactFit.shape.type === ShapeType.CHORD) {
+        if (showRed && emphasizedExactFit && emphasizedExactFit.shape.type === ShapeType.CHORD) {
             infos.push({
                 text: getNoteNameInExactFitShape(-emphasizedExactFit.noteToFirstNoteInShapeIdxOffset, emphasizedExactFit),
                 color: "red",
@@ -99,7 +116,7 @@ function HarmonyAnalyzer(props: Props) {
         return infos.filter(info => info.text !== "").map((info) => {
             return (<Text key={`info${info.text}${idx++}`} text={info.text} x={0} y={textelemoffset * (idx) + infosYOffset} fontSize={infosFontSize} fontFamily='monospace' fill={info.color} align="center" width={props.width} />);
         });
-    }, [activeExactFit, activeExactFitName, activeNotes, emphasizedExactFit, emphasizedNotes, getNoteNameInExactFitShape, homeNote, props.width]);
+    }, [activeExactFit, activeExactFitName, activeNotes, emphasizedExactFit, emphasizedNotes, getNoteNameInExactFitShape, homeNote, props.width, showRed, showWhite, showYellow]);
 
     const fullRender = React.useMemo((
     ) => {
@@ -113,9 +130,9 @@ function HarmonyAnalyzer(props: Props) {
     return (
         <Group>
             {fullRender}
-            {/* <SettingsMenuOverlay fromWidget={props.fromWidget}>
+            <SettingsMenuOverlay fromWidget={props.fromWidget} settingsRows={settingsMenuItems}>
                 {fullRender}
-            </SettingsMenuOverlay> */}
+            </SettingsMenuOverlay>
         </Group>
     );
 }
