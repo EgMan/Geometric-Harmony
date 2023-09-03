@@ -73,12 +73,12 @@ function ViewManager(props: Props) {
 
     const [trackedWidgets, setTrackedWidgets] = React.useState<Map<String, WidgetTracker>>(
         new Map<String, WidgetTracker>([
-            // ['1', {
-            //     type: WidgetType.Analyzer,
-            //     initialPosition: { x: (props.width / 2) + (-(props.width / (2 * 8 / 3)) - 20), y: 30 },
-            //     width: props.width / (8 / 3),
-            //     height: 0,
-            // }],
+            ['1', {
+                type: WidgetType.Analyzer,
+                initialPosition: { x: (props.width / 2), y: (props.height / 2) - wheelRadius - 40 },
+                width: props.width / (8 / 3),
+                height: 0,
+            }],
             ['2', {
                 type: WidgetType.Piano,
                 initialPosition: { x: props.width / 2, y: props.height - pianoHeight - 19 },
