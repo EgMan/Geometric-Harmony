@@ -234,7 +234,7 @@ function ToolBar(props: Props) {
                         <Paper>
                             <ClickAwayListener onClickAway={() => setAddDropdownOpen(false)}>
                                 <MenuList>
-                                    <MenuItem>
+                                    <MenuItem onClick={() => settings?.setIsMuted(muted => !muted)}>
                                         <ListItemIcon>
                                             {settings?.isMuted ? <VolumeOffIcon style={{ color: "white" }} fontSize="small" /> : <VolumeUpIcon style={{ color: "white" }} fontSize="small" />}
                                         </ListItemIcon>
