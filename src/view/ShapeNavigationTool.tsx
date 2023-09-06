@@ -132,6 +132,12 @@ function ShapeNavigationTool(props: Props) {
                                     setActiveShape(activeExactFit.shape, e.target.value as number - (dropdownValue?.startingNoteNum ?? 0));
                                 }
                             }}
+                            onClose={() => {
+                                // MUI sucks
+                                setTimeout(() => {
+                                    (document.activeElement as HTMLElement).blur();
+                                }, 0);
+                            }}
                             style={{ height: '33.5px' }}
                             sx={{
                                 width: keySelectorExplorerWidth,

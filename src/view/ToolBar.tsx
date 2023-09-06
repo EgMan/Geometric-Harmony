@@ -55,6 +55,18 @@ function ToolBar(props: Props) {
     }, [props.widgetTrackerActions]);
     const settings = useSettings();
 
+    React.useEffect(() => {
+        if (!addDropdownOpen) {
+            (document.activeElement as HTMLElement).blur();
+        }
+    }, [props.stageRef, addDropdownOpen]);
+
+    React.useEffect(() => {
+        if (!settingsDropdownOpen) {
+            (document.activeElement as HTMLElement).blur();
+        }
+    }, [props.stageRef, settingsDropdownOpen]);
+
     return (
         <div>
             <div ref={addButtonRef} style={{ position: "fixed", transform: "translate(0, 0px)", zIndex: 1, width: "100vw", backgroundColor: props.isPeaceModeEnabled ? "transparent" : "rgb(255,255,255,0.04)", borderBottomLeftRadius: "9px", borderBottomRightRadius: "9px", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
