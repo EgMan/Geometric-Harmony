@@ -12,6 +12,7 @@ import { Shape } from "konva/lib/Shape";
 import Tonnetz from "../toys/Tonnetz";
 import ToolBar from "./ToolBar";
 import { realignSpaces } from "../utils/SpacesUtils";
+import PlayTheShapeGame from "../toys/PlayTheShapeGame";
 
 export type WidgetTracker = {
     type: WidgetType,
@@ -37,6 +38,7 @@ export enum WidgetType {
     Guitar,
     Analyzer,
     Tonnetz,
+    PlayShapeGame,
 }
 
 export const widgetNameByType = (type: WidgetType) => {
@@ -51,6 +53,8 @@ export const widgetNameByType = (type: WidgetType) => {
             return "Analyzer";
         case WidgetType.Tonnetz:
             return "Tonnetz";
+        case WidgetType.PlayShapeGame:
+            return "Quiz";
     }
 }
 
@@ -324,6 +328,21 @@ function ViewManager(props: Props) {
                     contextMenuOffset={{ x: wheelRadius, y: -40 }}
                     width={wheelRadius * 2}
                     height={wheelRadius * 2}
+                />
+            case WidgetType.PlayShapeGame:
+                return <Widget of={PlayTheShapeGame}
+                    uid={uid}
+                    actions={trackerActions}
+                    tracker={widget}
+                    key={`${uid}`}
+                    isPeaceModeEnabled={isPeaceModeEnabled}
+                    isMaxamized={widget.isMaxamized ?? true}
+                    initialPosition={widget.initialPosition}
+                    draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
+                    setDraggedPosition={setDraggedPosition(uid)}
+                    contextMenuOffset={{ x: wheelRadius * 0.6, y: -20 }}
+                    width={wheelRadius * 1.2}
+                    height={wheelRadius / 2}
                 />
         }
     }, [guitarHeight, isPeaceModeEnabled, pianoHeight, pianoOctaveCount, pianoWidth, props.width, setDraggedPosition, trackerActions, wheelRadius])

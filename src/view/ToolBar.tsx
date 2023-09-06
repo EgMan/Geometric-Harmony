@@ -6,6 +6,7 @@ import { Stage } from "konva/lib/Stage";
 import { getCurrentSpace } from "../utils/SpacesUtils";
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import ConstructionIcon from '@mui/icons-material/Construction';
+import VideogameAssetIcon from '@mui/icons-material/VideogameAsset';
 
 type Props =
     {
@@ -43,7 +44,7 @@ function ToolBar(props: Props) {
     const addNewWidget = React.useCallback((widgetType: WidgetType) => {
         // const pos = props.stageRef.current?.getPointerPosition() ?? undefined;
         const space = getCurrentSpace();
-        const pos = { x: (space.col + 0.5) * window.innerWidth, y: (space.row + 0.15) * window.innerHeight };
+        const pos = { x: (space.col + 0.5) * window.innerWidth, y: (space.row + 0.25) * window.innerHeight };
         props.widgetTrackerActions.spawnWidget(widgetType, pos);
         setAddDropdownOpen(false);
     }, [props.widgetTrackerActions]);
@@ -166,6 +167,12 @@ function ToolBar(props: Props) {
                                             <ConstructionIcon style={{ color: "white" }} fontSize="small" />
                                         </ListItemIcon>
                                         <ListItemText>Harmonic Analyzer</ListItemText>
+                                    </MenuItem>
+                                    <MenuItem onClick={() => addNewWidget(WidgetType.PlayShapeGame)}>
+                                        <ListItemIcon>
+                                            <VideogameAssetIcon style={{ color: "white" }} fontSize="small" />
+                                        </ListItemIcon>
+                                        <ListItemText>Play the chord game</ListItemText>
                                     </MenuItem>
                                 </MenuList>
                             </ClickAwayListener>

@@ -27,9 +27,14 @@ function HarmonyAnalyzer(props: Props) {
     const emphasizedExactFits = useGetAllExactFits(emphasizedNotes);
     const emphasizedExactFit = emphasizedExactFits[0];
 
+    const inputNotes = useNoteSet()(NoteSet.PlayingInput, true);
+    const inputExactFits = useGetAllExactFits(inputNotes);
+    const inputExactFit = inputExactFits[0];
+
     const [showWhite, setShowWhite] = React.useState(false);
     const [showYellow, setShowYellow] = React.useState(false);
     const [showRed, setShowRed] = React.useState(true);
+    const [showBlue, setShowBlue] = React.useState(true);
 
     const settingsMenuItems = [
         (<tr key={"tr1"}>
@@ -47,6 +52,11 @@ function HarmonyAnalyzer(props: Props) {
             <td style={{ color: "red", textAlign: "center" }}>■</td>
             <td><Switch color={"primary"} checked={showRed} onChange={e => setShowRed(e.target.checked)} /></td>
         </tr>),
+        (<tr key={"tr4"}>
+            <td>Show midi input notes</td>
+            <td style={{ color: "blue", textAlign: "center" }}>■</td>
+            <td><Switch color={"primary"} checked={showBlue} onChange={e => setShowBlue(e.target.checked)} /></td>
+        </tr>),
     ];
 
     const getNoteNameInExactFitShape = React.useCallback((note: number, exactFit: ExactFit) => {
@@ -58,23 +68,28 @@ function HarmonyAnalyzer(props: Props) {
     }, [activeNotes, props.subdivisionCount]);
 
 
+    const getInfoText = React.useCallback((note: number) => {
+        // No exact fit, so display the note name
+        if (activeExactFit === null || activeExactFit === undefined) return getNoteName(note, activeNotes);
+
+        if (homeNote == null) {
+            if (emphasizedNotes.size === 1) {
+                return getNoteNameInExactFitShape(note, activeExactFit) ?? '?';
+            }
+            return getNoteName(note, activeNotes);
+        }
+        const scaleDegree = getScaleDegree(homeNote + activeExactFit.noteToFirstNoteInShapeIdxOffset, note + activeExactFit.noteToFirstNoteInShapeIdxOffset, activeExactFit.shape);
+        return `${getNoteName(note, activeNotes)}${scaleDegree > 0 ? `°${scaleDegree}` : ""}`;
+
+        // return `${exactFit.shape.name}`;
+    }, [activeExactFit, activeNotes, emphasizedNotes.size, getNoteNameInExactFitShape, homeNote]);
+
+
     const infoTextElems = React.useMemo(() => {
         //TODO Add exact fit names
-        const emphasizedNoteInfo = Array.from(emphasizedNotes).map(note => {
-            // No exact fit, so display the note name
-            if (activeExactFit === null || activeExactFit === undefined) return getNoteName(note, activeNotes);
+        const emphasizedNoteInfo = Array.from(emphasizedNotes).map(getInfoText).filter(info => info !== '');
 
-            if (homeNote == null) {
-                if (emphasizedNotes.size === 1) {
-                    return getNoteNameInExactFitShape(note, activeExactFit) ?? '?';
-                }
-                return getNoteName(note, activeNotes);
-            }
-            const scaleDegree = getScaleDegree(homeNote + activeExactFit.noteToFirstNoteInShapeIdxOffset, note + activeExactFit.noteToFirstNoteInShapeIdxOffset, activeExactFit.shape);
-            return `${getNoteName(note, activeNotes)}${scaleDegree > 0 ? `°${scaleDegree}` : ""}`;
-
-            // return `${exactFit.shape.name}`;
-        }).filter(info => info !== '');
+        const inputNoteInfo = Array.from(inputNotes).map(getInfoText).filter(info => info !== '');
 
         // Populate infos that display under the shape explorer
         type Info = {
@@ -95,7 +110,7 @@ function HarmonyAnalyzer(props: Props) {
             });
         }
 
-        if (showRed && emphasizedExactFit && emphasizedExactFit.shape.type === ShapeType.CHORD) {
+        if (showRed && emphasizedExactFit && (emphasizedExactFit.shape.type === ShapeType.CHORD || emphasizedExactFit.shape.type === ShapeType.SCALE)) {
             infos.push({
                 text: getNoteNameInExactFitShape(-emphasizedExactFit.noteToFirstNoteInShapeIdxOffset, emphasizedExactFit),
                 color: "red",
@@ -108,6 +123,19 @@ function HarmonyAnalyzer(props: Props) {
             });
         }
 
+        if (showBlue && inputExactFit && (inputExactFit.shape.type === ShapeType.CHORD || inputExactFit.shape.type === ShapeType.SCALE)) {
+            infos.push({
+                text: getNoteNameInExactFitShape(-inputExactFit.noteToFirstNoteInShapeIdxOffset, inputExactFit),
+                color: "lightblue",
+            });
+        }
+        else {
+            infos.push({
+                text: inputNoteInfo.join(", "),
+                color: "lightblue",
+            });
+        }
+
         // Convert infos to text elements
         var idx = 0;
         const textelemoffset = 28;
@@ -116,7 +144,7 @@ function HarmonyAnalyzer(props: Props) {
         return infos.filter(info => info.text !== "").map((info) => {
             return (<Text key={`info${info.text}${idx++}`} text={info.text} x={0} y={textelemoffset * (idx) + infosYOffset} fontSize={infosFontSize} fontFamily='monospace' fill={info.color} align="center" width={props.width} />);
         });
-    }, [activeExactFit, activeExactFitName, activeNotes, emphasizedExactFit, emphasizedNotes, getNoteNameInExactFitShape, homeNote, props.width, showRed, showWhite, showYellow]);
+    }, [activeExactFit, activeExactFitName, emphasizedExactFit, emphasizedNotes, getInfoText, getNoteNameInExactFitShape, homeNote, inputExactFit, inputNotes, props.width, showBlue, showRed, showWhite, showYellow]);
 
     const fullRender = React.useMemo((
     ) => {
@@ -222,6 +250,7 @@ export type ExactFit = {
     shape: HarmonicShape
     doesFit: boolean
     noteToFirstNoteInShapeIdxOffset: number
+    rootNote: number
 }
 
 function useTryToFitShape() {
@@ -252,6 +281,7 @@ function useTryToFitShape() {
                     shape,
                     doesFit: true,
                     noteToFirstNoteInShapeIdxOffset: findNextNoteInShape(-1) - note,
+                    rootNote: note,
                 };
             }
         }
@@ -260,6 +290,7 @@ function useTryToFitShape() {
             shape,
             doesFit: false,
             noteToFirstNoteInShapeIdxOffset: 0,
+            rootNote: -1,
         };
     }, []);
 }
@@ -280,6 +311,7 @@ export function useGetAllExactFits(notes: Set<number>): ExactFit[] {
             shape: getDynamicShape(notes),
             doesFit: true,
             noteToFirstNoteInShapeIdxOffset: 0,
+            rootNote: -1,
         }
         const shapesOfCorrectSize = knownShapes[notes.size] ?? [];
         return shapesOfCorrectSize.map(shape => tryToFitShape(shape, notes)).filter(shapeFit => shapeFit.doesFit).concat(defaultExactFit);
