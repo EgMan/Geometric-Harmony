@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, ClickAwayListener, ListItemIcon, ListItemText, MenuItem, MenuList, Paper, Popover, ThemeProvider, colors, createTheme, } from "@mui/material";
+import { Button, ClickAwayListener, ListItemIcon, ListItemText, MenuItem, MenuList, Paper, Popover, Switch, ThemeProvider, colors, createTheme, } from "@mui/material";
 import ShapeNavigationTool from "./ShapeNavigationTool";
 import { WidgetTrackerActions, WidgetType } from "./ViewManager";
 import { Stage } from "konva/lib/Stage";
@@ -7,6 +7,10 @@ import { getCurrentSpace } from "../utils/SpacesUtils";
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import VideogameAssetIcon from '@mui/icons-material/VideogameAsset';
+import VolumeOffIcon from '@mui/icons-material/VolumeOff';
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import { useSettings } from "./SettingsProvider";
+// import useSettings from "./SettingsProvider"
 
 type Props =
     {
@@ -41,6 +45,7 @@ export const toolbarTheme = createTheme({
 function ToolBar(props: Props) {
     const addButtonRef = React.useRef(null);
     const [addDropdownOpen, setAddDropdownOpen] = React.useState(false);
+    const [settingsDropdownOpen, setSettingsDropdownOpen] = React.useState(false);
     const addNewWidget = React.useCallback((widgetType: WidgetType) => {
         // const pos = props.stageRef.current?.getPointerPosition() ?? undefined;
         const space = getCurrentSpace();
@@ -48,13 +53,15 @@ function ToolBar(props: Props) {
         props.widgetTrackerActions.spawnWidget(widgetType, pos);
         setAddDropdownOpen(false);
     }, [props.widgetTrackerActions]);
+    const settings = useSettings();
+
     return (
         <div>
             <div ref={addButtonRef} style={{ position: "fixed", transform: "translate(0, 0px)", zIndex: 1, width: "100vw", backgroundColor: props.isPeaceModeEnabled ? "transparent" : "rgb(255,255,255,0.04)", borderBottomLeftRadius: "9px", borderBottomRightRadius: "9px", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                 <div>
                     {
                         props.isPeaceModeEnabled ? null :
-                            <Button type="submit" variant="contained"
+                            <><Button type="submit" variant="contained"
                                 sx={{
                                     fontSize: "0.7em",
                                     color: 'white',
@@ -76,7 +83,29 @@ function ToolBar(props: Props) {
                                 onClick={() => {
                                     setAddDropdownOpen(true);
                                 }}
-                            >+</Button>
+                            >+</Button><Button type="submit" variant="contained"
+                                sx={{
+                                    fontSize: "0.7em",
+                                    color: 'white',
+                                    backgroundColor: 'transparent',
+                                    boxShadow: 'none',
+                                    padding: "1.8px",
+                                    borderTopLeftRadius: '0px',
+                                    borderTopRightRadius: '9px',
+                                    borderBottomLeftRadius: '9px',
+                                    borderBottomRightRadius: '9px',
+                                    '&:hover': {
+                                        backgroundColor: 'rgb(255,255,255,0.1)',
+                                    },
+                                    "&.Mui-disabled": {
+                                        background: 'transparent',
+                                        color: "grey"
+                                    }
+                                }}
+                                onClick={() => {
+                                    setSettingsDropdownOpen(true);
+                                }}
+                            >⚙</Button></>
                     }
                 </div>
                 <div>
@@ -173,6 +202,32 @@ function ToolBar(props: Props) {
                                             <VideogameAssetIcon style={{ color: "white" }} fontSize="small" />
                                         </ListItemIcon>
                                         <ListItemText>Play the chord game</ListItemText>
+                                    </MenuItem>
+                                </MenuList>
+                            </ClickAwayListener>
+                        </Paper>
+                    </Popover>
+                    <Popover
+                        open={settingsDropdownOpen}
+                        onClose={() => setSettingsDropdownOpen(false)}
+                        anchorEl={addButtonRef.current}
+                        anchorOrigin={{
+                            vertical: 'bottom',
+                            horizontal: -10,
+                        }}
+                        style={{ transform: "translate(-15px, 0px)" }}
+                        role={"menu"}
+                        disablePortal
+                    >
+                        <Paper>
+                            <ClickAwayListener onClickAway={() => setAddDropdownOpen(false)}>
+                                <MenuList>
+                                    <MenuItem>
+                                        <ListItemIcon>
+                                            {settings?.isMuted ? <VolumeOffIcon style={{ color: "white" }} fontSize="small" /> : <VolumeUpIcon style={{ color: "white" }} fontSize="small" />}
+                                        </ListItemIcon>
+                                        <ListItemText> Mute sound output </ListItemText>
+                                        <Switch checked={settings?.isMuted} onChange={e => settings?.setIsMuted(e.target.checked)}></Switch>
                                     </MenuItem>
                                 </MenuList>
                             </ClickAwayListener>

@@ -5,6 +5,7 @@ import { NoteSet, normalizeToSingleOctave, useNoteSet, useUpdateNoteSet } from '
 import { useConnectToMidi } from './MIDIInterface';
 import { WebMidi } from "webmidi";
 import * as Tone from 'tone';
+import { useSettings } from '../view/SettingsProvider';
 
 function useSoundEngine() {
     useKeypressPlayer();
@@ -34,6 +35,12 @@ function useSoundEngine() {
     const synth = React.useMemo(() => {
         return new Tone.PolySynth(Tone.AMSynth).toDestination();
     }, []);
+
+    const settings = useSettings();
+    const isMuted = settings?.isMuted ?? false;
+    React.useEffect(() => {
+        synth.volume.value = isMuted ? -Infinity : 0;
+    }, [isMuted, synth.volume]);
 
     const midiNoteToProgramNote = (midiNote: number, octaveNumber: number) => {
         return normalizeToSingleOctave(midiNote) + (12 * (octaveNumber - 3))

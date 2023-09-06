@@ -4,6 +4,7 @@ import SoundEngine from './sound/SoundEngine';
 import NoteProvider from './sound/NoteProvider';
 import useSoundEngine from './sound/SoundEngine';
 import ViewManager from './view/ViewManager';
+import SettingsProvider from './view/SettingsProvider';
 function App() {
   useSoundEngine();
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth)
@@ -22,12 +23,14 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <NoteProvider>
-          <div>
-            <ViewManager width={windowWidth} height={windowHeight} />
-            <SoundEngine />
-          </div>
-        </NoteProvider>
+        <SettingsProvider>
+          <NoteProvider>
+            <div>
+              <ViewManager width={windowWidth} height={windowHeight} />
+              <SoundEngine />
+            </div>
+          </NoteProvider>
+        </SettingsProvider>
       </header>
     </div>
   );
