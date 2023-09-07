@@ -6,6 +6,7 @@ import { getIntervalColor, getNoteName } from '../utils/Utils';
 import { NoteSet, normalizeToSingleOctave, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import { Vector2d } from 'konva/lib/types';
+import { KonvaEventObject } from 'konva/lib/Node';
 
 const sqrt3over2 = Math.sqrt(3) / 2;
 
@@ -72,27 +73,6 @@ function Tonnetz(props: Props) {
         </tr>),
     ];
 
-    const distFromCenter = 4;
-    const spacing = 80;
-
-    // const rawCordsToDriftedCords = React.useCallback((cord: Vector2d) => {
-    //     const drift = Math.floor(cord.y / 2);
-    //     return { x: cord.x + drift, y: cord.y };
-    // }, []);
-
-    // const cordsToNote = React.useCallback((cord: Vector2d) => {
-    //     // const drift = -Math.floor(-cord.y / 2);
-    //     // const drift = 0;
-    //     return (homeNote ?? 0) + ((cord.x) * 7) + (-cord.y * 3);
-    // }, [homeNote]);
-
-    // const cordsToPosition = React.useCallback((cord: Vector2d) => {
-    //     const rowOffset = (cord.y % 2 === 0) ? 0 : spacing / 2;
-    //     const xPos = (cord.x * spacing) + rowOffset;
-    //     const yPos = cord.y * spacing * sqrt3over2;
-    //     return { x: xPos, y: yPos };
-    // }, []);
-
     const cordsToNote = React.useCallback((cord: Vector2d) => {
         // const drift = -Math.floor(-cord.y / 2);
         // const drift = 0;
@@ -115,12 +95,24 @@ function Tonnetz(props: Props) {
         }
     }, [emphasizedNotes])
 
+    const [draggedPosition, setDraggedPosition] = React.useState<Vector2d>({ x: 0, y: 0 });
+    const onDrag = React.useCallback((event: KonvaEventObject<DragEvent>) => {
+        setDraggedPosition(event.currentTarget.position());
+    }, []);
+
+    const spacing = 80;
+    const distFromCenter = Math.ceil(radius / spacing) + 1;
+    const xDraggedOffset = Math.floor(-(draggedPosition.x / spacing) - (draggedPosition.y * 0.5 / (sqrt3over2 * spacing)));
+    const yDraggedOffset = Math.floor(-draggedPosition.y / (sqrt3over2 * spacing));
+
     const elements = React.useMemo(() => {
         const notes: JSX.Element[] = [];
         const intervals: JSX.Element[] = [];
+        const triads: JSX.Element[] = [];
+        const dragListeners: JSX.Element[] = [];
 
-        for (let y = -distFromCenter; y <= distFromCenter; y++) {
-            for (let x = -distFromCenter; x <= distFromCenter; x++) {
+        for (let y = -distFromCenter + yDraggedOffset; y <= distFromCenter + yDraggedOffset; y++) {
+            for (let x = -distFromCenter + xDraggedOffset; x <= distFromCenter + xDraggedOffset; x++) {
                 // const rowOffset = (y % 2 === 0) ? 0 : spacing / 2;
                 // const xPos = (x * spacing) + rowOffset;
                 // const yPos = y * spacing * sqrt3over2;
@@ -252,17 +244,20 @@ function Tonnetz(props: Props) {
                     // Triad triangle listeners
                     if (activeNotes.has(normalizeToSingleOctave(rightNote))) {
                         if (activeNotes.has(normalizeToSingleOctave(downRightNote))) {
-                            notes.push(<Line key={`majorTriadListener${x}-${y}`} closed={true} x={xPos} y={yPos} points={[0, 0, spacing * 0.5, spacing * sqrt3over2, spacing, 0]} {...majorTriadEmphasizeProps} />);
+                            triads.push(<Line key={`majorTriadListener${x}-${y}`} closed={true} x={xPos} y={yPos} points={[0, 0, spacing * 0.5, spacing * sqrt3over2, spacing, 0]} {...majorTriadEmphasizeProps} />);
                         }
                         if (activeNotes.has(normalizeToSingleOctave(upRightNote))) {
-                            notes.push(<Line key={`minorTriadListener${x}-${y}`} closed={true} x={xPos} y={yPos} points={[0, 0, spacing * 0.5, -spacing * sqrt3over2, spacing, 0]} {...minorTriadEmphasizeProps} />);
+                            triads.push(<Line key={`minorTriadListener${x}-${y}`} closed={true} x={xPos} y={yPos} points={[0, 0, spacing * 0.5, -spacing * sqrt3over2, spacing, 0]} {...minorTriadEmphasizeProps} />);
                         }
-
                     }
 
                     // Note listener
                     notes.push(<Circle key={`listener${x}-${y}`} x={xPos} y={yPos} radius={20} {...hoverEmphasizeProps} />);
                 }
+
+                dragListeners.push(<Line key={`majorDragListener${x}-${y}`} closed={true} x={xPos} y={yPos} points={[0, 0, spacing * 0.5, spacing * sqrt3over2, spacing, 0]} />);
+                dragListeners.push(<Line key={`minorTriadListener${x}-${y}`} closed={true} x={xPos} y={yPos} points={[0, 0, spacing * 0.5, -spacing * sqrt3over2, spacing, 0]} />);
+
                 notes.push(<Text key={`noteName${x}-${y}`} width={40} height={40} x={xPos - 20} y={yPos - 20} text={getNoteName(normalizedNote, activeNotes)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(note) ? "rgb(37,37,37)" : "grey"} align="center" verticalAlign="middle" listening={false} />);
                 // notes.push(<Text key={`noteName${x}-${y}`} width={40} height={40} x={xPos - 20} y={yPos - 20} text={"" + note} fontSize={14} fontFamily='monospace' fill={activeNotes.has(note) ? "rgb(37,37,37)" : "grey"} align="center" verticalAlign="middle" />);
                 notes.push(<Circle key={`halo${x}-${y}`} x={xPos} y={yPos} stroke="rgba(255,255,255,0.1)" radius={20} listening={false} />);
@@ -270,9 +265,9 @@ function Tonnetz(props: Props) {
         }
 
         return {
-            notes, intervals
+            notes, intervals, triads, dragListeners
         }
-    }, [activeNotes, cordsToNote, cordsToPosition, displayInterval, emphasizedNotes, homeNote, intervalEmphasis, updateNotes]);
+    }, [activeNotes, cordsToNote, cordsToPosition, displayInterval, distFromCenter, emphasizedNotes, homeNote, intervalEmphasis, updateNotes, xDraggedOffset, yDraggedOffset]);
 
     const fullRender = React.useMemo((
     ) => {
@@ -282,12 +277,18 @@ function Tonnetz(props: Props) {
                 clipFunc={(ctx) => ctx.arc(0, 0, radius, 0, Math.PI * 2, false)}
             >
                 <Circle radius={radius} stroke="rgba(255,255,255,0.1)"></Circle>
-                {elements.intervals}
-                {elements.notes}
+                <Group draggable onDragMove={onDrag}>
+                    {elements.dragListeners}
+                    {elements.triads}
+                </Group>
+                <Group x={draggedPosition.x} y={draggedPosition.y}>
+                    {elements.intervals}
+                    {elements.notes}
+                </Group>
             </Group>
         );
 
-    }, [elements.intervals, elements.notes, radius]);
+    }, [draggedPosition.x, draggedPosition.y, elements.dragListeners, elements.intervals, elements.notes, elements.triads, onDrag, radius]);
 
     return (
         <Group>
