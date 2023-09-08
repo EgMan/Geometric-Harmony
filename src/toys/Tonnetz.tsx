@@ -7,6 +7,7 @@ import { NoteSet, normalizeToSingleOctave, useGetCombinedModdedEmphasis, useHome
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import { Vector2d } from 'konva/lib/types';
 import { KonvaEventObject } from 'konva/lib/Node';
+import useRenderingTrace from '../utils/ProfilingUtils';
 
 const sqrt3over2 = Math.sqrt(3) / 2;
 
@@ -24,6 +25,7 @@ function Tonnetz(props: Props) {
     // const getNotesInCommon = useGetActiveNotesInCommonWithModulation();
     const homeNote = useHomeNote();
     const updateNotes = useUpdateNoteSet();
+    // useRenderingTrace("Tonnetz", { activeNotes, emphasizedNotes, homeNote, updateNotes });
     // const setHomeNote = useSetHomeNote();
 
 

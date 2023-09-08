@@ -28,7 +28,7 @@ function NoteProvider(props: Props) {
         [NoteSet.PlayingInput]: new Set<number>(),
     });
     const [homeNoteRaw, setHomeNoteRaw] = React.useState<number | null>(10);
-    const homeNote = homeNoteRaw !== null && noteSets[NoteSet.Active].has(homeNoteRaw) ? homeNoteRaw : null;
+    const homeNote = React.useMemo(() => homeNoteRaw !== null && noteSets[NoteSet.Active].has(homeNoteRaw) ? homeNoteRaw : null, [homeNoteRaw, noteSets]);
     const setHomeNote = React.useCallback((note: number | null) => {
         // if (noteSets[NoteSet.Active].has(note)) {
         setHomeNoteRaw(note === null ? null : normalizeToSingleOctave(note));
@@ -51,13 +51,26 @@ function NoteProvider(props: Props) {
         //     return ((12 * 12) + elem) % 12;
         // }));
     }, [noteSets]);
+    /*
     const setNoteSet = React.useCallback((noteSetsToUpdate: NoteSet[] | NoteSet, nums: Array<number>, areEnabled: boolean, overwriteExisting: boolean = false) => {
         const writeToNoteSet = (noteSet: NoteSet) => {
-            const startingPoint = overwriteExisting ? new Set<number>() : noteSets[noteSet];
+            const startingPoint = overwriteExisting ? new Set<number>() : { ...noteSets[noteSet] };
 
             const maybeModdedNums = !octaveAgnosticNoteSets.has(noteSet) ? nums : nums.map(elem => {
                 return ((12 * 12) + elem) % 12;
             });
+
+            // function areSetsEqual(setA, setB) {
+            if (noteSets[noteSet].size === maybeModdedNums.size) {
+                return false;
+            }
+            for (let element of maybeModdedNums) {
+                if (!setB.has(element)) {
+                    return false;
+                }
+            }
+            return true;
+            // }
 
             setNoteSets(prevState => {
                 if (areEnabled) {
@@ -82,6 +95,46 @@ function NoteProvider(props: Props) {
             writeToNoteSet(noteSetsToUpdate);
         }
     }, [noteSets]);
+    */
+    const setNoteSet = React.useCallback(
+        (noteSetsToUpdate: NoteSet[] | NoteSet, nums: Array<number>, areEnabled: boolean, overwriteExisting: boolean = false) => {
+            const newNoteSets = { ...noteSets };  // Make a shallow copy of the current state
+
+            const writeToNoteSet = (noteSet: NoteSet) => {
+                const startingPoint = overwriteExisting ? new Set<number>() : newNoteSets[noteSet];
+
+                const maybeModdedNums = !octaveAgnosticNoteSets.has(noteSet) ? nums : nums.map(elem => {
+                    return ((12 * 12) + elem) % 12;
+                });
+
+                if (areEnabled) {
+                    newNoteSets[noteSet] = new Set(Array.from(startingPoint).concat(maybeModdedNums));
+                } else {
+                    const numsSet = new Set(maybeModdedNums);
+                    newNoteSets[noteSet] = new Set(Array.from(startingPoint).filter(elem => !numsSet.has(elem)));
+                }
+            };
+
+            if (noteSetsToUpdate instanceof Array) {
+                noteSetsToUpdate.forEach(writeToNoteSet);
+            } else {
+                writeToNoteSet(noteSetsToUpdate);
+            }
+
+            // Only update the state if there's a genuine change
+            for (const key in newNoteSets) {
+                const keynum = Number(key) as NoteSet;
+                if (!noteSets[keynum] ||
+                    newNoteSets[keynum].size !== noteSets[keynum].size ||
+                    !Array.from(newNoteSets[keynum]).every(elem => noteSets[keynum].has(elem))) {
+                    setNoteSets(newNoteSets);
+                    return;
+                }
+            }
+        },
+        [noteSets]
+    );
+
 
     // For adding new shapes
     // React.useEffect(() => {

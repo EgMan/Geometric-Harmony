@@ -7,6 +7,7 @@ import { useGetActiveNotesInCommonWithModulation, useModulateActiveNotes } from 
 import { getIntervalColor, getIntervalDistance, getNoteName } from '../utils/Utils';
 import { NoteSet, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
+import useRenderingTrace from '../utils/ProfilingUtils';
 type Props = {
     width: number,
     height: number,
@@ -29,6 +30,8 @@ function Wheel(props: Props) {
     const modulateActiveNotes = useModulateActiveNotes();
 
     const [highlightedNotes, setHighlightedNotes] = React.useState(new Set<number>());
+
+    // useRenderingTrace("Wheel", { activeNotes, inputNotes, emphasizedNotes, highlightedNotes, homeNote, setHomeNote, getNotesInCommon, modulateActiveNotes, updateNotes });
 
     // Settings Storage
 
