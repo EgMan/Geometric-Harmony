@@ -51,14 +51,15 @@ function useSoundEngine() {
     }, [notesPressedFromMidi, updateNotes]);
 
     const updateSynth = React.useCallback((notesTurnedOn: number[], notesTurnedOff: number[]) => {
+        console.log("SYNTH: ", Date.now());
         synth.triggerAttack(notesTurnedOn.map(note => getNote(note)))
         synth.triggerRelease(notesTurnedOff.map(note => getNote(note)))
     }, [synth]);
 
     const updateMIDIOut = React.useCallback((notesTurnedOn: number[], notesTurnedOff: number[]) => {
         WebMidi.outputs.forEach(output => {
-            output.sendNoteOff(notesTurnedOff.map(note => getNoteMIDI(note)));
-            output.sendNoteOn(notesTurnedOn.map(note => getNoteMIDI(note)));
+            // output.sendNoteOff(notesTurnedOff.map(note => getNoteMIDI(note)));
+            // output.sendNoteOn(notesTurnedOn.map(note => getNoteMIDI(note)));
         });
     }, []);
 

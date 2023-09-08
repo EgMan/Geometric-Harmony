@@ -18,7 +18,8 @@ function BackPlate(props: Props): JSX.Element {
             width={props.width}
             height={props.height}
             fill="rgba(0,0,0,0)"
-            onMouseEnter={resetEmphasizedNotes} />
+        // onMouseEnter={resetEmphasizedNotes} 
+        />
     );
 }
 

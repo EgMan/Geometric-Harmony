@@ -113,6 +113,19 @@ function Tonnetz(props: Props) {
         const triads: JSX.Element[] = [];
         const dragListeners: JSX.Element[] = [];
 
+        const emphasize = (notenums: number[]) => {
+            updateNotes(NoteSet.Emphasized_OctaveGnostic, notenums, true, true);
+        };
+
+        const unemphasize = (notenums: number[]) => {
+            updateNotes(NoteSet.Emphasized_OctaveGnostic, notenums, false);
+        };
+
+        // TODO make a centralized utility for this
+        const getEmphasizeProps = (notenums: number[]) => {
+            return { onTouchStart: () => emphasize(notenums), onTouchEnd: () => unemphasize(notenums), onMouseOver: () => emphasize(notenums), onMouseOut: () => unemphasize(notenums) }
+        }
+
         for (let y = -distFromCenter + yDraggedOffset; y <= distFromCenter + yDraggedOffset; y++) {
             for (let x = -distFromCenter + xDraggedOffset; x <= distFromCenter + xDraggedOffset; x++) {
                 // const rowOffset = (y % 2 === 0) ? 0 : spacing / 2;
@@ -134,7 +147,7 @@ function Tonnetz(props: Props) {
                         if (activeNotes.has(normalizeToSingleOctave(rightNote))) {
                             const { opacity, strokeWidth } = intervalEmphasis(note, rightNote);
                             const rightNotePos = cordsToPosition(rightNoteCord);
-                            intervals.push(<Line key={`right-${x}-${y}`} stroke={getIntervalColor(5)} strokeWidth={strokeWidth} points={[xPos, yPos, rightNotePos.x, rightNotePos.y]} opacity={opacity} />);
+                            intervals.push(<Line key={`right-${x}-${y}`} stroke={getIntervalColor(5)} strokeWidth={strokeWidth} points={[xPos, yPos, rightNotePos.x, rightNotePos.y]} opacity={opacity} {...getEmphasizeProps([note, rightNote])} />);
                         }
                     }
 
@@ -145,7 +158,7 @@ function Tonnetz(props: Props) {
                         if (activeNotes.has(normalizeToSingleOctave(upRightNote))) {
                             const { opacity, strokeWidth } = intervalEmphasis(note, upRightNote);
                             const upRightNotePos = cordsToPosition(upRightNoteCord);
-                            intervals.push(<Line key={`upright-${x}-${y}`} stroke={getIntervalColor(3)} strokeWidth={strokeWidth} points={[xPos, yPos, upRightNotePos.x, upRightNotePos.y]} opacity={opacity} />);
+                            intervals.push(<Line key={`upright-${x}-${y}`} stroke={getIntervalColor(3)} strokeWidth={strokeWidth} points={[xPos, yPos, upRightNotePos.x, upRightNotePos.y]} opacity={opacity} {...getEmphasizeProps([note, upRightNote])} />);
                         }
                     }
 
@@ -156,7 +169,7 @@ function Tonnetz(props: Props) {
                         if (activeNotes.has(normalizeToSingleOctave(downRightNote))) {
                             const { opacity, strokeWidth } = intervalEmphasis(note, downRightNote);
                             const downRightNotePos = cordsToPosition(downRightCord);
-                            intervals.push(<Line key={`downright-${x}-${y}`} stroke={getIntervalColor(4)} strokeWidth={strokeWidth} points={[xPos, yPos, downRightNotePos.x, downRightNotePos.y]} opacity={opacity} />);
+                            intervals.push(<Line key={`downright-${x}-${y}`} stroke={getIntervalColor(4)} strokeWidth={strokeWidth} points={[xPos, yPos, downRightNotePos.x, downRightNotePos.y]} opacity={opacity} {...getEmphasizeProps([note, downRightNote])} />);
                         }
                     }
 
@@ -167,7 +180,7 @@ function Tonnetz(props: Props) {
                         if (activeNotes.has(normalizeToSingleOctave(upRight2Note))) {
                             const { opacity, strokeWidth } = intervalEmphasis(note, upRight2Note);
                             const downRight2NotePos = cordsToPosition(upRight2Cord);
-                            intervals.push(<Line key={`upright2-${x}-${y}`} stroke={getIntervalColor(2)} strokeWidth={strokeWidth} points={[xPos, yPos, downRight2NotePos.x, downRight2NotePos.y]} opacity={opacity} />);
+                            intervals.push(<Line key={`upright2-${x}-${y}`} stroke={getIntervalColor(2)} strokeWidth={strokeWidth} points={[xPos, yPos, downRight2NotePos.x, downRight2NotePos.y]} opacity={opacity} {...getEmphasizeProps([note, upRight2Note])} />);
                         }
                     }
 
@@ -178,7 +191,7 @@ function Tonnetz(props: Props) {
                         if (activeNotes.has(normalizeToSingleOctave(downRight2Note))) {
                             const { opacity, strokeWidth } = intervalEmphasis(note, downRight2Note);
                             const downRight2NotePos = cordsToPosition(downRight2Cord);
-                            intervals.push(<Line key={`downright2-${x}-${y}`} stroke={getIntervalColor(1)} strokeWidth={strokeWidth} points={[xPos, yPos, downRight2NotePos.x, downRight2NotePos.y]} opacity={opacity} />);
+                            intervals.push(<Line key={`downright2-${x}-${y}`} stroke={getIntervalColor(1)} strokeWidth={strokeWidth} points={[xPos, yPos, downRight2NotePos.x, downRight2NotePos.y]} opacity={opacity} {...getEmphasizeProps([note, downRight2Note])} />);
                         }
                     }
 
@@ -221,23 +234,17 @@ function Tonnetz(props: Props) {
                                     stroke={getIntervalColor(6)}
                                     opacity={opacity}
                                     strokeWidth={strokeWidth}
+                                    {...getEmphasizeProps([note, up2Note])}
                                 />
                             );
                         }
                     }
 
-
-                    const emphasize = (notenums: number[]) => {
-                        updateNotes(NoteSet.Emphasized_OctaveGnostic, notenums, true, true);
-                    };
-
-                    const unemphasize = (notenums: number[]) => {
-                        updateNotes(NoteSet.Emphasized_OctaveGnostic, notenums, false);
-                    };
-
                     const hoverEmphasizeProps = { onTouchStart: () => emphasize([note]), onTouchEnd: () => unemphasize([note]), onMouseOver: () => emphasize([note]), onMouseOut: () => unemphasize([note]) }
-                    const minorTriadEmphasizeProps = { onTouchStart: () => emphasize([note, upRightNote, rightNote]), onTouchEnd: () => unemphasize([note, upRightNote, rightNote]), onMouseOver: () => emphasize([note, upRightNote, rightNote]), onMouseOut: () => unemphasize([note, upRightNote, rightNote]) }
-                    const majorTriadEmphasizeProps = { onTouchStart: () => emphasize([note, downRightNote, rightNote]), onTouchEnd: () => unemphasize([note, downRightNote, rightNote]), onMouseOver: () => emphasize([note, downRightNote, rightNote]), onMouseOut: () => unemphasize([note, downRightNote, rightNote]) }
+                    const minorTriadEmphasizeProps = getEmphasizeProps([note, upRightNote, rightNote]);
+                    const majorTriadEmphasizeProps = getEmphasizeProps([note, downRightNote, rightNote]);
+
+
 
                     // Note
                     const color = emphasizedNotes.has(normalizedNote) ? "red" : (homeNote === normalizedNote ? "yellow" : "white");

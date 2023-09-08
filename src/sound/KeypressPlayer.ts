@@ -204,6 +204,7 @@ function useKeypressPlayer() {
     }, [modulateActiveNotes]);
     React.useEffect(() => {
         const onKeyDown = (event: KeyboardEvent) => {
+            console.log("KEYDOWN: ", Date.now());
             // var mainStage = document.getElementById('root');
             // console.log(event.key);
             if (event.key === "Escape"){
@@ -246,8 +247,8 @@ function useKeypressPlayer() {
                 }
                 break;
         }
-            keysPressed.delete(event.key.toLocaleLowerCase());
-            setKeysPressed(new Set(keysPressed));
+            // keysPressed.delete(event.key.toLocaleLowerCase());
+            setKeysPressed(prevKeysPressed => {prevKeysPressed.delete(event.key.toLocaleLowerCase()); return new Set(prevKeysPressed)});
         }
 
         // Losing focus should clear the keys pressed

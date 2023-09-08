@@ -31,7 +31,7 @@ function Wheel(props: Props) {
 
     const [highlightedNotes, setHighlightedNotes] = React.useState(new Set<number>());
 
-    // useRenderingTrace("Wheel", { activeNotes, inputNotes, emphasizedNotes, highlightedNotes, homeNote, setHomeNote, getNotesInCommon, modulateActiveNotes, updateNotes });
+    useRenderingTrace("Wheel", { activeNotes, inputNotes, emphasizedNotes, highlightedNotes, homeNote, setHomeNote, getNotesInCommon, modulateActiveNotes, updateNotes });
 
     // Settings Storage
 

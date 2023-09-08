@@ -1,4 +1,5 @@
 import React from "react";
+import useRenderingTrace from "../utils/ProfilingUtils";
 
 const homeNoteContext = React.createContext<number | null>(null);
 const setHomeNoteContext = React.createContext((note: number | null) => { });
@@ -96,43 +97,47 @@ function NoteProvider(props: Props) {
         }
     }, [noteSets]);
     */
+    useRenderingTrace("NoteProvider.setNoteSet", { noteSets });
     const setNoteSet = React.useCallback(
         (noteSetsToUpdate: NoteSet[] | NoteSet, nums: Array<number>, areEnabled: boolean, overwriteExisting: boolean = false) => {
-            const newNoteSets = { ...noteSets };  // Make a shallow copy of the current state
 
-            const writeToNoteSet = (noteSet: NoteSet) => {
-                const startingPoint = overwriteExisting ? new Set<number>() : newNoteSets[noteSet];
+            setNoteSets(prevNoteSets => {
+                const newNoteSets = { ...prevNoteSets };  // Make a shallow copy of the current state
 
-                const maybeModdedNums = !octaveAgnosticNoteSets.has(noteSet) ? nums : nums.map(elem => {
-                    return ((12 * 12) + elem) % 12;
-                });
+                const writeToNoteSet = (noteSet: NoteSet) => {
+                    const startingPoint = overwriteExisting ? new Set<number>() : newNoteSets[noteSet];
 
-                if (areEnabled) {
-                    newNoteSets[noteSet] = new Set(Array.from(startingPoint).concat(maybeModdedNums));
+                    const maybeModdedNums = !octaveAgnosticNoteSets.has(noteSet) ? nums : nums.map(elem => {
+                        return ((12 * 12) + elem) % 12;
+                    });
+
+                    if (areEnabled) {
+                        newNoteSets[noteSet] = new Set(Array.from(startingPoint).concat(maybeModdedNums));
+                    } else {
+                        const numsSet = new Set(maybeModdedNums);
+                        newNoteSets[noteSet] = new Set(Array.from(startingPoint).filter(elem => !numsSet.has(elem)));
+                    }
+                };
+
+                if (noteSetsToUpdate instanceof Array) {
+                    noteSetsToUpdate.forEach(writeToNoteSet);
                 } else {
-                    const numsSet = new Set(maybeModdedNums);
-                    newNoteSets[noteSet] = new Set(Array.from(startingPoint).filter(elem => !numsSet.has(elem)));
+                    writeToNoteSet(noteSetsToUpdate);
                 }
-            };
 
-            if (noteSetsToUpdate instanceof Array) {
-                noteSetsToUpdate.forEach(writeToNoteSet);
-            } else {
-                writeToNoteSet(noteSetsToUpdate);
-            }
-
-            // Only update the state if there's a genuine change
-            for (const key in newNoteSets) {
-                const keynum = Number(key) as NoteSet;
-                if (!noteSets[keynum] ||
-                    newNoteSets[keynum].size !== noteSets[keynum].size ||
-                    !Array.from(newNoteSets[keynum]).every(elem => noteSets[keynum].has(elem))) {
-                    setNoteSets(newNoteSets);
-                    return;
+                // Only update the state if there's a genuine change
+                for (const key in newNoteSets) {
+                    const keynum = Number(key) as NoteSet;
+                    if (!prevNoteSets[keynum] ||
+                        newNoteSets[keynum].size !== prevNoteSets[keynum].size ||
+                        !Array.from(newNoteSets[keynum]).every(elem => prevNoteSets[keynum].has(elem))) {
+                        return newNoteSets;
+                    }
                 }
-            }
+                return prevNoteSets;
+            });
         },
-        [noteSets]
+        []
     );
 
 
