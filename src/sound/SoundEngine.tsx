@@ -2,7 +2,7 @@ import useKeypressPlayer from './KeypressPlayer';
 import React from 'react';
 import { getNote, getNoteMIDI, usePrevious } from '../utils/Utils';
 import { NoteSet, normalizeToSingleOctave, useNoteSet, useUpdateNoteSet } from './NoteProvider';
-import { useConnectToMidi } from './MIDIInterface';
+import { midiNoteToProgramNote, useConnectToMidi } from './MIDIInterface';
 import { WebMidi } from "webmidi";
 import * as Tone from 'tone';
 import { useSettings } from '../view/SettingsProvider';
@@ -42,9 +42,6 @@ function useSoundEngine() {
         synth.volume.value = isMuted ? -Infinity : 0;
     }, [isMuted, synth.volume]);
 
-    const midiNoteToProgramNote = (midiNote: number, octaveNumber: number) => {
-        return normalizeToSingleOctave(midiNote) + (12 * (octaveNumber - 3))
-    }
 
     React.useEffect(() => {
         updateNotes(NoteSet.PlayingInput, Array.from(notesPressedFromMidi), true, true);

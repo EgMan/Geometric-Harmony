@@ -10,6 +10,7 @@ import VideogameAssetIcon from '@mui/icons-material/VideogameAsset';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import { useSettings } from "./SettingsProvider";
+import { MidiFileParser } from "../sound/MidiFileParser";
 // import useSettings from "./SettingsProvider"
 
 type Props =
@@ -148,6 +149,7 @@ function ToolBar(props: Props) {
                             }
                         }}
                     >☮</Button>
+                    <MidiFileParser />
                 </div>
             </div>
             <div style={{ width: 320, maxWidth: '100%', zIndex: 1 }}>
