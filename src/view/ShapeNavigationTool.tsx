@@ -47,7 +47,7 @@ function ShapeNavigationTool(props: Props) {
     const setActiveShape = useSetActiveShape();
     const setHomeNote = useSetHomeNote();
 
-    const activeNotes = useNoteSet()(NoteSet.Active);
+    const activeNotes = useNoteSet()(NoteSet.Active).notes;
     const homeNote = useHomeNote();
 
     const activeExactFits = useGetAllExactFits(activeNotes);

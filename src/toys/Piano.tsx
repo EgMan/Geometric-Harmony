@@ -104,9 +104,9 @@ function Piano(props: Props) {
         </tr>),
     ];
 
-    const activeNotes = useNoteSet()(NoteSet.Active);
+    const activeNotes = useNoteSet()(NoteSet.Active).notes;
     const combinedEmphasis = useGetCombinedModdedEmphasis()();
-    const emphasizedNotesOctaveGnostic = useNoteSet()(NoteSet.Emphasized_OctaveGnostic);
+    const emphasizedNotesOctaveGnostic = useNoteSet()(NoteSet.Emphasized_OctaveGnostic).notes;
     const checkEmphasis = useCheckNoteEmphasis();
     const updateNotes = useUpdateNoteSet();
 

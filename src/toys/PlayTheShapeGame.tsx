@@ -39,7 +39,7 @@ function PlayTheShapeGame(props: Props) {
     const [question, setQuestion] = React.useState<Question>(pickNewShape());
     const [nextQuestion, setNextQuestion] = React.useState<Question>(pickNewShape());
 
-    const inputNotes = useNoteSet()(NoteSet.PlayingInput, true);
+    const inputNotes = useNoteSet()(NoteSet.PlayingInput, true).notes;
     const emphasizedNotes = useGetCombinedModdedEmphasis()();
     const consideredNotes = new Set(Array.from(inputNotes).concat(Array.from(emphasizedNotes)));
 

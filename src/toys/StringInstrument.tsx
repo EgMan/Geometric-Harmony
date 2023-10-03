@@ -20,10 +20,10 @@ function StringInstrument(props: Props) {
     const fretElemYOffset = -fretSpacing / 2;
     const circleElemRadius = stringSpacing / 5;
 
-    const activeNotes = useNoteSet()(NoteSet.Active);
+    const activeNotes = useNoteSet()(NoteSet.Active).notes;
     const checkEmphasis = useCheckNoteEmphasis();
     const combinedEmphasis = useGetCombinedModdedEmphasis()();
-    const emphasizedNotesOctaveGnostic = useNoteSet()(NoteSet.Emphasized_OctaveGnostic);
+    const emphasizedNotesOctaveGnostic = useNoteSet()(NoteSet.Emphasized_OctaveGnostic).notes;
     const updateNotes = useUpdateNoteSet();
 
     const homeNote = useHomeNote();

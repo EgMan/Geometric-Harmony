@@ -18,7 +18,7 @@ type Props = {
 
 function Tonnetz(props: Props) {
     const radius = Math.min(props.width, props.height) / 2;
-    const activeNotes = useNoteSet()(NoteSet.Active);
+    const activeNotes = useNoteSet()(NoteSet.Active).notes;
 
     const emphasizedNotes = useGetCombinedModdedEmphasis()();
     // const updateNotes = useUpdateNoteSet();

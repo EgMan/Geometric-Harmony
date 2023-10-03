@@ -23,29 +23,29 @@ import {
    * @see https://stackoverflow.com/a/51082563/2391795
    */
   const useRenderingTrace = (componentName: string, propsAndStates: any, level: 'debug' | 'info' | 'log' = 'debug') => {
-    const prev = useRef(propsAndStates);
+    // const prev = useRef(propsAndStates);
   
-    useEffect(() => {
-      const changedProps: { [key: string]: { old: any, new: any } } = Object.entries(propsAndStates).reduce((property: any, [key, value]: [string, any]) => {
-        if (prev.current[key] !== value) {
-          property[key] = {
-            old: prev.current[key],
-            new: value,
-          };
-        }
-        return property;
-      }, {});
+    // useEffect(() => {
+    //   const changedProps: { [key: string]: { old: any, new: any } } = Object.entries(propsAndStates).reduce((property: any, [key, value]: [string, any]) => {
+    //     if (prev.current[key] !== value) {
+    //       property[key] = {
+    //         old: prev.current[key],
+    //         new: value,
+    //       };
+    //     }
+    //     return property;
+    //   }, {});
   
-      if (Object.keys(changedProps).length > 0) {
-        console[level](`[${componentName}] Changed props:`, changedProps);
-      }
-      else
-      {
-        console[level](`[${componentName}] unknown prop change`);
-      }
+    //   if (Object.keys(changedProps).length > 0) {
+    //     console[level](`[${componentName}] Changed props:`, changedProps);
+    //   }
+    //   else
+    //   {
+    //     console[level](`[${componentName}] unknown prop change`);
+    //   }
   
-      prev.current = propsAndStates;
-    });
+    //   prev.current = propsAndStates;
+    // });
   };
   
   export default useRenderingTrace;

@@ -102,7 +102,7 @@ type SingleNoteShift =
 
 function useKeypressPlayer() {
     const [keysPressed, setKeysPressed] = React.useState(new Set<string>());
-    const activeNotes = useNoteSet()(NoteSet.Active);
+    const activeNotes = useNoteSet()(NoteSet.Active).notes;
     const updateNotes = useUpdateNoteSet();
     const modulateActiveNotes = useModulateActiveNotes();
     const getNoteFromScaleDegree = useGetNoteFromActiveShapeScaleDegree();
@@ -117,7 +117,7 @@ function useKeypressPlayer() {
     useExecuteOnPlayingNoteStateChange((notesTurnedOn, _notesTurnedOff, playingNotes) => {
         if (notesTurnedOn.length === 1)
         {
-            setMostRecentlyPlayedScaleDegree(getActiveShapeScaleDegree(normalizeToSingleOctave(notesTurnedOn[0])));
+            setMostRecentlyPlayedScaleDegree(getActiveShapeScaleDegree(normalizeToSingleOctave(notesTurnedOn[0][1])));
         }
         setIsPlayingAnyNote(playingNotes.length > 0);
     });
@@ -204,7 +204,7 @@ function useKeypressPlayer() {
     }, [modulateActiveNotes]);
     React.useEffect(() => {
         const onKeyDown = (event: KeyboardEvent) => {
-            console.log("KEYDOWN: ", Date.now());
+            // console.log("KEYDOWN: ", Date.now());
             // var mainStage = document.getElementById('root');
             // console.log(event.key);
             if (event.key === "Escape"){

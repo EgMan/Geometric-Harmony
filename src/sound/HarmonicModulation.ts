@@ -7,7 +7,7 @@ function getModulatedNotes(notes: Set<number>, semitones: number) {
 }
 
 export function useModulateActiveNotes() {
-    const activeNotes = useNoteSet()(NoteSet.Active);
+    const activeNotes = useNoteSet()(NoteSet.Active).notes;
     const updateNotes = useUpdateNoteSet();
     const homeNote = useHomeNote();
     const setHomeNote = useSetHomeNote();
@@ -23,7 +23,7 @@ export function useModulateActiveNotes() {
 }
 
 export function useGetActiveNotesInCommonWithModulation() {
-    const activeNotes = useNoteSet()(NoteSet.Active);
+    const activeNotes = useNoteSet()(NoteSet.Active).notes;
     return React.useCallback((semitones: number) => {
         const newActiveNotes = getModulatedNotes(activeNotes, semitones);
         // let notesInCommon: number[] = [];
