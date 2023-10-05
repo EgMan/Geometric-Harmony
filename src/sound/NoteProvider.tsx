@@ -217,13 +217,49 @@ export function useNotesOfType(...types: string[]) {
     }, [channels, types]);
 }
 
-export function useChannelDisplays() {
+function useChannelNamesToDisplay() {
     const channels = React.useContext(rawChannelContext);
     return React.useMemo(() => {
         return Object.keys(channels.get)
             .filter(name => channels.get[name].notes.size > 0 && channels.get[name].color)
-            .reduce((obj, key) => { obj.push(channels.get[key]); return obj; }, [] as NoteChannel[]);
-    }, [channels]);
+    }, [channels.get]);
+}
+
+export function useChannelDisplays() {
+    const channels = React.useContext(rawChannelContext);
+    const names = useChannelNamesToDisplay();
+    return React.useMemo(() => {
+        return names.reduce((obj, key) => { obj.push(channels.get[key]); return obj; }, [] as NoteChannel[]);
+    }, [channels.get, names]);
+}
+export function useNoteDisplays() {
+    const channels = React.useContext(rawChannelContext);
+    const names = useChannelNamesToDisplay();
+    return React.useMemo(() => {
+        return names
+            .reduce((obj, key) => {
+                const channel = channels.get[key];
+                if (channel) {
+                    channel.notes.forEach(note => {
+                        const octaveGnostic = obj.octaveGnostic[note] ?? [];
+                        const normalized = obj.normalized[normalizeToSingleOctave(note)] ?? [];
+                        normalized.push(channel);
+                        octaveGnostic.push(channel);
+                        obj.octaveGnostic[note] = octaveGnostic;
+                        obj.normalized[normalizeToSingleOctave(note)] = normalized;
+                    });
+                    return obj;
+                }
+                return obj;
+            }, { normalized: {}, octaveGnostic: {} } as {
+                normalized: {
+                    [note: number]: NoteChannel[],
+                }
+                octaveGnostic: {
+                    [note: number]: NoteChannel[],
+                }
+            });
+    }, [channels.get, names]);
 }
 
 export default NoteProvider;

@@ -5,7 +5,7 @@ import { MenuItem, Select, Switch } from '@mui/material';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { useGetActiveNotesInCommonWithModulation, useModulateActiveNotes } from '../sound/HarmonicModulation';
 import { getIntervalColor, getIntervalDistance, getNoteName } from '../utils/Utils';
-import { NoteSet, normalizeToSingleOctave, useChannelDisplays, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
+import { NoteSet, normalizeToSingleOctave, useChannelDisplays, useGetCombinedModdedEmphasis, useHomeNote, useNoteDisplays, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import useRenderingTrace from '../utils/ProfilingUtils';
 type Props = {
@@ -26,6 +26,7 @@ function Wheel(props: Props) {
     const homeNote = useHomeNote();
     const setHomeNote = useSetHomeNote();
     const channelDisplays = useChannelDisplays();
+    const noteDisplays = useNoteDisplays();
 
 
     const modulateActiveNotes = useModulateActiveNotes();
@@ -204,15 +205,10 @@ function Wheel(props: Props) {
                 const noteColor = homeNote === i ? "yellow" : "white";
                 notesArr.push(<Circle key={`active${i}`} x={noteLoc.x} y={noteLoc.y} fill={noteColor} radius={10} />);
             }
-            var hasPushed = false;
-            for (const channelDisplay of channelDisplays) {
-                if (Array.from(channelDisplay.notes).some((note) => normalizeToSingleOctave(note) === i)) {
-                    const opacity = hasPushed ? 0.5 : 1;
-                    emphasized.push(<Circle key={`${channelDisplay.name}-${i}`} opacity={opacity} x={noteLoc.x} y={noteLoc.y} fill={channelDisplay.color ?? "white"} radius={20} />);
-                    hasPushed = true;
-                    // break;
-                }
-            }
+            noteDisplays.normalized[i]?.forEach((channel, idx) => {
+                emphasized.push(<Circle key={`${channel.name}-${i}-${idx}`} opacity={1 / (idx + 1)} x={noteLoc.x} y={noteLoc.y} fill={channel.color ?? "white"} radius={20} />);
+            });
+
             if (highlightedNotes.has(i)) {
                 highlighted.push(<Circle key={`highlighted${i}`} x={noteLoc.x} y={noteLoc.y} fill="white" radius={20} />);
             }
@@ -230,7 +226,7 @@ function Wheel(props: Props) {
             clickListeners: clickListenersArr,
             names: noteNames,
         }
-    }, [getNoteLocation, rotatingStartingNote, props.subdivisionCount, isCircleOfFifths, getNotesInCommon, updateNotes, modulateActiveNotes, activeNotes, highlightedNotes, showNoteNames, setHomeNote, homeNote, channelDisplays]);
+    }, [getNoteLocation, rotatingStartingNote, props.subdivisionCount, isCircleOfFifths, getNotesInCommon, updateNotes, modulateActiveNotes, activeNotes, noteDisplays.normalized, highlightedNotes, showNoteNames, setHomeNote, homeNote]);
 
     const intervals = React.useMemo(() => {
         var intervalLines: JSX.Element[] = [];
