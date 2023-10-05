@@ -219,3 +219,14 @@ tr, td {
   /* background-color: white; */
   backdrop-filter: blur(16px);
 }
+
+.midi-file-input {
+  display: none;
+}
+.midi-file-input-label {
+  /* border: 1px solid #ccc; */
+  border-radius: 9px;
+  display: inline-block;
+  padding: 6px 12px;
+  cursor: pointer;
+}

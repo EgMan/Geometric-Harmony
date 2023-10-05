@@ -77,7 +77,7 @@ export const getIntervalDistance = (loc1: number, loc2: number, subdivisionCount
 
 export function usePrevious<T>(value: T, initialValue: T) {
     const ref = React.useRef<T>(initialValue);
-    React.useEffect(() => {
+    React.useLayoutEffect(() => {
         ref.current = value;
     });
     return ref.current;

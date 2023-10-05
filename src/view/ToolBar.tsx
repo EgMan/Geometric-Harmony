@@ -4,12 +4,18 @@ import ShapeNavigationTool from "./ShapeNavigationTool";
 import { WidgetTrackerActions, WidgetType } from "./ViewManager";
 import { Stage } from "konva/lib/Stage";
 import { getCurrentSpace } from "../utils/SpacesUtils";
+import AddIcon from '@mui/icons-material/Add';
+import AudioFileIcon from '@mui/icons-material/AudioFile';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import ConstructionIcon from '@mui/icons-material/Construction';
+import PianoIcon from '@mui/icons-material/Piano';
+import SettingsIcon from '@mui/icons-material/Settings';
 import VideogameAssetIcon from '@mui/icons-material/VideogameAsset';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import { useSettings } from "./SettingsProvider";
+import { MidiFileDataProvider, MidiFileParser } from "../sound/MidiFileParser";
+import { Height } from "@mui/icons-material";
 // import useSettings from "./SettingsProvider"
 
 type Props =
@@ -46,6 +52,7 @@ function ToolBar(props: Props) {
     const addButtonRef = React.useRef(null);
     const [addDropdownOpen, setAddDropdownOpen] = React.useState(false);
     const [settingsDropdownOpen, setSettingsDropdownOpen] = React.useState(false);
+    const [midiSettingsDropdownOpen, setMidiSettingsDropdownOpen] = React.useState(false);
     const addNewWidget = React.useCallback((widgetType: WidgetType) => {
         // const pos = props.stageRef.current?.getPointerPosition() ?? undefined;
         const space = getCurrentSpace();
@@ -95,29 +102,60 @@ function ToolBar(props: Props) {
                                 onClick={() => {
                                     setAddDropdownOpen(true);
                                 }}
-                            >+</Button><Button type="submit" variant="contained"
-                                sx={{
-                                    fontSize: "0.7em",
-                                    color: 'white',
-                                    backgroundColor: 'transparent',
-                                    boxShadow: 'none',
-                                    padding: "1.8px",
-                                    borderTopLeftRadius: '0px',
-                                    borderTopRightRadius: '9px',
-                                    borderBottomLeftRadius: '9px',
-                                    borderBottomRightRadius: '9px',
-                                    '&:hover': {
-                                        backgroundColor: 'rgb(255,255,255,0.1)',
-                                    },
-                                    "&.Mui-disabled": {
-                                        background: 'transparent',
-                                        color: "grey"
-                                    }
-                                }}
-                                onClick={() => {
-                                    setSettingsDropdownOpen(true);
-                                }}
-                            >⚙</Button></>
+                            >
+                                <AddIcon fontSize="small" />
+                            </Button>
+                                <Button type="submit" variant="contained"
+                                    sx={{
+                                        fontSize: "0.7em",
+                                        color: 'white',
+                                        backgroundColor: 'transparent',
+                                        boxShadow: 'none',
+                                        padding: "1.8px",
+                                        borderTopLeftRadius: '0px',
+                                        borderTopRightRadius: '9px',
+                                        borderBottomLeftRadius: '9px',
+                                        borderBottomRightRadius: '9px',
+                                        '&:hover': {
+                                            backgroundColor: 'rgb(255,255,255,0.1)',
+                                        },
+                                        "&.Mui-disabled": {
+                                            background: 'transparent',
+                                            color: "grey"
+                                        }
+                                    }}
+                                    onClick={() => {
+                                        setSettingsDropdownOpen(true);
+                                    }}
+                                >
+                                    <SettingsIcon fontSize="small" style={{ height: '100%' }} />
+                                </Button>
+                                <Button type="submit" variant="contained"
+                                    sx={{
+                                        fontSize: "0.7em",
+                                        color: 'white',
+                                        backgroundColor: 'transparent',
+                                        boxShadow: 'none',
+                                        padding: "1.8px",
+                                        borderTopLeftRadius: '0px',
+                                        borderTopRightRadius: '9px',
+                                        borderBottomLeftRadius: '9px',
+                                        borderBottomRightRadius: '9px',
+                                        '&:hover': {
+                                            backgroundColor: 'rgb(255,255,255,0.1)',
+                                        },
+                                        "&.Mui-disabled": {
+                                            background: 'transparent',
+                                            color: "grey"
+                                        }
+                                    }}
+                                    onClick={() => {
+                                        setMidiSettingsDropdownOpen(true);
+                                    }}
+                                >
+                                    <PianoIcon fontSize="small" />
+                                </Button>
+                            </>
                     }
                 </div>
                 <div>
@@ -245,6 +283,33 @@ function ToolBar(props: Props) {
                             </ClickAwayListener>
                         </Paper>
                     </Popover>
+                    <MidiFileDataProvider>
+                        <Popover
+                            open={midiSettingsDropdownOpen}
+                            onClose={() => setMidiSettingsDropdownOpen(false)}
+                            anchorEl={addButtonRef.current}
+                            anchorOrigin={{
+                                vertical: 'bottom',
+                                horizontal: -10,
+                            }}
+                            style={{ transform: "translate(-15px, 0px)" }}
+                            role={"menu"}
+                            disablePortal
+                        >
+                            <Paper>
+                                <ClickAwayListener onClickAway={() => setMidiSettingsDropdownOpen(false)}>
+                                    <MenuList>
+                                        <MenuItem >
+                                            <ListItemIcon>
+                                                <AudioFileIcon style={{ color: "white" }} fontSize="small" />
+                                            </ListItemIcon>
+                                            <MidiFileParser key={"midifileparser"} closeContainer={() => setMidiSettingsDropdownOpen(false)} />
+                                        </MenuItem>
+                                    </MenuList>
+                                </ClickAwayListener>
+                            </Paper>
+                        </Popover>
+                    </MidiFileDataProvider>
                 </ThemeProvider>
             </div>
         </div >

@@ -102,7 +102,7 @@ type SingleNoteShift =
 
 function useKeypressPlayer() {
     const [keysPressed, setKeysPressed] = React.useState(new Set<string>());
-    const activeNotes = useNoteSet()(NoteSet.Active);
+    const activeNotes = useNoteSet(NoteSet.Active).notes;
     const updateNotes = useUpdateNoteSet();
     const modulateActiveNotes = useModulateActiveNotes();
     const getNoteFromScaleDegree = useGetNoteFromActiveShapeScaleDegree();
@@ -117,7 +117,7 @@ function useKeypressPlayer() {
     useExecuteOnPlayingNoteStateChange((notesTurnedOn, _notesTurnedOff, playingNotes) => {
         if (notesTurnedOn.length === 1)
         {
-            setMostRecentlyPlayedScaleDegree(getActiveShapeScaleDegree(normalizeToSingleOctave(notesTurnedOn[0])));
+            setMostRecentlyPlayedScaleDegree(getActiveShapeScaleDegree(normalizeToSingleOctave(notesTurnedOn[0][1])));
         }
         setIsPlayingAnyNote(playingNotes.length > 0);
     });
@@ -204,7 +204,6 @@ function useKeypressPlayer() {
     }, [modulateActiveNotes]);
     React.useEffect(() => {
         const onKeyDown = (event: KeyboardEvent) => {
-            // var mainStage = document.getElementById('root');
             // console.log(event.key);
             if (event.key === "Escape"){
                 (document.activeElement as HTMLElement).blur();
@@ -246,8 +245,7 @@ function useKeypressPlayer() {
                 }
                 break;
         }
-            keysPressed.delete(event.key.toLocaleLowerCase());
-            setKeysPressed(new Set(keysPressed));
+            setKeysPressed(prevKeysPressed => {prevKeysPressed.delete(event.key.toLocaleLowerCase()); return new Set(prevKeysPressed)});
         }
 
         // Losing focus should clear the keys pressed

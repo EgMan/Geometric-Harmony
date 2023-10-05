@@ -16,8 +16,8 @@ type Props =
     } & WidgetComponentProps
 
 function HarmonyAnalyzer(props: Props) {
-    const activeNotes = useNoteSet()(NoteSet.Active);
-    const emphasizedNotes = useGetCombinedModdedEmphasis()();
+    const activeNotes = useNoteSet(NoteSet.Active).notes;
+    const emphasizedNotes = useGetCombinedModdedEmphasis();
     const homeNote = useHomeNote();
 
     const activeExactFits = useGetAllExactFits(activeNotes);
@@ -27,7 +27,7 @@ function HarmonyAnalyzer(props: Props) {
     const emphasizedExactFits = useGetAllExactFits(emphasizedNotes);
     const emphasizedExactFit = emphasizedExactFits[0];
 
-    const inputNotes = useNoteSet()(NoteSet.PlayingInput, true);
+    const inputNotes = useNoteSet(NoteSet.PlayingInput, true).notes;
     const inputExactFits = useGetAllExactFits(inputNotes);
     const inputExactFit = inputExactFits[0];
 
@@ -180,7 +180,7 @@ export function getScaleDegree(noteInShapeFrom: number, noteInShapeTo: number, s
 }
 
 export function useGetActiveShapeScaleDegreeFromNote() {
-    const activeNotes = useNoteSet()(NoteSet.Active);
+    const activeNotes = useNoteSet(NoteSet.Active).notes;
     const exactFit = useGetAllExactFits(activeNotes)[0];
     const homeNote = useHomeNote() ?? 0;
 
@@ -190,7 +190,7 @@ export function useGetActiveShapeScaleDegreeFromNote() {
     return React.useCallback((note: number) => getScaleDegree(homeNote + shapeOffset, note + shapeOffset, shape), [homeNote, shape, shapeOffset]);
 }
 export function useGetNoteFromActiveShapeScaleDegree() {
-    const activeNotes = useNoteSet()(NoteSet.Active);
+    const activeNotes = useNoteSet(NoteSet.Active).notes;
     const homeNote = useHomeNote() ?? 0;
     const getActiveShapeScaleDegree = useGetActiveShapeScaleDegreeFromNote();
 
