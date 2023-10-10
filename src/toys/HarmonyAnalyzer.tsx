@@ -2,7 +2,7 @@ import React from "react";
 import { Group, Text } from 'react-konva';
 import { HarmonicShape, SCALE_CHROMATIC, ShapeType, knownShapes } from "../utils/KnownHarmonicShapes";
 import { getIntervalColor, getNoteName } from "../utils/Utils";
-import { NoteSet, normalizeToSingleOctave, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote } from "../sound/NoteProvider";
+import { NoteSet, normalizeToSingleOctave, useChannelDisplays, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote } from "../sound/NoteProvider";
 import { WidgetComponentProps } from "../view/Widget";
 import SettingsMenuOverlay from "../view/SettingsMenuOverlay";
 import { Switch } from "@mui/material";
@@ -19,6 +19,7 @@ function HarmonyAnalyzer(props: Props) {
     const activeNotes = useNoteSet(NoteSet.Active).notes;
     const emphasizedNotes = useGetCombinedModdedEmphasis();
     const homeNote = useHomeNote();
+    // const channelDisplays = useChannelDisplays();
 
     const activeExactFits = useGetAllExactFits(activeNotes);
     const activeExactFit = activeExactFits[0];
@@ -88,10 +89,9 @@ function HarmonyAnalyzer(props: Props) {
     const infoTextElems = React.useMemo(() => {
         //TODO Add exact fit names
         const emphasizedNoteInfo = Array.from(emphasizedNotes).map(getInfoText).filter(info => info !== '');
-
         const inputNoteInfo = Array.from(inputNotes).map(getInfoText).filter(info => info !== '');
+        // channelDisplays.map(channel => getInfoText(Array.from(channel.notes)))
 
-        // Populate infos that display under the shape explorer
         type Info = {
             text: string;
             color: string;

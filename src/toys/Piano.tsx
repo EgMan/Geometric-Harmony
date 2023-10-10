@@ -3,7 +3,7 @@ import { Circle, Group, Rect, Shape, Text } from 'react-konva';
 import { WidgetComponentProps } from '../view/Widget';
 import { MenuItem, Select, Switch } from '@mui/material';
 import { getIntervalColor, getIntervalDistance, getNoteName } from '../utils/Utils';
-import { NoteSet, useCheckNoteEmphasis, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
+import { NoteSet, normalizeToSingleOctave, useChannelDisplays, useCheckNoteEmphasis, useGetCombinedModdedEmphasis, useHomeNote, useNoteDisplays, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
 import { KonvaEventObject } from 'konva/lib/Node';
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 
@@ -32,10 +32,11 @@ function Piano(props: Props) {
     }
 
     const [showNoteNames, setShowNoteNames] = React.useState(false);
+    const [showGhostOctaves, setShowGhostOctaves] = React.useState(false);
 
-    const [onlyShowIntervalsOnHover, setOnlyShowIntervalsOnHover] = React.useState(true);
+    const [onlyShowIntervalsOnHover, setOnlyShowIntervalsOnHover] = React.useState(false);
 
-    const [showInverseIntervals, setShowInverseIntervals] = React.useState(false);
+    const [showInverseIntervals, setShowInverseIntervals] = React.useState(true);
 
     ///////////////////
 
@@ -102,6 +103,11 @@ function Piano(props: Props) {
             <td style={{ textAlign: "center" }}>♯</td>
             <td><Switch checked={showNoteNames} onChange={e => setShowNoteNames(e.target.checked)} /></td>
         </tr>),
+        (<tr key={"tr11"}>
+            <td>Show ghost octaves</td>
+            <td style={{ textAlign: "center" }}>👻</td>
+            <td><Switch checked={showGhostOctaves} onChange={e => setShowGhostOctaves(e.target.checked)} /></td>
+        </tr>),
     ];
 
     const activeNotes = useNoteSet(NoteSet.Active).notes;
@@ -109,6 +115,9 @@ function Piano(props: Props) {
     const emphasizedNotesOctaveGnostic = useNoteSet(NoteSet.Emphasized_OctaveGnostic).notes;
     const checkEmphasis = useCheckNoteEmphasis();
     const updateNotes = useUpdateNoteSet();
+
+    const noteDisplays = useNoteDisplays();
+    const channelDisplays = useChannelDisplays();
 
     const homeNote = useHomeNote();
     const setHomeNote = useSetHomeNote();
@@ -153,7 +162,7 @@ function Piano(props: Props) {
         const activeIndicatorWidth = keyWidth * 2 / 3;
         const activeIndicatorY = 3 * keyHeight / 4;
         const xpos = noteToXOffsetFactor[note] * octaveWidth / 7;
-        const extraProps = { fill: keyColor }
+        const extraProps = { stroke: keyColor, fill: keyColor }
         return {
             keyWidth,
             keyHeight,
@@ -173,12 +182,14 @@ function Piano(props: Props) {
         return getPropsForWhiteNote(note, octave);
     }, [getPropsForBlackNote, getPropsForWhiteNote]);
 
+    const octaveOffset = -1;
     const getAbsoluteNoteNum = React.useCallback((note: number, octave: number) => {
-        return note + (octave * 12);
-    }, []);
+        return note + ((octave + octaveOffset) * 12);
+    }, [octaveOffset]);
 
     const keys = React.useMemo(() => {
-        var keys: JSX.Element[] = [];
+        var whitekeys: JSX.Element[] = [];
+        var blackkeys: JSX.Element[] = [];
         let activeNoteIndicators: JSX.Element[] = [];
         let emphasized: JSX.Element[] = [];
         let clickListenersArr: JSX.Element[] = [];
@@ -198,14 +209,18 @@ function Piano(props: Props) {
                         updateNotes(NoteSet.Active, [note], !activeNotes.has(note));
                     }
                 };
-                keys.push(
-                    <Rect
-                        key={`key${i}-${note}`}
-                        x={noteprops.xpos + noteprops.individualKeyOffset}
-                        width={noteprops.keyWidth}
-                        height={noteprops.keyHeight}
-                        {...noteprops.extraProps} />
-                );
+                const key = <Rect
+                    key={`key${i}-${note}`}
+                    x={noteprops.xpos + noteprops.individualKeyOffset}
+                    width={noteprops.keyWidth}
+                    height={noteprops.keyHeight}
+                    {...noteprops.extraProps} />
+                if (whiteKeyNums.includes(note)) {
+                    whitekeys.push(key);
+                }
+                else {
+                    blackkeys.push(key);
+                }
                 if (activeNotes.has(note)) {
                     const noteColor = note === homeNote ? "yellow" : "white";
                     activeNoteIndicators.push(
@@ -218,15 +233,41 @@ function Piano(props: Props) {
                             fill={noteColor} />
                     );
                 }
-                if (checkEmphasis(absoluteNoteNum, true))
-                    emphasized.push(
-                        <Circle
-                            key={`emphaInd${i}-${note}`}
-                            x={noteprops.xpos + noteprops.individualActiveIndicaterOffset}
-                            y={noteprops.activeIndicatorY}
-                            width={noteprops.activeIndicatorWidth}
-                            height={noteprops.activeIndicatorWidth}
-                            fill={"red"} />);
+                noteDisplays.octaveGnostic[absoluteNoteNum]?.forEach((channel, idx) => {
+                    const emphasizedKey = <Rect
+                        key={`emphaInd${i}-${note}-${channel.name}-${idx}}`}
+                        x={noteprops.xpos + noteprops.individualKeyOffset}
+                        width={noteprops.keyWidth}
+                        height={noteprops.keyHeight}
+                        // {...noteprops.extraProps}
+                        opacity={1 / (idx + 1)}
+                        fill={channel.color ?? "white"}
+                    />
+                    if (whiteKeyNums.includes(note)) {
+                        whitekeys.push(emphasizedKey);
+                    } else {
+                        blackkeys.push(emphasizedKey);
+                    }
+                });
+                if (showGhostOctaves) {
+                    noteDisplays.normalized[note]?.forEach((channel, idx) => {
+                        const emphasizedKey = <Rect
+                            key={`emphaIndNormalized${i}-${note}-${channel.name}-${idx}}`}
+                            x={noteprops.xpos + noteprops.individualKeyOffset}
+                            width={noteprops.keyWidth}
+                            height={noteprops.keyHeight}
+                            // {...noteprops.extraProps}
+                            opacity={0.15 / (idx + 1)}
+                            fill={channel.color ?? "white"}
+                        />
+                        if (whiteKeyNums.includes(note)) {
+                            whitekeys.push(emphasizedKey);
+                        } else {
+                            blackkeys.push(emphasizedKey);
+                        }
+                    });
+                }
+
                 clickListenersArr.push(
                     <Rect
                         key={`keyHitbox${i}-${note}`}
@@ -259,13 +300,14 @@ function Piano(props: Props) {
             }
         }
         return {
-            keys,
+            whitekeys,
+            blackkeys,
             noteNames,
             activeNoteIndicators,
             emphasized,
             clickListenersArr,
         };
-    }, [activeNotes, checkEmphasis, getAbsoluteNoteNum, getPropsForNote, homeNote, octaveCount, setHomeNote, showNoteNames, updateNotes]);
+    }, [activeNotes, getAbsoluteNoteNum, getPropsForNote, homeNote, noteDisplays.normalized, noteDisplays.octaveGnostic, octaveCount, setHomeNote, showGhostOctaves, showNoteNames, updateNotes]);
 
     const intervals = React.useMemo(() => {
         var intervalLines: JSX.Element[] = [];
@@ -273,116 +315,125 @@ function Piano(props: Props) {
         var touchListeners: JSX.Element[] = [];
         const activeNoteArr = Array.from(activeNotes);
 
-        for (let octaveA = 0; octaveA < octaveCount; octaveA++) {
-            for (let octaveB = octaveA; octaveB <= Math.min(octaveA + 1, octaveCount - 1); octaveB++) {
-                for (let a = 0; a < activeNoteArr.length; a++) {
-                    for (let b = 0; b < activeNoteArr.length; b++) {
-                        const noteA = activeNoteArr[a];
-                        const noteB = activeNoteArr[b];
+        channelDisplays.forEach((channel, idx) => {
+            const noteArr = Array.from(channel.notes);
+            for (let aIdx = 0; aIdx < noteArr.length; aIdx++) {
+                for (let bIdx = aIdx; bIdx < noteArr.length; bIdx++) {
+                    const absoluteNoteA = noteArr[aIdx];
+                    const absoluteNoteB = noteArr[bIdx];
+                    const absoluteInverval = [absoluteNoteA, absoluteNoteB];
 
-                        const absoluteNoteA = getAbsoluteNoteNum(noteA, octaveA);
-                        const absoluteNoteB = getAbsoluteNoteNum(noteB, octaveB);
-                        const absoluteInverval = [absoluteNoteA, absoluteNoteB];
+                    const noteA = normalizeToSingleOctave(absoluteNoteA);
+                    const noteB = normalizeToSingleOctave(absoluteNoteB);
 
-                        const propsA = getPropsForNote(noteA, octaveA);
-                        const propsB = getPropsForNote(noteB, octaveB);
+                    const octaveA = Math.floor(absoluteNoteA / 12) + 1;
+                    const octaveB = Math.floor(absoluteNoteB / 12) + 1;
 
-                        const aLoc = { x: propsA.xpos + propsA.individualActiveIndicaterOffset, y: propsA.activeIndicatorY };
-                        const bLoc = { x: propsB.xpos + propsB.individualActiveIndicaterOffset, y: propsB.activeIndicatorY };
+                    const propsA = getPropsForNote(noteA, octaveA);
+                    const propsB = getPropsForNote(noteB, octaveB);
+
+                    const aLoc = { x: propsA.xpos + propsA.individualActiveIndicaterOffset, y: propsA.activeIndicatorY };
+                    const bLoc = { x: propsB.xpos + propsB.individualActiveIndicaterOffset, y: propsB.activeIndicatorY };
 
 
-                        const dist = getIntervalDistance(noteA, noteB, 12);
-                        const discColor = getIntervalColor(dist);
-                        const absoluteDist = Math.abs((noteA + (12 * octaveA)) - (noteB + (12 * octaveB)));
+                    const dist = getIntervalDistance(noteA, noteB, 12);
+                    const discColor = getIntervalColor(dist);
+                    const absoluteDist = Math.abs((noteA + (12 * octaveA)) - (noteB + (12 * octaveB)));
 
-                        if (onlyShowIntervalsOnHover) {
-                            if (combinedEmphasis.size === 0)
-                                continue;
-                            if (combinedEmphasis.size === 1)
-                                continue;
-                            // To instead show all intervals between the single emphasized note
-                            // if (emphasizedNotes.size === 1 && !emphasizedNotes.has(noteA) && !emphasizedNotes.has(noteB))
-                            //     continue;
-                            if (combinedEmphasis.size >= 2 && (!combinedEmphasis.has(noteA) || !combinedEmphasis.has(noteB)))
-                                continue;
-                        }
-
-                        if (!displayInterval[dist - 1]) {
+                    if (onlyShowIntervalsOnHover) {
+                        if (combinedEmphasis.size === 0)
                             continue;
-                        }
-
-                        if (showInverseIntervals && absoluteDist > 12 - dist) {
+                        if (combinedEmphasis.size === 1)
                             continue;
-                        }
-                        if (!showInverseIntervals && absoluteDist > dist) {
+                        // To instead show all intervals between the single emphasized note
+                        // if (emphasizedNotes.size === 1 && !emphasizedNotes.has(noteA) && !emphasizedNotes.has(noteB))
+                        //     continue;
+                        if (combinedEmphasis.size >= 2 && (!combinedEmphasis.has(noteA) || !combinedEmphasis.has(noteB)))
                             continue;
-                        }
-
-                        const emphasize = () => {
-                            updateNotes([NoteSet.Emphasized_OctaveGnostic], absoluteInverval, true, true);
-                        };
-                        const deemphasize = () => {
-                            updateNotes([NoteSet.Emphasized_OctaveGnostic], absoluteInverval, false);
-                        };
-                        const isIntervalEmphasized = emphasizedNotesOctaveGnostic.size > 0 ? emphasizedNotesOctaveGnostic.has(absoluteNoteA) && emphasizedNotesOctaveGnostic.has(absoluteNoteB) : combinedEmphasis.has(noteA) && combinedEmphasis.has(noteB);
-
-                        intervalLines.push(
-                            <Shape
-                                key={`interval${absoluteInverval}`}
-                                sceneFunc={(context, shape) => {
-                                    context.beginPath();
-                                    context.moveTo(aLoc.x, aLoc.y);
-                                    context.bezierCurveTo(
-                                        aLoc.x,
-                                        aLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
-                                        bLoc.x,
-                                        bLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
-                                        bLoc.x,
-                                        bLoc.y
-                                    );
-                                    context.strokeShape(shape);
-                                }}
-                                stroke={discColor}
-                                strokeWidth={isIntervalEmphasized ? 3 : 1.5}
-                            />
-                        );
-                        touchListeners.push(
-                            <Shape
-                                key={`touchlisten${absoluteInverval}`}
-                                sceneFunc={(context, shape) => {
-                                    context.beginPath();
-                                    context.moveTo(aLoc.x, aLoc.y);
-                                    context.bezierCurveTo(
-                                        aLoc.x,
-                                        aLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
-                                        bLoc.x,
-                                        bLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
-                                        bLoc.x,
-                                        bLoc.y
-                                    );
-                                    context.strokeShape(shape);
-                                }}
-                                stroke={'rgba(0,0,0,0)'}
-                                strokeWidth={3}
-                                onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize}
-                            />
-                        );
                     }
+
+                    if (!displayInterval[dist - 1]) {
+                        continue;
+                    }
+
+                    if (showInverseIntervals && absoluteDist > 12 - dist) {
+                        continue;
+                    }
+                    if (!showInverseIntervals && absoluteDist > dist) {
+                        continue;
+                    }
+
+                    const emphasize = () => {
+                        updateNotes([NoteSet.Emphasized_OctaveGnostic], absoluteInverval, true, true);
+                    };
+                    const deemphasize = () => {
+                        updateNotes([NoteSet.Emphasized_OctaveGnostic], absoluteInverval, false);
+                    };
+                    const isIntervalEmphasized = emphasizedNotesOctaveGnostic.size > 0 ? emphasizedNotesOctaveGnostic.has(absoluteNoteA) && emphasizedNotesOctaveGnostic.has(absoluteNoteB) : combinedEmphasis.has(noteA) && combinedEmphasis.has(noteB);
+
+                    intervalLines.push(
+                        <Shape
+                            key={`interval${absoluteInverval}-${absoluteNoteA}-${absoluteNoteB}-${channel.name}`}
+                            sceneFunc={(context, shape) => {
+                                context.beginPath();
+                                context.moveTo(aLoc.x, aLoc.y);
+                                context.bezierCurveTo(
+                                    aLoc.x,
+                                    aLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
+                                    bLoc.x,
+                                    bLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
+                                    bLoc.x,
+                                    bLoc.y
+                                );
+                                context.strokeShape(shape);
+                            }}
+                            stroke={discColor}
+                            // strokeWidth={isIntervalEmphasized ? 3 : 1.5}
+                            strokeWidth={5}
+                            opacity={0.225}
+                            shadowEnabled={true}
+                            shadowColor={'white'}
+                            shadowOpacity={0.5}
+                            shadowBlur={5}
+                        />
+                    );
+                    touchListeners.push(
+                        <Shape
+                            key={`touchlisten${absoluteInverval}`}
+                            sceneFunc={(context, shape) => {
+                                context.beginPath();
+                                context.moveTo(aLoc.x, aLoc.y);
+                                context.bezierCurveTo(
+                                    aLoc.x,
+                                    aLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
+                                    bLoc.x,
+                                    bLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
+                                    bLoc.x,
+                                    bLoc.y
+                                );
+                                context.strokeShape(shape);
+                            }}
+                            stroke={'rgba(0,0,0,0)'}
+                            strokeWidth={3}
+                            onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize}
+                        />
+                    );
                 }
             }
-        }
+        });
         return {
             line: intervalLines,
             emphasized: emphasized,
             listeners: touchListeners,
         }
-    }, [activeNotes, combinedEmphasis, displayInterval, emphasizedNotesOctaveGnostic, getAbsoluteNoteNum, getPropsForNote, octaveCount, onlyShowIntervalsOnHover, props.height, showInverseIntervals, updateNotes]);
+    }, [activeNotes, channelDisplays, combinedEmphasis, displayInterval, emphasizedNotesOctaveGnostic, getPropsForNote, onlyShowIntervalsOnHover, props.height, showInverseIntervals, updateNotes]);
 
     const fullRender = React.useMemo((
     ) => {
         return (
             <Group>
-                {keys.keys}
+                {keys.whitekeys}
+                {keys.blackkeys}
                 {intervals.line}
                 {intervals.emphasized}
                 {keys.activeNoteIndicators}
@@ -392,7 +443,7 @@ function Piano(props: Props) {
                 {intervals.listeners}
             </Group>
         );
-    }, [intervals.emphasized, intervals.line, intervals.listeners, keys.activeNoteIndicators, keys.clickListenersArr, keys.emphasized, keys.keys, keys.noteNames]);
+    }, [intervals.emphasized, intervals.line, intervals.listeners, keys.activeNoteIndicators, keys.blackkeys, keys.clickListenersArr, keys.emphasized, keys.noteNames, keys.whitekeys]);
 
     return (
         <Group>

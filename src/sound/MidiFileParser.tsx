@@ -83,12 +83,12 @@ export function MidiFileParser(props: Props) {
             if (event.type === 'noteOn' || event.type === 'noteOff') {
                 // if ((event as MidiNoteMixins).noteNumber > 34 && (event as MidiNoteMixins).noteNumber < 49 && (event as MidiNoteMixins).noteNumber != 58) {
                 if (
-                    // (tracker.programNumber === 0 && (stateContext.midiEventTrackers.current?.length ?? 0) > 1) || 
+                    // (tracker.programNumber === 0 && (stateContext.midiEventTrackers.current?.length ?? 0) > 1) ||
                     tracker.programNumber > 96) {
                     console.log("Is this drums?", track);
                     return;
                 };
-                updateNotes(`${NoteSet.MIDIFileInput}-Track${track}`, [midiNoteToProgramNote((event as MidiNoteMixins).noteNumber, Math.floor((event as MidiNoteMixins).noteNumber / 12) - 1)], event.type === 'noteOn', false, new Set([NoteSet.MIDIFileInput]), `hsl(${(track * 2 * 360 / 16) % 360}, 100%, 50%)`);
+                updateNotes(`${NoteSet.MIDIFileInput}-Track${track}`, [midiNoteToProgramNote((event as MidiNoteMixins).noteNumber, Math.floor((event as MidiNoteMixins).noteNumber / 12) - 1)], event.type === 'noteOn', false, new Set([NoteSet.MIDIFileInput]), `hsl(${(track * 2 * 360 / 16) % 360}, 100%, 70%)`);
                 // console.log("scheduled event", getNoteName(midiNoteToProgramNote((event as MidiNoteMixins).noteNumber, 3), new Set()), event, msFromNow);
             }
         }, msFromNow);
@@ -133,7 +133,7 @@ export function MidiFileParser(props: Props) {
                     console.log("program change", trackIdx, (nextEvent as MidiProgramChangeEvent).programNumber);
                     midiEventTrackers.current[trackIdx].programNumber = (nextEvent as MidiProgramChangeEvent).programNumber;
                     WebMidi.outputs.forEach(output => {
-                        // output.sendProgramChange((nextEvent as MidiProgramChangeEvent).programNumber, { channels: (nextEvent as MidiProgramChangeEvent).channel });
+                        output.sendProgramChange((nextEvent as MidiProgramChangeEvent).programNumber, { channels: (nextEvent as MidiProgramChangeEvent).channel });
                     });
                 }
 

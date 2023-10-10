@@ -15,7 +15,6 @@ import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import { useSettings } from "./SettingsProvider";
 import { MidiFileDataProvider, MidiFileParser } from "../sound/MidiFileParser";
-import { Height } from "@mui/icons-material";
 // import useSettings from "./SettingsProvider"
 
 type Props =

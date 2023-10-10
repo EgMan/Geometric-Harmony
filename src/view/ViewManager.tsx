@@ -68,7 +68,7 @@ function ViewManager(props: Props) {
     const limitingAxisSize = limitingAxisIsHeight ? props.height : props.width;
     const padding = limitingAxisSize / 5;
     const wheelRadius = limitingAxisSize / 2 - padding;
-    const pianoOctaveCount = limitingAxisIsHeight ? 4 : 2;
+    const pianoOctaveCount = limitingAxisIsHeight ? 5 : 2;
     const pianoHeight = ((props.height / 2) - wheelRadius) * 2 / 3;
     const guitarHeight = props.height - 200;
     // const pianoWidth = (props.width) - .5;

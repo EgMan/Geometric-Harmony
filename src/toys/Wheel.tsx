@@ -287,24 +287,24 @@ function Wheel(props: Props) {
 
     const fullRender = React.useMemo((
     ) => {
-        const centerpoint = (<Circle radius={1} fill="white"></Circle>);
+        // const centerpoint = (<Circle radius={1} fill="white"></Circle>);
         return (
             <Group x={radius} y={radius}>
                 <Group opacity={isRotating ? 0.125 : 1} key={"realGroup"}>
                     {notes.halos}
                     {intervals.emphasized}
                     {intervals.line}
-                    {notes.values}
                     {notes.emphasized}
-                    {centerpoint}
+                    {notes.values}
+                    {/* {centerpoint} */}
                 </Group>
                 {isRotating && <Group rotation={rotation} key={"rotationalGroup"}>
                     {notes.halos}
                     {intervals.line}
                     {intervals.highlighted}
-                    {notes.values}
                     {notes.highlighted}
-                    {centerpoint}
+                    {notes.values}
+                    {/* {centerpoint} */}
                 </Group>}
                 {notes.names}
                 {notes.clickListeners}
