@@ -304,6 +304,14 @@ function ToolBar(props: Props) {
                                             </ListItemIcon>
                                             <MidiFileParser key={"midifileparser"} closeContainer={() => setMidiSettingsDropdownOpen(false)} />
                                         </MenuItem>
+                                        <MenuItem onClick={() => settings?.setPrioritizeMIDIAudio(val => !val)}>
+                                            <ListItemIcon>
+                                                <SettingsIcon style={{ color: "white" }} fontSize="small" />
+                                            </ListItemIcon>
+                                            {/* <ListItemText> Prioritize accurate audio timings over synchronicity with onscreen visuals </ListItemText> */}
+                                            <ListItemText>Send midi events directly to devices</ListItemText>
+                                            <Switch checked={settings?.prioritizeMIDIAudio} onChange={e => settings?.setPrioritizeMIDIAudio(e.target.checked)}></Switch>
+                                        </MenuItem>
                                     </MenuList>
                                 </ClickAwayListener>
                             </Paper>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { MidiNoteMixins, MidiSetTempoEvent, MidiProgramChangeEvent, MidiKeySignatureEvent, MidiControllerEvent, MidiNoteAftertouchEvent, MidiPitchBendEvent, MidiTextEvent } from "midi-file";
+import { MidiNoteMixins, MidiSetTempoEvent, MidiProgramChangeEvent, MidiKeySignatureEvent, MidiControllerEvent, MidiNoteAftertouchEvent, MidiPitchBendEvent, MidiTextEvent, MidiNoteOnEvent, MidiNoteOffEvent } from "midi-file";
 import * as midiManager from 'midi-file';
 import { NoteSet, useClearChannelsOfType, useSetHomeNote, useUpdateNoteSet } from './NoteProvider';
 import { midiNoteToProgramNote } from './MIDIInterface';
@@ -7,6 +7,7 @@ import { WebMidi } from 'webmidi';
 import { useSetActiveShape } from './HarmonicModulation';
 import { SCALE_NATURAL } from '../utils/KnownHarmonicShapes';
 import { getNoteName } from '../utils/Utils';
+import { useSettings } from '../view/SettingsProvider';
 
 type Props = {
     closeContainer: () => void,
@@ -19,8 +20,7 @@ type MidiEventTracker = {
     programNumber: number,
 };
 
-const scheduleAheadMS = 150;
-const scheduleBehindMS = 10;
+const scheduleAheadMS = 200;
 
 type MidiDataContextType = {
     midiData: React.MutableRefObject<midiManager.MidiData | null>,
@@ -60,6 +60,7 @@ export function MidiFileParser(props: Props) {
     if (!stateContext) { throw new Error("MidiFileParser must be a child of MidiFileDataProvider"); }
     const { midiData, midiEventTrackers, startTime, microsecPerBeat, inputRef, loadedFileNameState, totalPendingScheduled } = stateContext;
     const [loadedFileName, setLoadedFilename] = loadedFileNameState;
+    const settings = useSettings();
 
     const setActiveShape = useSetActiveShape();
     const setHomeNote = useSetHomeNote();
@@ -67,7 +68,7 @@ export function MidiFileParser(props: Props) {
     // const [midiData, setMidiData] = React.useState<midiManager.MidiData | null>(null);
     // const [midiEventTrackers, setMidiEventTrackers] = React.useState<MidiEventTracker[] | null>(null);
 
-    const scheduleEvent = React.useCallback((event: midiManager.MidiEvent, msFromNow: number, track: number) => {
+    const scheduleEvent = React.useCallback((event: midiManager.MidiEvent, time: number, track: number) => {
         setTimeout(() => {
             totalPendingScheduled.current--;
             const tracker = stateContext.midiEventTrackers.current?.[track];
@@ -78,7 +79,7 @@ export function MidiFileParser(props: Props) {
                     // if ((event as MidiNoteMixins).noteNumber > 34 && (event as MidiNoteMixins).noteNumber < 49 && (event as MidiNoteMixins).noteNumber != 58) {
                     // (stateContext.midiEventTrackers.current ?? []).some((tracker, index) => tracker.programNumber !== 0);
                     if (
-                        (tracker.programNumber === 0 && (stateContext.midiEventTrackers.current ?? []).some((tracker, index) => tracker.programNumber > 0 && tracker.programNumber <= 96)) ||
+                        // (tracker.programNumber === 0 && (stateContext.midiEventTrackers.current ?? []).some((tracker, index) => tracker.programNumber > 0 && tracker.programNumber <= 96)) ||
                         tracker.programNumber > 96) {
                         console.log("Is this drums?", track, midiEventTrackers.current);
                         return;
@@ -86,14 +87,14 @@ export function MidiFileParser(props: Props) {
                     const offset = 3;
                     const chanColor = `hsl(${(45 * (event.channel + offset) + (Math.floor((event.channel + offset) / 8) * (45 / 2))) % 360}deg, 100%, 70%)`;
                     updateNotes(`${NoteSet.MIDIFileInput}-${event.channel}`, [midiNoteToProgramNote((event as MidiNoteMixins).noteNumber, Math.floor((event as MidiNoteMixins).noteNumber / 12) - 1)], event.type === 'noteOn', false, new Set([NoteSet.MIDIFileInput]), chanColor);
-
-                    // console.log("scheduled event", getNoteName(midiNoteToProgramNote((event as MidiNoteMixins).noteNumber, 3), new Set()), event, msFromNow);
                     break;
                 case 'programChange':
-                    console.log("program change", track, (event as MidiProgramChangeEvent).programNumber);
+                    console.log("program change", track, (event as MidiProgramChangeEvent));
                     tracker.programNumber = (event as MidiProgramChangeEvent).programNumber;
                     WebMidi.outputs.forEach(output => {
-                        output.sendProgramChange((event as MidiProgramChangeEvent).programNumber, { channels: (event as MidiProgramChangeEvent).channel });
+                        output.sendProgramChange((event as MidiProgramChangeEvent).programNumber, {
+                            channels: ((event as MidiProgramChangeEvent).channel + 1),
+                        });
                     });
                     break;
                 case 'keySignature':
@@ -119,69 +120,76 @@ export function MidiFileParser(props: Props) {
                     }
                     break;
                 case 'setTempo':
-                    microsecPerBeat.current = (event as MidiSetTempoEvent).microsecondsPerBeat;
-                    console.log("parsed tempo: ", 60000000 / microsecPerBeat.current, "dt=", (event as MidiSetTempoEvent).deltaTime);
+                    // microsecPerBeat.current = (event as MidiSetTempoEvent).microsecondsPerBeat;
+                    console.log("parsed tempo: ", 60000000 / microsecPerBeat.current, "dt=", (event as MidiSetTempoEvent).deltaTime, "track: ", track);
                     break;
                 case 'controller':
                     WebMidi.outputs.forEach(output => {
                         output.sendControlChange((event as MidiControllerEvent).controllerType, (event as MidiControllerEvent).value, {
-                            channels: (event as MidiControllerEvent).channel
+                            channels: ((event as MidiControllerEvent).channel + 1),
                         });
                     });
                     break;
                 case 'noteAftertouch':
                     WebMidi.outputs.forEach(output => {
-                        output.sendKeyAftertouch((event as MidiNoteAftertouchEvent).noteNumber, (event as MidiNoteAftertouchEvent).amount, { channels: (event as MidiNoteAftertouchEvent).channel });
+                        output.sendKeyAftertouch((event as MidiNoteAftertouchEvent).noteNumber, (event as MidiNoteAftertouchEvent).amount, {
+                            channels: ((event as MidiNoteAftertouchEvent).channel + 1),
+                        });
                     });
                     break;
                 case 'pitchBend':
                     const normalizedPitchBend = ((event as MidiPitchBendEvent).value / 8191.5);
                     console.log("pitch bend", normalizedPitchBend, (event as MidiPitchBendEvent).value);
                     WebMidi.outputs.forEach(output => {
-                        // output.sendPitchBend((event as MidiPitchBendEvent).value, { channels: (event as MidiPitchBendEvent).channel });
-                        output.sendPitchBend(normalizedPitchBend, { channels: 1 });
+                        output.sendPitchBend(normalizedPitchBend, {
+                            channels: ((event as MidiPitchBendEvent).channel + 1),
+                        });
                     });
                     break;
                 case 'text':
-                    WebMidi.outputs.forEach(output => {
-                        console.log("MIDI TEXT: ", (event as MidiTextEvent).text);
-                    });
+                    console.log("MIDI TEXT: ", (event as MidiTextEvent).text);
+                    alert((event as MidiTextEvent).text);
                     break;
                 default:
                     console.log("Unsupported event type", event.type);
                     break;
             }
             // console.log("pending", totalPendingScheduled.current);
-        }, msFromNow);
+        }, time - window.performance.now());
         // Sending events directly to midi outputs
 
-        // switch (event.type) {
-        //     case 'noteOn':
-        //         WebMidi.outputs.forEach(output => {
-        //             output.sendNoteOn((event as MidiNoteOnEvent).noteNumber, {
-        //                 channels: 1,
-        //                 time: WebMidi.time + msFromNow,
+        if (settings?.prioritizeMIDIAudio) {
+            switch (event.type) {
+                case 'noteOn':
+                    console.log("noteon velocity", (event as MidiNoteOnEvent).velocity, "chan", (event as MidiNoteOnEvent).channel);
+                    WebMidi.outputs.forEach(output => {
+                        output.sendNoteOn((event as MidiNoteOnEvent).noteNumber, {
+                            channels: ((event as MidiNoteOnEvent).channel + 1),
+                            time: WebMidi.time + Math.floor(time - window.performance.now()),
 
-        //                 // time: msFromNow,
-        //                 // channels: (event as MidiNoteOnEvent).channel,
-        //                 // attack: (event as MidiNoteOnEvent).velocity / 127,
-        //             });
-        //         });
-        //         break;
-        //     case 'noteOff':
-        //         WebMidi.outputs.forEach(output => {
-        //             output.sendNoteOff((event as MidiNoteOffEvent).noteNumber, {
-        //                 channels: 1,
-        //                 time: WebMidi.time + msFromNow,
-        //                 // time: msFromNow,
-        //                 // channels: (event as MidiNoteOnEvent).channel,
-        //                 // attack: (event as MidiNoteOnEvent).velocity / 127,
-        //             });
-        //         });
-        //         break;
-        // }
+                            // time: msFromNow,
+                            // channels: (event as MidiNoteOnEvent).channel,
+                            attack: (event as MidiNoteOnEvent).velocity / 127,
+                        });
+                    });
+                    break;
+                case 'noteOff':
+                    console.log("noteoff velocity", (event as MidiNoteOffEvent).velocity);
+                    WebMidi.outputs.forEach(output => {
+                        output.sendNoteOff((event as MidiNoteOffEvent).noteNumber, {
+                            channels: ((event as MidiNoteOffEvent).channel + 1),
+                            time: WebMidi.time + Math.floor(time - window.performance.now()),
+                            // time: msFromNow,
+                            // channels: (event as MidiNoteOnEvent).channel,
+                            // attack: (event as MidiNoteOnEvent).velocity / 127,
+                            release: (event as MidiNoteOffEvent).velocity / 127,
+                        });
+                    });
+                    break;
+            }
+        }
         totalPendingScheduled.current++;
-    }, [microsecPerBeat, midiEventTrackers, setActiveShape, stateContext.midiEventTrackers, totalPendingScheduled, updateNotes]);
+    }, [microsecPerBeat, midiEventTrackers, setActiveShape, setHomeNote, settings?.prioritizeMIDIAudio, stateContext.midiEventTrackers, totalPendingScheduled, updateNotes]);
 
     // var lastTime = window.performance.now();
     const tickWithDrift = React.useCallback(() => {
@@ -212,7 +220,11 @@ export function MidiFileParser(props: Props) {
                     break;
                 }
 
-                scheduleEvent(nextEvent, eventTimeMS + startTime.current - now, trackIdx);
+                if (nextEvent.type === 'setTempo') {
+                    microsecPerBeat.current = (nextEvent as MidiSetTempoEvent).microsecondsPerBeat;
+                }
+
+                scheduleEvent(nextEvent, startTime.current + eventTimeMS, trackIdx);
 
                 // eventTracker.ticksTraversed = eventTime;
                 // setMidiEventTrackers(prev => { const trackers = prev ?? []; trackers[trackIdx].eventIndex += 1; return trackers; });
@@ -266,6 +278,10 @@ export function MidiFileParser(props: Props) {
         microsecPerBeat.current = 60000000 / 120;
         console.log("Midi data parsed: ", parsed);
         clearChannels(NoteSet.MIDIFileInput);
+        WebMidi.outputs.forEach(output => {
+            output.sendReset();
+            output.sendResetAllControllers();
+        });
 
         console.log(`${source.files[0].name} FORMAT ${midiData.current.header.format}`);
         updateNotes(NoteSet.Active, [], false, true);

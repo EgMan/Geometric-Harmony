@@ -17,26 +17,26 @@ function useSoundEngine() {
     const [notesPressedFromMidi, setNotesPressedFromMidi] = React.useState(new Map<string, Set<number>>());
 
     const onMidiInputNoteOn = React.useCallback((input: Input, e: NoteMessageEvent) => {
-        const deviceID = input.id;
+        const deviceID = input.name;
         const noteon = midiNoteToProgramNote(e.note.number, e.note.octave);
         const notesPressedFromMidiByDevice = notesPressedFromMidi.get(deviceID) ?? new Set();
 
         if (!notesPressedFromMidiByDevice.has(noteon)) {
             notesPressedFromMidiByDevice.add(noteon);
             setNotesPressedFromMidi(prev => new Map(prev.set(deviceID, notesPressedFromMidiByDevice)));
-            updateNotes(playingInputChannelName(input.id), Array.from(notesPressedFromMidiByDevice), true, true, new Set([NoteSet.PlayingInput]), "blue");
+            updateNotes(playingInputChannelName(deviceID), Array.from(notesPressedFromMidiByDevice), true, true, new Set([NoteSet.PlayingInput]), "blue");
             return;
         }
     }, [notesPressedFromMidi, updateNotes]);
 
     const onMidiInputNoteOff = React.useCallback((input: Input, e: NoteMessageEvent) => {
-        const deviceID = input.id;
+        const deviceID = input.name;
         const noteoff = midiNoteToProgramNote(e.note.number, e.note.octave);
         const notesPressedFromMidiByDevice = notesPressedFromMidi.get(deviceID) ?? new Set();
         if (notesPressedFromMidiByDevice.has(noteoff)) {
             notesPressedFromMidiByDevice.delete(noteoff);
             setNotesPressedFromMidi(prev => new Map(prev.set(deviceID, notesPressedFromMidiByDevice)));
-            updateNotes(playingInputChannelName(input.id), Array.from(notesPressedFromMidiByDevice), true, true, new Set([NoteSet.PlayingInput]));
+            updateNotes(playingInputChannelName(deviceID), Array.from(notesPressedFromMidiByDevice), true, true, new Set([NoteSet.PlayingInput]));
             return;
         }
     }, [notesPressedFromMidi, updateNotes]);
@@ -55,6 +55,7 @@ function useSoundEngine() {
 
     const settings = useSettings();
     const isMuted = settings?.isMuted ?? false;
+    const prioritizeMIDIAudio = settings?.prioritizeMIDIAudio ?? false;
     React.useEffect(() => {
         synth.volume.value = isMuted ? -Infinity : 0;
     }, [isMuted, synth.volume]);
@@ -64,18 +65,27 @@ function useSoundEngine() {
         synth.triggerRelease(notesTurnedOff.map(note => getNote(note[1])))
     }, [synth]);
 
-    const updateMIDIOutFilteringSelfInput = React.useCallback((notesTurnedOn: [NoteChannel, number][], notesTurnedOff: [NoteChannel, number][]) => {
+    const updateMIDIOutWithFiltering = React.useCallback((notesTurnedOn: [NoteChannel, number][], notesTurnedOff: [NoteChannel, number][]) => {
         WebMidi.outputs.forEach(output => {
-            const notesTurnedOnFilteringSelfInput = notesTurnedOn.filter(elem => elem[0].name !== playingInputChannelName(output.id));
-            const notesTurnedOffFilteringSelfInput = notesTurnedOff.filter(elem => elem[0].name !== playingInputChannelName(output.id));
-            output.sendNoteOff(notesTurnedOffFilteringSelfInput.map(note => getNoteMIDI(note[1])), { channels: 1 });
-            output.sendNoteOn(notesTurnedOnFilteringSelfInput.map(note => getNoteMIDI(note[1])), { channels: 1 });
+            let notesTurnedOnFiltered = notesTurnedOn.filter(elem => elem[0].name !== playingInputChannelName(output.name));
+            let notesTurnedOffFiltered = notesTurnedOff.filter(elem => elem[0].name !== playingInputChannelName(output.name));
+
+            // When priotizing MIDI audio over synchronization with visuals,
+            // MIDI events are sent directly to devices, and do not go through the channel system first.
+            // In this case, we shouldn't be sending MIDI events from the channel system.
+            if (prioritizeMIDIAudio) {
+                notesTurnedOnFiltered = notesTurnedOnFiltered.filter(elem => !elem[0].channelTypes.has(NoteSet.MIDIFileInput));
+                notesTurnedOffFiltered = notesTurnedOffFiltered.filter(elem => !elem[0].channelTypes.has(NoteSet.MIDIFileInput));
+            }
+
+            output.sendNoteOff(notesTurnedOffFiltered.map(note => getNoteMIDI(note[1])), { channels: 1 });
+            output.sendNoteOn(notesTurnedOnFiltered.map(note => getNoteMIDI(note[1])), { channels: 1 });
         });
-    }, []);
+    }, [prioritizeMIDIAudio]);
 
     useExecuteOnPlayingNoteStateChange((notesTurnedOn, notesTurnedOff) => {
         updateSynth(notesTurnedOn, notesTurnedOff);
-        updateMIDIOutFilteringSelfInput(notesTurnedOn, notesTurnedOff);
+        updateMIDIOutWithFiltering(notesTurnedOn, notesTurnedOff);
     });
     return null;
 }
