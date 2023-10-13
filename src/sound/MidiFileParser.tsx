@@ -1,7 +1,7 @@
 import React from 'react';
 import { MidiNoteMixins, MidiSetTempoEvent, MidiProgramChangeEvent, MidiKeySignatureEvent, MidiControllerEvent, MidiNoteAftertouchEvent, MidiPitchBendEvent, MidiTextEvent } from "midi-file";
 import * as midiManager from 'midi-file';
-import { NoteSet, useClearChannelsOfType, useUpdateNoteSet } from './NoteProvider';
+import { NoteSet, useClearChannelsOfType, useSetHomeNote, useUpdateNoteSet } from './NoteProvider';
 import { midiNoteToProgramNote } from './MIDIInterface';
 import { WebMidi } from 'webmidi';
 import { useSetActiveShape } from './HarmonicModulation';
@@ -37,23 +37,6 @@ type ProviderProps = {
     children: JSX.Element
 }
 export function MidiFileDataProvider({ children }: ProviderProps) {
-    // const midiData = React.useRef<midiManager.MidiData | null>(null);
-    // const midiEventTrackers = React.useRef<MidiEventTracker[] | null>(null);
-    // const lastTime = React.useRef<number>(window.performance.now());
-    // const startTime = React.useRef<number>(window.performance.now());
-    // const microsecPerBeat = React.useRef<number>(60000000 / 120);
-    // const inputRef = React.useRef<HTMLInputElement>(null);
-    // const [loadedFilename, setLoadedFilename] = React.useState<string | null>(null);
-    // return {
-    //     midiData: React.useRef<midiManager.MidiData | null>(null),
-    //     midiEventTrackers: React.useRef<MidiEventTracker[] | null>(null),
-    //     lastTime: React.useRef<number>(window.performance.now()),
-    //     startTime: React.useRef<number>(window.performance.now()),
-    //     microsecPerBeat: React.useRef<number>(60000000 / 120),
-    //     inputRef: React.useRef<HTMLInputElement>(null),
-    //     loadedFileName: React.useState<string | null>(null),
-    // };
-
     return (
         <midiDataContext.Provider value={{
             midiData: React.useRef<midiManager.MidiData | null>(null),
@@ -79,6 +62,7 @@ export function MidiFileParser(props: Props) {
     const [loadedFileName, setLoadedFilename] = loadedFileNameState;
 
     const setActiveShape = useSetActiveShape();
+    const setHomeNote = useSetHomeNote();
 
     // const [midiData, setMidiData] = React.useState<midiManager.MidiData | null>(null);
     // const [midiEventTrackers, setMidiEventTrackers] = React.useState<MidiEventTracker[] | null>(null);
@@ -114,13 +98,24 @@ export function MidiFileParser(props: Props) {
                     break;
                 case 'keySignature':
                     // setActiveShape((event as MidiKeySignatureEvent).key, (event as MidiKeySignatureEvent).scale);
-                    const scale = [11, 6, 1, 8, 3, 10, 5, 0, 7, 2, 9, 4][(event as MidiKeySignatureEvent).key + 7];
-                    if (scale !== undefined) {
-                        setActiveShape(SCALE_NATURAL, scale);
-                        console.log("KEY SIG", track, (event as MidiKeySignatureEvent).key, getNoteName(scale, new Set()), (event as MidiKeySignatureEvent).scale);
+                    const keysig = [11, 6, 1, 8, 3, 10, 5, 0, 7, 2, 9, 4][(event as MidiKeySignatureEvent).key + 7];
+                    if (keysig !== undefined) {
+                        setActiveShape(SCALE_NATURAL, keysig);
+                        console.log("KEY SIG", track, (event as MidiKeySignatureEvent).key, getNoteName(keysig, new Set()), (event as MidiKeySignatureEvent).scale);
                     }
                     else {
-                        console.warn("Unsupported key signature", (event as MidiKeySignatureEvent).key);
+                        console.warn("Unsupported key signerature", (event as MidiKeySignatureEvent).key);
+                    }
+                    // Major
+                    if ((event as MidiKeySignatureEvent).scale === 0) {
+                        setHomeNote(keysig);
+                    }
+                    // Minor
+                    else if ((event as MidiKeySignatureEvent).scale === 1) {
+                        setHomeNote(keysig + 9);
+                    }
+                    else {
+                        console.warn("Unsupported scale", (event as MidiKeySignatureEvent).scale);
                     }
                     break;
                 case 'setTempo':
