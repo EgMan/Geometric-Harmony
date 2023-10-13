@@ -135,10 +135,11 @@ export function MidiFileParser(props: Props) {
                     });
                     break;
                 case 'pitchBend':
-                    console.log("pitch bend");
+                    const normalizedPitchBend = ((event as MidiPitchBendEvent).value / 8191.5);
+                    console.log("pitch bend", normalizedPitchBend, (event as MidiPitchBendEvent).value);
                     WebMidi.outputs.forEach(output => {
                         // output.sendPitchBend((event as MidiPitchBendEvent).value, { channels: (event as MidiPitchBendEvent).channel });
-                        output.sendPitchBend((event as MidiPitchBendEvent).value, { channels: 1 });
+                        output.sendPitchBend(normalizedPitchBend, { channels: 1 });
                     });
                     break;
                 case 'text':
