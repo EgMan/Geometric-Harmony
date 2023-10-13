@@ -20,10 +20,14 @@ export function useConnectToMidi(onReady: () => void) {
 
         function onEnabled() {
             // Inputs
-            WebMidi.inputs.forEach(input => console.log("Midi input found: ", input.manufacturer, input.name));
+            WebMidi.inputs.forEach(input => console.log("Midi input found: ", input.manufacturer, input.name, input.id));
 
             // Outputs
-            WebMidi.outputs.forEach(output => console.log("Midi output found: ", output.manufacturer, output.name));
+            WebMidi.outputs.forEach(output => {
+                console.log("Midi output found: ", output.manufacturer, output.name, output.id);
+                output.sendAllNotesOff();
+                output.sendAllSoundOff();
+            });
 
             onReady();
         }

@@ -41,7 +41,7 @@ function NoteProvider(props: Props) {
         [NoteSet.Highlighted]: { name: NoteSet.Highlighted, channelTypes: new Set([NoteSet.Highlighted]), notes: new Set<number>([]) },
         [NoteSet.Emphasized_OctaveGnostic]: { name: NoteSet.Emphasized_OctaveGnostic, channelTypes: new Set([NoteSet.Emphasized_OctaveGnostic]), notes: new Set<number>([]), color: "red" },
     });
-    // console.log("channels", channels);
+    console.log("channels", channels);
     const [homeNoteRaw, setHomeNoteRaw] = React.useState<number | null>(10);
     const homeNote = React.useMemo(() => homeNoteRaw !== null && channels[NoteSet.Active].notes.has(homeNoteRaw) ? homeNoteRaw : null, [homeNoteRaw, channels]);
     const setHomeNote = React.useCallback((note: number | null) => {

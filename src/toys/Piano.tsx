@@ -18,6 +18,8 @@ type Props = {
     octaveCount: number
 } & WidgetComponentProps;
 
+const octaveOffset = -2;
+
 function Piano(props: Props) {
     // Settings Storage
 
@@ -182,10 +184,9 @@ function Piano(props: Props) {
         return getPropsForWhiteNote(note, octave);
     }, [getPropsForBlackNote, getPropsForWhiteNote]);
 
-    const octaveOffset = -1;
     const getAbsoluteNoteNum = React.useCallback((note: number, octave: number) => {
         return note + ((octave + octaveOffset) * 12);
-    }, [octaveOffset]);
+    }, []);
 
     const keys = React.useMemo(() => {
         var whitekeys: JSX.Element[] = [];
@@ -326,8 +327,8 @@ function Piano(props: Props) {
                     const noteA = normalizeToSingleOctave(absoluteNoteA);
                     const noteB = normalizeToSingleOctave(absoluteNoteB);
 
-                    const octaveA = Math.floor(absoluteNoteA / 12) + 1;
-                    const octaveB = Math.floor(absoluteNoteB / 12) + 1;
+                    const octaveA = Math.floor(absoluteNoteA / 12) - octaveOffset;
+                    const octaveB = Math.floor(absoluteNoteB / 12) - octaveOffset;
 
                     const propsA = getPropsForNote(noteA, octaveA);
                     const propsB = getPropsForNote(noteB, octaveB);

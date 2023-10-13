@@ -17,26 +17,26 @@ function useSoundEngine() {
     const [notesPressedFromMidi, setNotesPressedFromMidi] = React.useState(new Map<string, Set<number>>());
 
     const onMidiInputNoteOn = React.useCallback((input: Input, e: NoteMessageEvent) => {
-        const device = input.name;
+        const deviceID = input.id;
         const noteon = midiNoteToProgramNote(e.note.number, e.note.octave);
-        const notesPressedFromMidiByDevice = notesPressedFromMidi.get(device) ?? new Set();
+        const notesPressedFromMidiByDevice = notesPressedFromMidi.get(deviceID) ?? new Set();
 
         if (!notesPressedFromMidiByDevice.has(noteon)) {
             notesPressedFromMidiByDevice.add(noteon);
-            setNotesPressedFromMidi(prev => new Map(prev.set(device, notesPressedFromMidiByDevice)));
-            updateNotes(playingInputChannelName(device), Array.from(notesPressedFromMidiByDevice), true, true, new Set([NoteSet.PlayingInput]), "blue");
+            setNotesPressedFromMidi(prev => new Map(prev.set(deviceID, notesPressedFromMidiByDevice)));
+            updateNotes(playingInputChannelName(input.id), Array.from(notesPressedFromMidiByDevice), true, true, new Set([NoteSet.PlayingInput]), "blue");
             return;
         }
     }, [notesPressedFromMidi, updateNotes]);
 
     const onMidiInputNoteOff = React.useCallback((input: Input, e: NoteMessageEvent) => {
-        const device = input.name;
+        const deviceID = input.id;
         const noteoff = midiNoteToProgramNote(e.note.number, e.note.octave);
-        const notesPressedFromMidiByDevice = notesPressedFromMidi.get(device) ?? new Set();
+        const notesPressedFromMidiByDevice = notesPressedFromMidi.get(deviceID) ?? new Set();
         if (notesPressedFromMidiByDevice.has(noteoff)) {
             notesPressedFromMidiByDevice.delete(noteoff);
-            setNotesPressedFromMidi(prev => new Map(prev.set(device, notesPressedFromMidiByDevice)));
-            updateNotes(playingInputChannelName(device), Array.from(notesPressedFromMidiByDevice), true, true, new Set([NoteSet.PlayingInput]));
+            setNotesPressedFromMidi(prev => new Map(prev.set(deviceID, notesPressedFromMidiByDevice)));
+            updateNotes(playingInputChannelName(input.id), Array.from(notesPressedFromMidiByDevice), true, true, new Set([NoteSet.PlayingInput]));
             return;
         }
     }, [notesPressedFromMidi, updateNotes]);
@@ -66,8 +66,8 @@ function useSoundEngine() {
 
     const updateMIDIOutFilteringSelfInput = React.useCallback((notesTurnedOn: [NoteChannel, number][], notesTurnedOff: [NoteChannel, number][]) => {
         WebMidi.outputs.forEach(output => {
-            const notesTurnedOnFilteringSelfInput = notesTurnedOn.filter(elem => elem[0].name !== playingInputChannelName(output.name));
-            const notesTurnedOffFilteringSelfInput = notesTurnedOff.filter(elem => elem[0].name !== playingInputChannelName(output.name));
+            const notesTurnedOnFilteringSelfInput = notesTurnedOn.filter(elem => elem[0].name !== playingInputChannelName(output.id));
+            const notesTurnedOffFilteringSelfInput = notesTurnedOff.filter(elem => elem[0].name !== playingInputChannelName(output.id));
             output.sendNoteOff(notesTurnedOffFilteringSelfInput.map(note => getNoteMIDI(note[1])), { channels: 1 });
             output.sendNoteOn(notesTurnedOnFilteringSelfInput.map(note => getNoteMIDI(note[1])), { channels: 1 });
         });
@@ -100,6 +100,6 @@ function useExecuteOnArrStateChange<T>(arr: T[], callback: (turnedOn: T[], turne
     }, [arr, callback, equality, previousArr]);
 }
 
-export function playingInputChannelName(device: string) {
-    return NoteSet.PlayingInput + "_" + device;
+export function playingInputChannelName(id: string) {
+    return NoteSet.PlayingInput + "_" + id;
 }
