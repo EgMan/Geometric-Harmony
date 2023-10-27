@@ -17,8 +17,11 @@ type MidiEventTracker = {
     eventIndex: number,
     ticksTraversed: number,
     msTraversed: number,
-    programNumber: number,
 };
+
+type MidiChannelTracker = {
+    programNumber: number,
+}
 
 type TempoTracker = { ticks: number, msPerTick: number, beatsPerMinute: number };
 type TemposByTrack = { [trackNum: number]: TempoTracker[] };
@@ -32,6 +35,7 @@ const scheduleAheadMS = 300;
 type MidiDataContextType = {
     midiData: React.MutableRefObject<midiManager.MidiData | null>,
     midiEventTrackers: React.MutableRefObject<MidiEventTracker[] | null>,
+    midiChannelTrackers: React.MutableRefObject<MidiChannelTracker[] | null>,
     preprocessedData: React.MutableRefObject<MidiPreprocessedData>,
     lastTime: React.MutableRefObject<number>,
     startTime: React.MutableRefObject<number>,
@@ -51,6 +55,7 @@ export function MidiFileDataProvider({ children }: ProviderProps) {
         <midiDataContext.Provider value={{
             midiData: React.useRef<midiManager.MidiData | null>(null),
             midiEventTrackers: React.useRef<MidiEventTracker[] | null>(null),
+            midiChannelTrackers: React.useRef<MidiChannelTracker[] | null>(null),
             preprocessedData: React.useRef<MidiPreprocessedData>({ tempos: [] }),
             lastTime: React.useRef<number>((audioCtx.currentTime * 1000)),
             startTime: React.useRef<number>((audioCtx.currentTime * 1000)),
@@ -70,7 +75,7 @@ export function MidiFileParser(props: Props) {
     const clearChannels = useClearChannelsOfType();
     const stateContext = React.useContext(midiDataContext);
     if (!stateContext) { throw new Error("MidiFileParser must be a child of MidiFileDataProvider"); }
-    const { midiData, midiEventTrackers, preprocessedData, startTime, microsecPerBeat, inputRef, loadedFileNameState, totalPendingScheduled, audioCtx } = stateContext;
+    const { midiData, midiEventTrackers, midiChannelTrackers, preprocessedData, startTime, microsecPerBeat, inputRef, loadedFileNameState, totalPendingScheduled, audioCtx } = stateContext;
     const [loadedFileName, setLoadedFilename] = loadedFileNameState;
     const settings = useSettings();
 
@@ -148,12 +153,16 @@ export function MidiFileParser(props: Props) {
             case 'noteOn':
             case 'noteOff':
                 setTimeout(() => {
+                    const midiChannel = stateContext.midiChannelTrackers.current?.[event.channel];
                     if (
-                        // (tracker.programNumber === 0 && (stateContext.midiEventTrackers.current ?? []).some((tracker, index) => tracker.programNumber > 0 && tracker.programNumber <= 96)) ||
-                        tracker.programNumber > 96) {
+                        // midiChannel && midiChannel.programNumber > 112
+                        event.channel === 9 ||
+                        event.channel === 10 ||
+                        (midiChannel && midiChannel.programNumber > 96)) {
                         console.log("Is this drums?", track, midiEventTrackers.current);
                         return;
                     };
+                    console.log("drums deleteme", event.channel, midiChannel!.programNumber);
                     const offset = 3;
                     const chanColor = `hsl(${(45 * (event.channel + offset) + (Math.floor((event.channel + offset) / 8) * (45 / 2))) % 360}deg, 100%, 70%)`;
                     updateNotes(`${NoteSet.MIDIFileInput}-${event.channel}`, [midiNoteToProgramNote((event as MidiNoteMixins).noteNumber, Math.floor((event as MidiNoteMixins).noteNumber / 12) - 1)], event.type === 'noteOn', false, new Set([NoteSet.MIDIFileInput]), chanColor);
@@ -181,9 +190,10 @@ export function MidiFileParser(props: Props) {
                 break;
             case 'programChange':
                 console.log("program change", track, (event as MidiProgramChangeEvent));
-                tracker.programNumber = (event as MidiProgramChangeEvent).programNumber;
-                if (tracker.programNumber < 0 || tracker.programNumber >= 127) {
-                    console.warn("Invalid program number", tracker.programNumber);
+                const midiChannel = stateContext.midiChannelTrackers.current?.[event.channel];
+                midiChannel!.programNumber = (event as MidiProgramChangeEvent).programNumber;
+                if (midiChannel!.programNumber < 0 || midiChannel!.programNumber >= 127) {
+                    console.warn("Invalid program number", midiChannel!.programNumber);
                     return;
                 }
                 WebMidi.outputs.forEach(output => {
@@ -260,7 +270,7 @@ export function MidiFileParser(props: Props) {
         }
 
         totalPendingScheduled.current++;
-    }, [audioCtx.currentTime, microsecPerBeat, midiEventTrackers, setActiveShape, setHomeNote, settings?.prioritizeMIDIAudio, startTime, stateContext.midiEventTrackers, totalPendingScheduled, updateNotes]);
+    }, [audioCtx.currentTime, midiEventTrackers, setActiveShape, setHomeNote, settings?.prioritizeMIDIAudio, stateContext.midiChannelTrackers, stateContext.midiEventTrackers, totalPendingScheduled, updateNotes]);
 
     // var lastTime = (audioCtx.currentTime * 1000);
     const tickWithDrift = React.useCallback(() => {
@@ -345,7 +355,8 @@ export function MidiFileParser(props: Props) {
         const input = new Uint8Array(arrBuffer);
         const parsed = midiManager.parseMidi(input);
         midiData.current = parsed;
-        midiEventTrackers.current = Array.from({ length: parsed.tracks.length }, e => ({ eventIndex: 0, ticksTraversed: 0, msTraversed: 0, programNumber: -1 }));
+        midiEventTrackers.current = Array.from({ length: parsed.tracks.length }, e => ({ eventIndex: 0, ticksTraversed: 0, msTraversed: 0 }));
+        midiChannelTrackers.current = Array.from({ length: 16 }, e => ({ programNumber: -1 }));
         preprocessedData.current = preprocessData(parsed);
 
         // microsecPerBeat.current = 60000000 / 120;
@@ -357,10 +368,7 @@ export function MidiFileParser(props: Props) {
 
         startTime.current = (audioCtx.currentTime * 1000);
         tickWithDrift();
-    }, [audioCtx.currentTime, clearChannels, inputRef, midiData, midiEventTrackers, preprocessData, preprocessedData, props, setLoadedFilename, startTime, tickWithDrift, updateNotes]);
-
-
-
+    }, [audioCtx.currentTime, clearChannels, inputRef, midiChannelTrackers, midiData, midiEventTrackers, preprocessData, preprocessedData, props, setLoadedFilename, startTime, tickWithDrift, updateNotes]);
 
     return (
         <div>
@@ -368,7 +376,6 @@ export function MidiFileParser(props: Props) {
                 <input className="midi-file-input" accept=".mid,.midi" onChange={loadMidiData} ref={inputRef} type="file" id="filereader" />
                 {loadedFileName ?? "Play a MIDI file"}
             </label>
-            {/* <input id="file-upload" type="file" /> */}
         </div>
     );
 }

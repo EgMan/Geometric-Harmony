@@ -1,8 +1,6 @@
+Refactor midi file parser to reduce minor timing descrepencies
+Add the active notes lines to tonnetz
+Give string instrument support for new note API
 Add center hoverable to play/arpegiate all active notes
-Add rotation to wheels
-Fix notes cutting out when changing chords quickly
-Add automatic chord analysis
 Add chord hoverables
-Add emphasized note info overlay
-Track playing notes separately
 Remove magic 12s
