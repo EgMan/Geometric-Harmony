@@ -32,7 +32,7 @@ function Tonnetz(props: Props) {
     const updateNotes = useUpdateNoteSet();
 
     // Settings Storage
-    const [displayInterval, setDisplayIntervals] = React.useState([true, true, true, true, true, false]);
+    const [displayInterval, setDisplayIntervals] = React.useState([true, true, true, true, true, true]);
     const setDisplayInterval = (index: number, value: boolean) => {
         const newDisplayInterval = displayInterval.slice();
         newDisplayInterval[index] = value;
@@ -216,14 +216,14 @@ function Tonnetz(props: Props) {
             }
 
             // Down-Right3, down one tritone (straight line)
-            if (displayInterval[5]) {
-                // if (noteDisplays.octaveGnostic[downRight3Note]?.some(chan => channel.name === chan.name)) {
-                if (notes.has(normalizeToSingleOctave(downRight3Note))) {
-                    const { opacity, strokeWidth, strokeColor } = intervalEmphasis(note, downRight3Note, channelName);
-                    const downRight3NotePos = cordsToPosition(downRight3Cord);
-                    intervals.push(<Line key={`downright3-${x}-${y}-${channelName}`} stroke={strokeColor} strokeWidth={strokeWidth} points={[xPos, yPos, downRight3NotePos.x, downRight3NotePos.y]} opacity={opacity} />);
-                }
-            }
+            // if (displayInterval[5]) {
+            //     // if (noteDisplays.octaveGnostic[downRight3Note]?.some(chan => channel.name === chan.name)) {
+            //     if (notes.has(normalizeToSingleOctave(downRight3Note))) {
+            //         const { opacity, strokeWidth, strokeColor } = intervalEmphasis(note, downRight3Note, channelName);
+            //         const downRight3NotePos = cordsToPosition(downRight3Cord);
+            //         intervals.push(<Line key={`downright3-${x}-${y}-${channelName}`} stroke={strokeColor} strokeWidth={strokeWidth} points={[xPos, yPos, downRight3NotePos.x, downRight3NotePos.y]} opacity={opacity} />);
+            //     }
+            // }
 
             // Up2, up one tritone (curved line)
             if (displayInterval[5]) {
