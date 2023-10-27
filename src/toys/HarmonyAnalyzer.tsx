@@ -2,7 +2,7 @@ import React from "react";
 import { Group, Text } from 'react-konva';
 import { HarmonicShape, SCALE_CHROMATIC, ShapeType, knownShapes } from "../utils/KnownHarmonicShapes";
 import { getIntervalColor, getNoteName } from "../utils/Utils";
-import { NoteSet, normalizeToSingleOctave, useChannelDisplays, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote } from "../sound/NoteProvider";
+import { NoteSet, normalizeToSingleOctave, useChannelDisplays, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useNotesOfType, useSetHomeNote } from "../sound/NoteProvider";
 import { WidgetComponentProps } from "../view/Widget";
 import SettingsMenuOverlay from "../view/SettingsMenuOverlay";
 import { Switch } from "@mui/material";
@@ -32,10 +32,21 @@ function HarmonyAnalyzer(props: Props) {
     const inputExactFits = useGetAllExactFits(inputNotes);
     const inputExactFit = inputExactFits[0];
 
+    // const midifileNotes = useNoteSet(NoteSet.MIDIFileInput, true).notes;
+    const midifileNoteInfo = useNotesOfType(NoteSet.MIDIFileInput);
+    const midifileNotes = midifileNoteInfo.map(note => normalizeToSingleOctave(note[1]));
+    const midiFileExactFits = useGetAllExactFits(new Set(midifileNotes));
+    const midiFileExactFit = midiFileExactFits[0];
+    console.log("deleteme", midifileNotes, midiFileExactFits);
+
+    // TODO
+    // const channelDisplays = useChannelDisplays();
+
     const [showWhite, setShowWhite] = React.useState(false);
     const [showYellow, setShowYellow] = React.useState(false);
     const [showRed, setShowRed] = React.useState(true);
     const [showBlue, setShowBlue] = React.useState(true);
+    const [showMidiFileCombined, setShowMidiFileCombined] = React.useState(true);
 
     const settingsMenuItems = [
         (<tr key={"tr1"}>
@@ -57,6 +68,11 @@ function HarmonyAnalyzer(props: Props) {
             <td>Show midi input notes</td>
             <td style={{ color: "blue", textAlign: "center" }}>■</td>
             <td><Switch color={"primary"} checked={showBlue} onChange={e => setShowBlue(e.target.checked)} /></td>
+        </tr>),
+        (<tr key={"tr5"}>
+            <td>Show midi file notes (combined)</td>
+            <td style={{ color: "white", textAlign: "center" }}>■</td>
+            <td><Switch color={"primary"} checked={showMidiFileCombined} onChange={e => setShowMidiFileCombined(e.target.checked)} /></td>
         </tr>),
     ];
 
@@ -90,6 +106,7 @@ function HarmonyAnalyzer(props: Props) {
         //TODO Add exact fit names
         const emphasizedNoteInfo = Array.from(emphasizedNotes).map(getInfoText).filter(info => info !== '');
         const inputNoteInfo = Array.from(inputNotes).map(getInfoText).filter(info => info !== '');
+
         // channelDisplays.map(channel => getInfoText(Array.from(channel.notes)))
 
         type Info = {
@@ -136,6 +153,13 @@ function HarmonyAnalyzer(props: Props) {
             });
         }
 
+        if (showMidiFileCombined && midiFileExactFit && (midiFileExactFit.shape.type === ShapeType.CHORD)) {
+            infos.push({
+                text: getNoteNameInExactFitShape(-midiFileExactFit.noteToFirstNoteInShapeIdxOffset, midiFileExactFit),
+                color: "white",
+            });
+        }
+
         // Convert infos to text elements
         var idx = 0;
         const textelemoffset = 28;
@@ -144,7 +168,7 @@ function HarmonyAnalyzer(props: Props) {
         return infos.filter(info => info.text !== "").map((info) => {
             return (<Text key={`info${info.text}${idx++}`} text={info.text} x={0} y={textelemoffset * (idx) + infosYOffset} fontSize={infosFontSize} fontFamily='monospace' fill={info.color} align="center" width={props.width} />);
         });
-    }, [activeExactFit, activeExactFitName, emphasizedExactFit, emphasizedNotes, getInfoText, getNoteNameInExactFitShape, homeNote, inputExactFit, inputNotes, props.width, showBlue, showRed, showWhite, showYellow]);
+    }, [activeExactFit, activeExactFitName, emphasizedExactFit, emphasizedNotes, getInfoText, getNoteNameInExactFitShape, homeNote, inputExactFit, inputNotes, midiFileExactFit, props.width, showBlue, showMidiFileCombined, showRed, showWhite, showYellow]);
 
     const fullRender = React.useMemo((
     ) => {
