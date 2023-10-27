@@ -102,46 +102,26 @@ export function MidiFileParser(props: Props) {
         return { tempos: outTempos };
     }, []);
 
-    // TODO swap this out for simply getting a tick and returning a time
-    const getMSBetweenEventAndNext = React.useCallback((midiData: midiManager.MidiData, preProcessedData: MidiPreprocessedData, trackIdx: number, eventIdx: number, ticksTraversed: number) => {
-        const event = midiData.tracks[trackIdx][eventIdx];
-        const nextEvent = midiData.tracks[trackIdx][eventIdx + 1];
-        if (!event || !nextEvent) {
-            return { MSBetween: 0, tempo: null };
-        }
+    // TODO dynamically memoize this
+    const tickToTime = React.useCallback((tick: number, midiData: midiManager.MidiData, preProcessedData: MidiPreprocessedData, trackIdx: number) => {
+        let ticksProcessed = 0;
+        let tempoIdx = 0;
+        let timeMS = 0;
         const tempos = midiData.header.format === 2 ? preProcessedData.tempos[trackIdx] : preProcessedData.tempos[0];
-
-        let eventTempoIdx = 0;
-
-        // Find tempo at the time of the last played event
-        for (let i = 0; i < tempos.length; i++) {
-            eventTempoIdx = i;
-            if (tempos[i].ticks <= ticksTraversed && (i + 1 >= tempos.length || tempos[i + 1].ticks > ticksTraversed)) {
-                break;
-            }
-        }
-
-        let msBetween = 0;
-        let totalTicksLeftToProcessed = nextEvent.deltaTime;
-        let processedTicksUpTo = ticksTraversed + event.deltaTime;
-
-        while (totalTicksLeftToProcessed > 0 && eventTempoIdx < tempos.length && tempos[eventTempoIdx].ticks < ticksTraversed + nextEvent.deltaTime) {
-            //if there is a next tempo and the next tempo is before the next event
-            if (eventTempoIdx + 1 < tempos.length && tempos[eventTempoIdx + 1].ticks < ticksTraversed + nextEvent.deltaTime) {
-                // add the time between the current tempo and the next tempo
-                const ticksSpentInCurrentTempo = tempos[eventTempoIdx + 1].ticks - processedTicksUpTo;
-                msBetween += ticksSpentInCurrentTempo * tempos[eventTempoIdx].msPerTick;
-                processedTicksUpTo += ticksSpentInCurrentTempo;
-                totalTicksLeftToProcessed -= ticksSpentInCurrentTempo;
-                eventTempoIdx++;
+        while (ticksProcessed < tick) {
+            if (tempoIdx + 1 < tempos.length && tempos[tempoIdx + 1].ticks < tick) {
+                const ticksSpentInCurrentTempo = tempos[tempoIdx + 1].ticks - ticksProcessed;
+                timeMS += ticksSpentInCurrentTempo * tempos[tempoIdx].msPerTick;
+                ticksProcessed += ticksSpentInCurrentTempo;
+                tempoIdx++;
             }
             else {
-                msBetween += totalTicksLeftToProcessed * tempos[eventTempoIdx].msPerTick;
-                totalTicksLeftToProcessed = 0;
+                // ticksProcessed += tick - preprocessedData.current.tempos[0][tempoIdx].ticks;
+                timeMS += (tick - ticksProcessed) * tempos[tempoIdx].msPerTick;
+                ticksProcessed = tick;
             }
         }
-
-        return { MSBetween: msBetween, tempo: tempos[eventTempoIdx] };
+        return { timeMS, tempo: tempos[tempoIdx] };
     }, []);
 
     const scheduleEvent = React.useCallback((event: midiManager.MidiEvent, time: number, track: number, ticks: number, tempo: TempoTracker | null) => {
@@ -162,7 +142,6 @@ export function MidiFileParser(props: Props) {
                         console.log("Is this drums?", track, midiEventTrackers.current);
                         return;
                     };
-                    console.log("drums deleteme", event.channel, midiChannel!.programNumber);
                     const offset = 3;
                     const chanColor = `hsl(${(45 * (event.channel + offset) + (Math.floor((event.channel + offset) / 8) * (45 / 2))) % 360}deg, 100%, 70%)`;
                     updateNotes(`${NoteSet.MIDIFileInput}-${event.channel}`, [midiNoteToProgramNote((event as MidiNoteMixins).noteNumber, Math.floor((event as MidiNoteMixins).noteNumber / 12) - 1)], event.type === 'noteOn', false, new Set([NoteSet.MIDIFileInput]), chanColor);
@@ -197,6 +176,7 @@ export function MidiFileParser(props: Props) {
                     return;
                 }
                 WebMidi.outputs.forEach(output => {
+                    // output.sendPg
                     output.sendProgramChange((event as MidiProgramChangeEvent).programNumber, {
                         channels: ((event as MidiProgramChangeEvent).channel + 1),
                         time: WebMidi.time + Math.floor(time - (audioCtx.currentTime * 1000)),
@@ -296,8 +276,9 @@ export function MidiFileParser(props: Props) {
                 let nextEvent = track[midiEventTrackers.current[trackIdx].eventIndex];
                 // eventTimeMS += (nextEvent.deltaTime * microsecPerTick / 1000);
                 // TODO address the -1 on the index thing
-                const { MSBetween, tempo } = getMSBetweenEventAndNext(midiData.current, preprocessedData.current, trackIdx, midiEventTrackers.current[trackIdx].eventIndex - 1, ticksTraversed);
-                eventTimeMS += MSBetween;
+                const { timeMS, tempo } = tickToTime(ticksTraversed + nextEvent.deltaTime, midiData.current, preprocessedData.current, trackIdx);
+
+                eventTimeMS = timeMS;
                 ticksTraversed += nextEvent.deltaTime;
 
                 const now = (audioCtx.currentTime * 1000);
@@ -338,7 +319,7 @@ export function MidiFileParser(props: Props) {
                 tickWithDrift();
             }, 10);
         }
-    }, [audioCtx.currentTime, clearChannels, getMSBetweenEventAndNext, midiData, midiEventTrackers, preprocessedData, scheduleEvent, startTime]);
+    }, [audioCtx.currentTime, clearChannels, midiData, midiEventTrackers, preprocessedData, scheduleEvent, startTime, tickToTime]);
 
 
     const loadMidiData = React.useCallback<React.ChangeEventHandler<HTMLInputElement>>(async (inputEvent) => {

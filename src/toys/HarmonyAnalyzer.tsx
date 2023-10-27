@@ -37,7 +37,6 @@ function HarmonyAnalyzer(props: Props) {
     const midifileNotes = midifileNoteInfo.map(note => normalizeToSingleOctave(note[1]));
     const midiFileExactFits = useGetAllExactFits(new Set(midifileNotes));
     const midiFileExactFit = midiFileExactFits[0];
-    console.log("deleteme", midifileNotes, midiFileExactFits);
 
     // TODO
     // const channelDisplays = useChannelDisplays();
