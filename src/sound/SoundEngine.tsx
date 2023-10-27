@@ -50,7 +50,7 @@ function useSoundEngine() {
     useConnectToMidi(onMidiConnect);
 
     const synth = React.useMemo(() => {
-        return new Tone.PolySynth(Tone.AMSynth).toDestination();
+        return new Tone.PolySynth({ voice: Tone.AMSynth, maxPolyphony: 10 }).toDestination();
     }, []);
 
     const settings = useSettings();
