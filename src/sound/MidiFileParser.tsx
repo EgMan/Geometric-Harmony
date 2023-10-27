@@ -20,11 +20,19 @@ type MidiEventTracker = {
     programNumber: number,
 };
 
+type TempoTracker = { ticks: number, msPerTick: number, beatsPerMinute: number };
+type TemposByTrack = { [trackNum: number]: TempoTracker[] };
+
+type MidiPreprocessedData = {
+    tempos: TemposByTrack,
+};
+
 const scheduleAheadMS = 300;
 
 type MidiDataContextType = {
     midiData: React.MutableRefObject<midiManager.MidiData | null>,
     midiEventTrackers: React.MutableRefObject<MidiEventTracker[] | null>,
+    preprocessedData: React.MutableRefObject<MidiPreprocessedData>,
     lastTime: React.MutableRefObject<number>,
     startTime: React.MutableRefObject<number>,
     microsecPerBeat: React.MutableRefObject<number>,
@@ -43,6 +51,7 @@ export function MidiFileDataProvider({ children }: ProviderProps) {
         <midiDataContext.Provider value={{
             midiData: React.useRef<midiManager.MidiData | null>(null),
             midiEventTrackers: React.useRef<MidiEventTracker[] | null>(null),
+            preprocessedData: React.useRef<MidiPreprocessedData>({ tempos: [] }),
             lastTime: React.useRef<number>((audioCtx.currentTime * 1000)),
             startTime: React.useRef<number>((audioCtx.currentTime * 1000)),
             microsecPerBeat: React.useRef<number>(60000000 / 120),
@@ -61,7 +70,7 @@ export function MidiFileParser(props: Props) {
     const clearChannels = useClearChannelsOfType();
     const stateContext = React.useContext(midiDataContext);
     if (!stateContext) { throw new Error("MidiFileParser must be a child of MidiFileDataProvider"); }
-    const { midiData, midiEventTrackers, startTime, microsecPerBeat, inputRef, loadedFileNameState, totalPendingScheduled, audioCtx } = stateContext;
+    const { midiData, midiEventTrackers, preprocessedData, startTime, microsecPerBeat, inputRef, loadedFileNameState, totalPendingScheduled, audioCtx } = stateContext;
     const [loadedFileName, setLoadedFilename] = loadedFileNameState;
     const settings = useSettings();
 
@@ -71,7 +80,66 @@ export function MidiFileParser(props: Props) {
     // const [midiData, setMidiData] = React.useState<midiManager.MidiData | null>(null);
     // const [midiEventTrackers, setMidiEventTrackers] = React.useState<MidiEventTracker[] | null>(null);
 
-    const scheduleEvent = React.useCallback((event: midiManager.MidiEvent, time: number, track: number) => {
+    const preprocessData = React.useCallback((midiData: midiManager.MidiData): MidiPreprocessedData => {
+        let outTempos: TemposByTrack = {};
+        midiData.tracks.forEach((track, trackIdx) => {
+            let ticks = 0;
+            let MSPerTick = (60000 / 120) / ((midiData.header?.ticksPerBeat ?? 400));
+            outTempos[trackIdx] = [{ ticks: 0, msPerTick: MSPerTick, beatsPerMinute: 120 }];
+            track.forEach(event => {
+                ticks += event.deltaTime;
+                if (event.type === 'setTempo') {
+                    MSPerTick = (event as MidiSetTempoEvent).microsecondsPerBeat / ((midiData.header?.ticksPerBeat ?? 400) * 1000);
+                    outTempos[trackIdx].push({ ticks, msPerTick: MSPerTick, beatsPerMinute: 60000000 / (event as MidiSetTempoEvent).microsecondsPerBeat });
+                }
+            });
+        });
+        return { tempos: outTempos };
+    }, []);
+
+    // TODO swap this out for simply getting a tick and returning a time
+    const getMSBetweenEventAndNext = React.useCallback((midiData: midiManager.MidiData, preProcessedData: MidiPreprocessedData, trackIdx: number, eventIdx: number, ticksTraversed: number) => {
+        const event = midiData.tracks[trackIdx][eventIdx];
+        const nextEvent = midiData.tracks[trackIdx][eventIdx + 1];
+        if (!event || !nextEvent) {
+            return { MSBetween: 0, tempo: null };
+        }
+        const tempos = midiData.header.format === 2 ? preProcessedData.tempos[trackIdx] : preProcessedData.tempos[0];
+
+        let eventTempoIdx = 0;
+
+        // Find tempo at the time of the last played event
+        for (let i = 0; i < tempos.length; i++) {
+            eventTempoIdx = i;
+            if (tempos[i].ticks <= ticksTraversed && (i + 1 >= tempos.length || tempos[i + 1].ticks > ticksTraversed)) {
+                break;
+            }
+        }
+
+        let msBetween = 0;
+        let totalTicksLeftToProcessed = nextEvent.deltaTime;
+        let processedTicksUpTo = ticksTraversed + event.deltaTime;
+
+        while (totalTicksLeftToProcessed > 0 && eventTempoIdx < tempos.length && tempos[eventTempoIdx].ticks < ticksTraversed + nextEvent.deltaTime) {
+            //if there is a next tempo and the next tempo is before the next event
+            if (eventTempoIdx + 1 < tempos.length && tempos[eventTempoIdx + 1].ticks < ticksTraversed + nextEvent.deltaTime) {
+                // add the time between the current tempo and the next tempo
+                const ticksSpentInCurrentTempo = tempos[eventTempoIdx + 1].ticks - processedTicksUpTo;
+                msBetween += ticksSpentInCurrentTempo * tempos[eventTempoIdx].msPerTick;
+                processedTicksUpTo += ticksSpentInCurrentTempo;
+                totalTicksLeftToProcessed -= ticksSpentInCurrentTempo;
+                eventTempoIdx++;
+            }
+            else {
+                msBetween += totalTicksLeftToProcessed * tempos[eventTempoIdx].msPerTick;
+                totalTicksLeftToProcessed = 0;
+            }
+        }
+
+        return { MSBetween: msBetween, tempo: tempos[eventTempoIdx] };
+    }, []);
+
+    const scheduleEvent = React.useCallback((event: midiManager.MidiEvent, time: number, track: number, ticks: number, tempo: TempoTracker | null) => {
         // setTimeout(() => {
         totalPendingScheduled.current--;
         const tracker = stateContext.midiEventTrackers.current?.[track];
@@ -128,7 +196,6 @@ export function MidiFileParser(props: Props) {
             case 'keySignature':
                 // setActiveShape((event as MidiKeySignatureEvent).key, (event as MidiKeySignatureEvent).scale);
                 setTimeout(() => {
-                    console.log("DELETEME", event.type);
                     const keysig = [11, 6, 1, 8, 3, 10, 5, 0, 7, 2, 9, 4][(event as MidiKeySignatureEvent).key + 7];
                     if (keysig !== undefined) {
                         setActiveShape(SCALE_NATURAL, keysig);
@@ -152,13 +219,12 @@ export function MidiFileParser(props: Props) {
                 break;
             case 'setTempo':
                 setTimeout(() => {
-                    console.log("DELETEME", event.type);
-                    console.log("parsed tempo: ", 60000000 / microsecPerBeat.current, "dt=", (event as MidiSetTempoEvent).deltaTime, "track: ", track);
+                    // microsecPerBeat.current = (event as MidiSetTempoEvent).microsecondsPerBeat;
+                    console.log("Tempo change: ", 60000000 / (event as MidiSetTempoEvent).microsecondsPerBeat, " bpm, track: ", track, ", @ ", ticks);
                 }, time - (audioCtx.currentTime * 1000));
                 break;
             case 'controller':
                 WebMidi.outputs.forEach(output => {
-                    console.log("DELETEME", event.type);
                     output.sendControlChange((event as MidiControllerEvent).controllerType, (event as MidiControllerEvent).value, {
                         channels: ((event as MidiControllerEvent).channel + 1),
                         time: WebMidi.time + Math.floor(time - (audioCtx.currentTime * 1000)),
@@ -167,7 +233,6 @@ export function MidiFileParser(props: Props) {
                 break;
             case 'noteAftertouch':
                 WebMidi.outputs.forEach(output => {
-                    console.log("DELETEME", event.type);
                     output.sendKeyAftertouch((event as MidiNoteAftertouchEvent).noteNumber, (event as MidiNoteAftertouchEvent).amount, {
                         channels: ((event as MidiNoteAftertouchEvent).channel + 1),
                         time: WebMidi.time + Math.floor(time - (audioCtx.currentTime * 1000)),
@@ -186,7 +251,6 @@ export function MidiFileParser(props: Props) {
                 break;
             case 'text':
                 setTimeout(() => {
-                    console.log("DELETEME", event.type);
                     console.log("MIDI TEXT: ", (event as MidiTextEvent).text);
                 }, time - (audioCtx.currentTime * 1000));
                 break;
@@ -196,14 +260,14 @@ export function MidiFileParser(props: Props) {
         }
 
         totalPendingScheduled.current++;
-    }, [audioCtx.currentTime, microsecPerBeat, midiEventTrackers, setActiveShape, setHomeNote, settings?.prioritizeMIDIAudio, stateContext.midiEventTrackers, totalPendingScheduled, updateNotes]);
+    }, [audioCtx.currentTime, microsecPerBeat, midiEventTrackers, setActiveShape, setHomeNote, settings?.prioritizeMIDIAudio, startTime, stateContext.midiEventTrackers, totalPendingScheduled, updateNotes]);
 
     // var lastTime = (audioCtx.currentTime * 1000);
     const tickWithDrift = React.useCallback(() => {
         if (!midiData?.current || !midiEventTrackers?.current) { return; }
         // console.log("time since last", now - lastTime.current);
         // lastTime.current = now;
-        const microsecPerTick = microsecPerBeat.current / ((midiData.current?.header?.ticksPerBeat ?? 400));
+        // const microsecPerTick = microsecPerBeat.current / ((midiData.current?.header?.ticksPerBeat ?? 400));
 
         midiData.current?.tracks.forEach((track, trackIdx) => {
             // if (trackIdx !== 0 && trackIdx !== 2) { return; }
@@ -213,31 +277,34 @@ export function MidiFileParser(props: Props) {
             if (!midiEventTrackers.current) { return; }
             const eventTracker = midiEventTrackers.current[trackIdx];
 
-            // let eventTimeTicks = eventTracker.ticksTraversed;
             let eventTimeMS = eventTracker.msTraversed;
+            let ticksTraversed = eventTracker.ticksTraversed;
 
             while (midiEventTrackers.current[trackIdx].eventIndex < track.length) {
-                let nextEvent = track[midiEventTrackers.current[trackIdx].eventIndex];
+                if (!midiData?.current || !midiEventTrackers?.current) { return; }
 
-                // eventTimeTicks += nextEvent.deltaTime ?? 0;
-                eventTimeMS += (nextEvent.deltaTime * microsecPerTick / 1000);
+                let nextEvent = track[midiEventTrackers.current[trackIdx].eventIndex];
+                // eventTimeMS += (nextEvent.deltaTime * microsecPerTick / 1000);
+                // TODO address the -1 on the index thing
+                const { MSBetween, tempo } = getMSBetweenEventAndNext(midiData.current, preprocessedData.current, trackIdx, midiEventTrackers.current[trackIdx].eventIndex - 1, ticksTraversed);
+                eventTimeMS += MSBetween;
+                ticksTraversed += nextEvent.deltaTime;
 
                 const now = (audioCtx.currentTime * 1000);
+                // console.log("NOW", now);
                 if (startTime.current + eventTimeMS > now + scheduleAheadMS) {
                     break;
                 }
 
-                if (nextEvent.type === 'setTempo') {
-                    microsecPerBeat.current = (nextEvent as MidiSetTempoEvent).microsecondsPerBeat;
-                }
+                // if (nextEvent.type === 'setTempo') {
+                // microsecPerBeat.current = (nextEvent as MidiSetTempoEvent).microsecondsPerBeat;
+                // }
 
-                scheduleEvent(nextEvent, startTime.current + eventTimeMS, trackIdx);
+                scheduleEvent(nextEvent, startTime.current + eventTimeMS, trackIdx, ticksTraversed, tempo);
 
-                // eventTracker.ticksTraversed = eventTime;
-                // setMidiEventTrackers(prev => { const trackers = prev ?? []; trackers[trackIdx].eventIndex += 1; return trackers; });
-                // midiEventTrackers.current[trackIdx].ticksTraversed = eventTimeTicks;
                 midiEventTrackers.current[trackIdx].msTraversed = eventTimeMS;
                 midiEventTrackers.current[trackIdx].eventIndex++;
+                midiEventTrackers.current[trackIdx].ticksTraversed = ticksTraversed;
 
                 // console.log(`track ${trackIdx} : ${midiEventTrackers.current[trackIdx].eventIndex} / ${midiData.current?.tracks[trackIdx].length} ${100 * midiEventTrackers.current[trackIdx].eventIndex / (midiData.current?.tracks[trackIdx].length ?? 1)}%`)
             }
@@ -261,13 +328,10 @@ export function MidiFileParser(props: Props) {
                 tickWithDrift();
             }, 10);
         }
-    }, [audioCtx.currentTime, clearChannels, microsecPerBeat, midiData, midiEventTrackers, scheduleEvent, startTime]);
+    }, [audioCtx.currentTime, clearChannels, getMSBetweenEventAndNext, midiData, midiEventTrackers, preprocessedData, scheduleEvent, startTime]);
 
-    React.useEffect(() => {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
-    const onInputChange = React.useCallback<React.ChangeEventHandler<HTMLInputElement>>(async (inputEvent) => {
+    const loadMidiData = React.useCallback<React.ChangeEventHandler<HTMLInputElement>>(async (inputEvent) => {
         if (!inputRef.current) { return; }
         const source: HTMLInputElement = inputRef.current;
         if (!source.files) { return; }
@@ -280,21 +344,20 @@ export function MidiFileParser(props: Props) {
         const arrBuffer = await source.files[0].arrayBuffer();
         const input = new Uint8Array(arrBuffer);
         const parsed = midiManager.parseMidi(input);
-        // setMidiEventTrackers(new Array(parsed.tracks.length).fill({ eventIndex: 0, ticksTraversed: 0 }));
-        // setMidiData(parsed);
         midiData.current = parsed;
-        // midiEventTrackers.current = new Array(parsed.tracks.length).fill({ ...{ eventIndex: 0, ticksTraversed: 0 } });
         midiEventTrackers.current = Array.from({ length: parsed.tracks.length }, e => ({ eventIndex: 0, ticksTraversed: 0, msTraversed: 0, programNumber: -1 }));
+        preprocessedData.current = preprocessData(parsed);
 
-        startTime.current = (audioCtx.currentTime * 1000);
-        microsecPerBeat.current = 60000000 / 120;
+        // microsecPerBeat.current = 60000000 / 120;
         console.log("Midi data parsed: ", parsed);
         clearChannels(NoteSet.MIDIFileInput);
 
         console.log(`${source.files[0].name} FORMAT ${midiData.current.header.format}`);
         updateNotes(NoteSet.Active, [], false, true);
+
+        startTime.current = (audioCtx.currentTime * 1000);
         tickWithDrift();
-    }, [audioCtx.currentTime, clearChannels, inputRef, microsecPerBeat, midiData, midiEventTrackers, props, setLoadedFilename, startTime, tickWithDrift, updateNotes]);
+    }, [audioCtx.currentTime, clearChannels, inputRef, midiData, midiEventTrackers, preprocessData, preprocessedData, props, setLoadedFilename, startTime, tickWithDrift, updateNotes]);
 
 
 
@@ -302,7 +365,7 @@ export function MidiFileParser(props: Props) {
     return (
         <div>
             <label className="midi-file-input-label">
-                <input className="midi-file-input" accept=".mid,.midi" onChange={onInputChange} ref={inputRef} type="file" id="filereader" />
+                <input className="midi-file-input" accept=".mid,.midi" onChange={loadMidiData} ref={inputRef} type="file" id="filereader" />
                 {loadedFileName ?? "Play a MIDI file"}
             </label>
             {/* <input id="file-upload" type="file" /> */}
