@@ -1,11 +1,13 @@
 import React from "react";
 import { Group, Text } from 'react-konva';
 import { HarmonicShape, SCALE_CHROMATIC, ShapeType, knownShapes } from "../utils/KnownHarmonicShapes";
-import { getIntervalColor, getNoteName } from "../utils/Utils";
+import { blendColors, getIntervalColor, getNoteName } from "../utils/Utils";
 import { NoteSet, normalizeToSingleOctave, useChannelDisplays, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useNotesOfType, useSetHomeNote } from "../sound/NoteProvider";
 import { WidgetComponentProps } from "../view/Widget";
 import SettingsMenuOverlay from "../view/SettingsMenuOverlay";
 import { Switch } from "@mui/material";
+
+
 
 const inputBoxNoteNameRegex = /^([aAbBcCdDeEfFgG][b#♭♯]?)\s/
 
@@ -19,7 +21,8 @@ function HarmonyAnalyzer(props: Props) {
     const activeNotes = useNoteSet(NoteSet.Active).notes;
     const emphasizedNotes = useGetCombinedModdedEmphasis();
     const homeNote = useHomeNote();
-    // const channelDisplays = useChannelDisplays();
+    const channelDisplays = useChannelDisplays();
+    console.log("Displays", channelDisplays);
 
     const activeExactFits = useGetAllExactFits(activeNotes);
     const activeExactFit = activeExactFits[0];
@@ -153,9 +156,14 @@ function HarmonyAnalyzer(props: Props) {
         }
 
         if (showMidiFileCombined && midiFileExactFit && (midiFileExactFit.shape.type === ShapeType.CHORD)) {
+            const midiFileCombinedDisplayColor =
+                blendColors(
+                    channelDisplays.filter(channel => channel.channelTypes.has(NoteSet.MIDIFileInput))
+                        .map(channel => channel.color ?? "")
+                );
             infos.push({
                 text: getNoteNameInExactFitShape(-midiFileExactFit.noteToFirstNoteInShapeIdxOffset, midiFileExactFit),
-                color: "white",
+                color: midiFileCombinedDisplayColor,
             });
         }
 
@@ -167,7 +175,7 @@ function HarmonyAnalyzer(props: Props) {
         return infos.filter(info => info.text !== "").map((info) => {
             return (<Text key={`info${info.text}${idx++}`} text={info.text} x={0} y={textelemoffset * (idx) + infosYOffset} fontSize={infosFontSize} fontFamily='monospace' fill={info.color} align="center" width={props.width} />);
         });
-    }, [activeExactFit, activeExactFitName, emphasizedExactFit, emphasizedNotes, getInfoText, getNoteNameInExactFitShape, homeNote, inputExactFit, inputNotes, midiFileExactFit, props.width, showBlue, showMidiFileCombined, showRed, showWhite, showYellow]);
+    }, [activeExactFit, activeExactFitName, channelDisplays, emphasizedExactFit, emphasizedNotes, getInfoText, getNoteNameInExactFitShape, homeNote, inputExactFit, inputNotes, midiFileExactFit, props.width, showBlue, showMidiFileCombined, showRed, showWhite, showYellow]);
 
     const fullRender = React.useMemo((
     ) => {

@@ -1,6 +1,7 @@
 import React from "react";
 import useRenderingTrace from "../utils/ProfilingUtils";
 import { SpeakerSoundType } from "./SoundEngine";
+import { channel } from "diagnostics_channel";
 
 type Props = {
     children: JSX.Element
@@ -229,7 +230,7 @@ export function useChannelDisplays() {
     const channels = React.useContext(rawChannelContext);
     const names = useChannelNamesToDisplay();
     return React.useMemo(() => {
-        return names.reduce((obj, key) => { obj.push(channels.get[key]); return obj; }, [] as NoteChannel[]);
+        return names.reduce((obj, key) => { obj.push(channels.get[key]); return obj; }, [] as NoteChannel[]).filter(channel => channel.notes.size > 0);
     }, [channels.get, names]);
 }
 export function useNoteDisplays() {

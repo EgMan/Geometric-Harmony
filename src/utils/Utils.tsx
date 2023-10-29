@@ -2,6 +2,7 @@ import React from "react";
 import { normalizeToSingleOctave } from "../sound/NoteProvider";
 import { Vector2d } from "konva/lib/types";
 import { KonvaEventObject } from "konva/lib/Node";
+import ColorConverter from "string-color-converter";
 
 // const numberToNote = ["C-1", "C#3", "D3", "D#3", "E3", "F3", "F#3", "G3", "G#3", "A3", "A#3", "B3"];
 const numberToPlayableNote = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
@@ -134,4 +135,25 @@ export function addVectors(v1: Vector2d, v2: Vector2d) {
 export function setPointer(event: KonvaEventObject<MouseEvent>, cursorType: string) {
     const container = event.target.getStage()?.container();
     if (container != null) container.style.cursor = cursorType;
+}
+
+export function blendColors(colors: string[]) {
+    let r = 0;
+    let g = 0;
+    let b = 0;
+    let a = 0;
+    let count = 0;
+
+    colors.forEach(color => {
+        const parsedColor = ColorConverter(color);
+        if (parsedColor.isValid) {
+            r += parsedColor.r;
+            g += parsedColor.g;
+            b += parsedColor.b;
+            a += parsedColor.a;
+            count++
+        }
+    });
+
+    return `rgba(${r / count}, ${g / count}, ${b / count}, ${a / count}`;
 }
