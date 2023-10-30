@@ -96,6 +96,9 @@ export function MidiFileParser(props: Props) {
                 if (event.type === 'setTempo') {
                     MSPerTick = (event as MidiSetTempoEvent).microsecondsPerBeat / ((midiData.header?.ticksPerBeat ?? 400) * 1000);
                     outTempos[trackIdx].push({ ticks, msPerTick: MSPerTick, beatsPerMinute: 60000000 / (event as MidiSetTempoEvent).microsecondsPerBeat });
+                    if (midiData.header.format === 1 && trackIdx !== 0) {
+                        outTempos[0].push({ ticks, msPerTick: MSPerTick, beatsPerMinute: 60000000 / (event as MidiSetTempoEvent).microsecondsPerBeat });
+                    }
                 }
             });
         });
