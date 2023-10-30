@@ -94,7 +94,7 @@ export default useSoundEngine;
 export function useExecuteOnPlayingNoteStateChange(callback: (notesTurnedOn: [NoteChannel, number][], notesTurnedOff: [NoteChannel, number][], playingNotes: [NoteChannel, number][]) => void) {
     const activeNotes = useNoteSet(NoteSet.Active).notes;
     const notesToPlayWhenActive = useNotesOfType(NoteSet.Emphasized, NoteSet.Emphasized_OctaveGnostic);
-    const notesToPlayRegardless = useNotesOfType(NoteSet.MIDIFileInput, NoteSet.PlayingInput);
+    const notesToPlayRegardless = useNotesOfType(NoteSet.KeypressInput, NoteSet.MIDIFileInput, NoteSet.PlayingInput);
     const channelsToPlay = React.useMemo(() => {
         return Array.from(notesToPlayWhenActive).filter(note => activeNotes.has(normalizeToSingleOctave(note[1]))).concat(Array.from(notesToPlayRegardless));
     }, [activeNotes, notesToPlayRegardless, notesToPlayWhenActive]);

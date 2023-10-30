@@ -12,6 +12,7 @@ export enum NoteSet {
     Highlighted = "Highlighted",
     Emphasized = "Emphasized",
     Emphasized_OctaveGnostic = "Emphasized_OctaveGnostic",
+    KeypressInput = "KeypressInput",
     PlayingInput = "PlayingInput",
     MIDIFileInput = "MidiFileInput",
 }
@@ -41,6 +42,7 @@ function NoteProvider(props: Props) {
         [NoteSet.Emphasized]: { name: NoteSet.Emphasized, channelTypes: new Set([NoteSet.Emphasized]), notes: new Set<number>([]), color: "red" },
         [NoteSet.Highlighted]: { name: NoteSet.Highlighted, channelTypes: new Set([NoteSet.Highlighted]), notes: new Set<number>([]) },
         [NoteSet.Emphasized_OctaveGnostic]: { name: NoteSet.Emphasized_OctaveGnostic, channelTypes: new Set([NoteSet.Emphasized_OctaveGnostic]), notes: new Set<number>([]), color: "red" },
+        [NoteSet.KeypressInput]: { name: NoteSet.KeypressInput, channelTypes: new Set([NoteSet.KeypressInput]), notes: new Set<number>([]), color: "hsl(25, 100%, 50%)" },
     });
     // console.log("channels", channels);
     const [homeNoteRaw, setHomeNoteRaw] = React.useState<number | null>(10);

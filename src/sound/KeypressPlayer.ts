@@ -252,12 +252,12 @@ function useKeypressPlayer() {
         const onVisChange = (event: Event) => {
             if (!document.hasFocus()) {
                 keysPressed.clear();
-                updateNotes([NoteSet.Emphasized, NoteSet.Emphasized_OctaveGnostic], [], false, true);
+                updateNotes([NoteSet.Emphasized, NoteSet.Emphasized_OctaveGnostic, NoteSet.KeypressInput], [], false, true);
             }
         }
 
         const onMouseLeave = (event: Event) => {
-                updateNotes([NoteSet.Emphasized, NoteSet.Emphasized_OctaveGnostic], [], false, true);
+                updateNotes([NoteSet.Emphasized, NoteSet.Emphasized_OctaveGnostic, NoteSet.KeypressInput], [], false, true);
         }
 
         document.addEventListener("visibilitychange", onVisChange);
@@ -302,7 +302,7 @@ function useKeypressPlayer() {
         const notesPressed = Array.from(keysPressed).filter(key => keyToNoteNumber.get(key.toLocaleLowerCase()) !== undefined).map(key => {
             return keyToNoteNumber.get(key.toLocaleLowerCase()) ?? -1;
         })
-        updateNotes(NoteSet.Emphasized_OctaveGnostic, [...notesPressed, ...scaleDegreesPressed], true, true);
+        updateNotes(NoteSet.KeypressInput, [...notesPressed, ...scaleDegreesPressed], true, true);
 
         // updateNotes can not trigger this effect otherwise "no keys pressed" will constantly
         // Be overwriting emphasized notes when the keyboard is not being touched.  
