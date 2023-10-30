@@ -1,7 +1,7 @@
 import React from "react";
 import { Group, Text } from 'react-konva';
 import { HarmonicShape, SCALE_CHROMATIC, ShapeType, knownShapes } from "../utils/KnownHarmonicShapes";
-import { blendColors, getIntervalColor, getNoteName } from "../utils/Utils";
+import { blendColors, getNoteName } from "../utils/Utils";
 import { NoteSet, normalizeToSingleOctave, useChannelDisplays, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useNotesOfType, useSetHomeNote } from "../sound/NoteProvider";
 import { WidgetComponentProps } from "../view/Widget";
 import SettingsMenuOverlay from "../view/SettingsMenuOverlay";
@@ -37,6 +37,8 @@ function HarmonyAnalyzer(props: Props) {
     const midifileNotes = midifileNoteInfo.map(note => normalizeToSingleOctave(note[1]));
     const midiFileExactFits = useGetAllExactFits(new Set(midifileNotes));
     const midiFileExactFit = midiFileExactFits[0];
+
+    const channelDisplaysExactFits = useChannelDisplaysExactFits();
 
     // TODO
     // const channelDisplays = useChannelDisplays();
@@ -126,19 +128,6 @@ function HarmonyAnalyzer(props: Props) {
             });
         }
 
-        if (showRed && emphasizedExactFit && (emphasizedExactFit.shape.type === ShapeType.CHORD || emphasizedExactFit.shape.type === ShapeType.SCALE)) {
-            infos.push({
-                text: getNoteNameInExactFitShape(-emphasizedExactFit.noteToFirstNoteInShapeIdxOffset, emphasizedExactFit),
-                color: "red",
-            });
-        }
-        else {
-            infos.push({
-                text: emphasizedNoteInfo.join(", "),
-                color: "red",
-            });
-        }
-
         if (showBlue && inputExactFit && (inputExactFit.shape.type === ShapeType.CHORD || inputExactFit.shape.type === ShapeType.SCALE)) {
             infos.push({
                 text: getNoteNameInExactFitShape(-inputExactFit.noteToFirstNoteInShapeIdxOffset, inputExactFit),
@@ -158,11 +147,30 @@ function HarmonyAnalyzer(props: Props) {
                     channelDisplays.filter(channel => channel.channelTypes.has(NoteSet.MIDIFileInput))
                         .map(channel => channel.color ?? "")
                 );
+            var combinedMidiFileText = getNoteNameInExactFitShape(-midiFileExactFit.noteToFirstNoteInShapeIdxOffset, midiFileExactFit);
             infos.push({
-                text: getNoteNameInExactFitShape(-midiFileExactFit.noteToFirstNoteInShapeIdxOffset, midiFileExactFit),
+                text: combinedMidiFileText,
                 color: midiFileCombinedDisplayColor,
             });
         }
+
+        // This could be optimized by exposing a function that only searches for chord exact fits
+        channelDisplaysExactFits.forEach(exactFits => {
+            const exactFitChords = exactFits.exactFits.filter(fit =>
+                fit.shape.type === ShapeType.CHORD &&
+
+                // Don't display individual midi file analysis if there is a match on the combined analysis
+                !(combinedMidiFileText && combinedMidiFileText !== "" && exactFits.channel.channelTypes.has(NoteSet.MIDIFileInput))
+            );
+            // const exactFitChords = exactFits.exactFits;
+            if (exactFitChords.length > 0) {
+                const exactFit = exactFitChords[0];
+                infos.push({
+                    text: getNoteNameInExactFitShape(-exactFit.noteToFirstNoteInShapeIdxOffset, exactFit),
+                    color: exactFits.channel.color ?? "white",
+                });
+            }
+        });
 
         // Convert infos to text elements
         var idx = 0;
@@ -172,7 +180,7 @@ function HarmonyAnalyzer(props: Props) {
         return infos.filter(info => info.text !== "").map((info) => {
             return (<Text key={`info${info.text}${idx++}`} text={info.text} x={0} y={textelemoffset * (idx) + infosYOffset} fontSize={infosFontSize} fontFamily='monospace' fill={info.color} align="center" width={props.width} />);
         });
-    }, [activeExactFit, activeExactFitName, channelDisplays, emphasizedExactFit, emphasizedNotes, getInfoText, getNoteNameInExactFitShape, homeNote, inputExactFit, inputNotes, midiFileExactFit, props.width, showBlue, showMidiFileCombined, showRed, showWhite, showYellow]);
+    }, [activeExactFit, activeExactFitName, channelDisplays, channelDisplaysExactFits, emphasizedNotes, getInfoText, getNoteNameInExactFitShape, homeNote, inputExactFit, inputNotes, midiFileExactFit, props.width, showBlue, showMidiFileCombined, showWhite, showYellow]);
 
     const fullRender = React.useMemo((
     ) => {
@@ -344,6 +352,18 @@ export function useGetAllExactFits(notes: Set<number>): ExactFit[] {
         const shapesOfCorrectSize = knownShapes[notes.size] ?? [];
         return shapesOfCorrectSize.map(shape => tryToFitShape(shape, notes)).filter(shapeFit => shapeFit.doesFit).concat(defaultExactFit);
     }, [notes, tryToFitShape]);
+}
+
+export function useChannelDisplaysExactFits() {
+    const channels = useChannelDisplays();
+    const tryToFitShape = useTryToFitShape();
+    return React.useMemo(() => {
+        return channels.map(channel => {
+            const shapesOfCorrectSize = knownShapes[channel.notes.size] ?? [];
+            const normalizedNotes = new Set(Array.from(channel.notes).map(note => normalizeToSingleOctave(note)));
+            return { exactFits: shapesOfCorrectSize.map(shape => tryToFitShape(shape, normalizedNotes)).filter(shapeFit => shapeFit.doesFit), channel: channel };
+        });
+    }, [channels, tryToFitShape]);
 }
 
 export default HarmonyAnalyzer;
