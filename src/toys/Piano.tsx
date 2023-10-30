@@ -402,7 +402,7 @@ function Piano(props: Props) {
                     );
                     touchListeners.push(
                         <Shape
-                            key={`touchlisten${absoluteInverval}`}
+                            key={`touchlisten${absoluteInverval}-${channel.name}`}
                             sceneFunc={(context, shape) => {
                                 context.beginPath();
                                 context.moveTo(aLoc.x, aLoc.y);

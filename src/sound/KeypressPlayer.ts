@@ -297,7 +297,14 @@ function useKeypressPlayer() {
             if (keyToScaleDegreeMid.has(key)) specificKeyOffset += 12;
             if (keyToScaleDegreeHigh.has(key)) specificKeyOffset += 12*2;
 
-            return getNoteFromScaleDegree(scaleDegree)+specificKeyOffset+(octaveShift*12);
+            const noteFromScaleDegree = getNoteFromScaleDegree(scaleDegree);
+            const offset = specificKeyOffset+(octaveShift*12);
+
+            // The case where there are no active notes
+            if (isNaN(noteFromScaleDegree)){
+                return scaleDegree + offset - 1;
+            }
+            return noteFromScaleDegree + offset;
         })
         const notesPressed = Array.from(keysPressed).filter(key => keyToNoteNumber.get(key.toLocaleLowerCase()) !== undefined).map(key => {
             return keyToNoteNumber.get(key.toLocaleLowerCase()) ?? -1;
