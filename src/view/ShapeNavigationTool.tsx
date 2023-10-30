@@ -123,7 +123,7 @@ function ShapeNavigationTool(props: Props) {
                     <FormGroup row sx={{ backgroundColor: 'rgb(255,255,255,0)', borderRadius: '0px' }}>
                         <Select
                             id="explorer-dropdown"
-                            value={homeNote}
+                            value={homeNote ?? -1}
                             label="Note layout"
                             labelId="demo-simple-select-filled-label"
                             onChange={e => {

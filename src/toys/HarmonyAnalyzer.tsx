@@ -7,8 +7,6 @@ import { WidgetComponentProps } from "../view/Widget";
 import SettingsMenuOverlay from "../view/SettingsMenuOverlay";
 import { Switch } from "@mui/material";
 
-
-
 const inputBoxNoteNameRegex = /^([aAbBcCdDeEfFgG][b#♭♯]?)\s/
 
 type Props =
@@ -22,7 +20,6 @@ function HarmonyAnalyzer(props: Props) {
     const emphasizedNotes = useGetCombinedModdedEmphasis();
     const homeNote = useHomeNote();
     const channelDisplays = useChannelDisplays();
-    console.log("Displays", channelDisplays);
 
     const activeExactFits = useGetAllExactFits(activeNotes);
     const activeExactFit = activeExactFits[0];
