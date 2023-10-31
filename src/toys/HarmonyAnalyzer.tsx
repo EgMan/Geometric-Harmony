@@ -1,7 +1,7 @@
 import React from "react";
 import { Group, Text } from 'react-konva';
 import { HarmonicShape, SCALE_CHROMATIC, ShapeType, knownShapes } from "../utils/KnownHarmonicShapes";
-import { blendColors, getNoteName } from "../utils/Utils";
+import { blendColors, changeLightness, getNoteName } from "../utils/Utils";
 import { NoteSet, normalizeToSingleOctave, useChannelDisplays, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useNotesOfType, useSetHomeNote } from "../sound/NoteProvider";
 import { WidgetComponentProps } from "../view/Widget";
 import SettingsMenuOverlay from "../view/SettingsMenuOverlay";
@@ -45,8 +45,8 @@ function HarmonyAnalyzer(props: Props) {
 
     const [showWhite, setShowWhite] = React.useState(false);
     const [showYellow, setShowYellow] = React.useState(false);
-    const [showRed, setShowRed] = React.useState(true);
-    const [showBlue, setShowBlue] = React.useState(true);
+    // const [showRed, setShowRed] = React.useState(true);
+    // const [showBlue, setShowBlue] = React.useState(true);
     const [showMidiFileCombined, setShowMidiFileCombined] = React.useState(true);
 
     const settingsMenuItems = [
@@ -60,16 +60,16 @@ function HarmonyAnalyzer(props: Props) {
             <td style={{ color: "yellow", textAlign: "center" }}>■</td>
             <td><Switch color={"primary"} checked={showYellow} onChange={e => setShowYellow(e.target.checked)} /></td>
         </tr>),
-        (<tr key={"tr3"}>
-            <td>Show emphasized notes</td>
-            <td style={{ color: "red", textAlign: "center" }}>■</td>
-            <td><Switch color={"primary"} checked={showRed} onChange={e => setShowRed(e.target.checked)} /></td>
-        </tr>),
-        (<tr key={"tr4"}>
-            <td>Show midi input notes</td>
-            <td style={{ color: "blue", textAlign: "center" }}>■</td>
-            <td><Switch color={"primary"} checked={showBlue} onChange={e => setShowBlue(e.target.checked)} /></td>
-        </tr>),
+        // (<tr key={"tr3"}>
+        //     <td>Show emphasized notes</td>
+        //     <td style={{ color: "red", textAlign: "center" }}>■</td>
+        //     <td><Switch color={"primary"} checked={showRed} onChange={e => setShowRed(e.target.checked)} /></td>
+        // </tr>),
+        // (<tr key={"tr4"}>
+        //     <td>Show midi input notes</td>
+        //     <td style={{ color: "blue", textAlign: "center" }}>■</td>
+        //     <td><Switch color={"primary"} checked={showBlue} onChange={e => setShowBlue(e.target.checked)} /></td>
+        // </tr>),
         (<tr key={"tr5"}>
             <td>Show midi file notes (combined)</td>
             <td style={{ color: "white", textAlign: "center" }}>■</td>
@@ -128,19 +128,6 @@ function HarmonyAnalyzer(props: Props) {
             });
         }
 
-        if (showBlue && inputExactFit && (inputExactFit.shape.type === ShapeType.CHORD || inputExactFit.shape.type === ShapeType.SCALE)) {
-            infos.push({
-                text: getNoteNameInExactFitShape(-inputExactFit.noteToFirstNoteInShapeIdxOffset, inputExactFit),
-                color: "lightblue",
-            });
-        }
-        else {
-            infos.push({
-                text: inputNoteInfo.join(", "),
-                color: "lightblue",
-            });
-        }
-
         if (showMidiFileCombined && midiFileExactFit && (midiFileExactFit.shape.type === ShapeType.CHORD)) {
             const midiFileCombinedDisplayColor =
                 blendColors(
@@ -165,9 +152,11 @@ function HarmonyAnalyzer(props: Props) {
             // const exactFitChords = exactFits.exactFits;
             if (exactFitChords.length > 0) {
                 const exactFit = exactFitChords[0];
+                let color = exactFits.channel.color ?? "white";
+                if (color === "blue") color = changeLightness(color, 1.6);
                 infos.push({
                     text: getNoteNameInExactFitShape(-exactFit.noteToFirstNoteInShapeIdxOffset, exactFit),
-                    color: exactFits.channel.color ?? "white",
+                    color: color ?? "white",
                 });
             }
         });
@@ -180,7 +169,7 @@ function HarmonyAnalyzer(props: Props) {
         return infos.filter(info => info.text !== "").map((info) => {
             return (<Text key={`info${info.text}${idx++}`} text={info.text} x={0} y={textelemoffset * (idx) + infosYOffset} fontSize={infosFontSize} fontFamily='monospace' fill={info.color} align="center" width={props.width} />);
         });
-    }, [activeExactFit, activeExactFitName, channelDisplays, channelDisplaysExactFits, emphasizedNotes, getInfoText, getNoteNameInExactFitShape, homeNote, inputExactFit, inputNotes, midiFileExactFit, props.width, showBlue, showMidiFileCombined, showWhite, showYellow]);
+    }, [activeExactFit, activeExactFitName, channelDisplays, channelDisplaysExactFits, emphasizedNotes, getInfoText, getNoteNameInExactFitShape, homeNote, inputNotes, midiFileExactFit, props.width, showMidiFileCombined, showWhite, showYellow]);
 
     const fullRender = React.useMemo((
     ) => {
@@ -359,8 +348,8 @@ export function useChannelDisplaysExactFits() {
     const tryToFitShape = useTryToFitShape();
     return React.useMemo(() => {
         return channels.map(channel => {
-            const shapesOfCorrectSize = knownShapes[channel.notes.size] ?? [];
             const normalizedNotes = new Set(Array.from(channel.notes).map(note => normalizeToSingleOctave(note)));
+            const shapesOfCorrectSize = knownShapes[normalizedNotes.size] ?? [];
             return { exactFits: shapesOfCorrectSize.map(shape => tryToFitShape(shape, normalizedNotes)).filter(shapeFit => shapeFit.doesFit), channel: channel };
         });
     }, [channels, tryToFitShape]);

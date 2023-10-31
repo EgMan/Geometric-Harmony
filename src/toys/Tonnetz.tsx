@@ -107,7 +107,7 @@ function Tonnetz(props: Props) {
         setDraggedPosition(event.currentTarget.position());
     }, []);
 
-    const spacing = 80;
+    const spacing = 75;
     const distFromCenter = Math.ceil(radius / spacing) + 1;
     const xDraggedOffset = Math.floor(-(draggedPosition.x / spacing) - (draggedPosition.y * 0.5 / (sqrt3over2 * spacing)));
     const yDraggedOffset = Math.floor(-draggedPosition.y / (sqrt3over2 * spacing));

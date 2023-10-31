@@ -157,3 +157,10 @@ export function blendColors(colors: string[]) {
 
     return `rgba(${r / count}, ${g / count}, ${b / count}, ${a / count}`;
 }
+
+export function changeLightness(color: string, multiplier: number) {
+    const parsedColor = ColorConverter(color);
+    if (!parsedColor.isValid) return "black";
+    let lightness = Math.min(Math.max(parsedColor.l * multiplier, 0), 100);
+    return `hsla(${parsedColor.h}, ${parsedColor.s}%, ${lightness}%, ${parsedColor.a})`
+}
