@@ -9,7 +9,14 @@ import { useSettings } from '../view/SettingsProvider';
 
 export type SpeakerSoundType = "AMSynth";
 
-function useSoundEngine() {
+const synthContext = React.createContext<Tone.PolySynth | null>(null);
+const synthOutContext = React.createContext<Tone.ToneAudioNode | null>(null);
+
+type Props = {
+    children: JSX.Element
+}
+
+function SoundEngine(props: Props) {
     useKeypressPlayer();
 
     const updateNotes = useUpdateNoteSet();
@@ -49,15 +56,62 @@ function useSoundEngine() {
     }, [onMidiInputNoteOff, onMidiInputNoteOn]);
     useConnectToMidi(onMidiConnect);
 
-    const synth = React.useMemo(() => {
-        return new Tone.PolySynth(Tone.AMSynth).toDestination();
+    const { synth, output } = React.useMemo(() => {
+        // Tone.setContext(new AudioContext({ sampleRate: 96000 }))
+        const reverb = new Tone.Reverb({
+            decay: 1.25,
+            wet: 0.75,
+        });
+        const filter = new Tone.Filter({
+            frequency: 75000,
+            type: "lowpass",
+            gain: 0,
+            Q: 10,
+        });
+        const autowah = new Tone.AutoWah().toDestination();
+        const bitcrusher = new Tone.BitCrusher();
+        const distortion = new Tone.Distortion({
+            distortion: 0.1,
+            wet: 0.1,
+        });
+        const eq = new Tone.EQ3({
+            low: 55,
+            mid: 20,
+            high: 0,
+            lowFrequency: 2500,
+            highFrequency: 20000,
+        });
+        const gain = new Tone.Gain(
+            {
+                gain: 1.1,
+                // gain: 1000,
+            }
+        );
+        const compressor = new Tone.Compressor({
+            ratio: 3.5,
+            threshold: -90,
+            // release: 0,
+            // attack: 0.001,
+            // knee: 10,
+        });
+
+        // const panner = new Tone.Panner(1).toDestination();
+        // panner.pan.rampTo(0, 0.1);
+
+
+        // const limiter = new Tone.Limiter(    -50).toDestination();
+        // const polysynth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" } })
+        const polysynth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" }, envelope: { attack: 0.05, decay: 0.05, sustain: 0.75, release: 0.2 } });
+        polysynth.chain(eq, compressor, gain, reverb, Tone.Destination);
+
+        return { synth: polysynth, output: compressor };
     }, []);
 
     const settings = useSettings();
     const isMuted = settings?.isMuted ?? false;
     const prioritizeMIDIAudio = settings?.prioritizeMIDIAudio ?? false;
     React.useEffect(() => {
-        synth.volume.value = isMuted ? -Infinity : 0;
+        synth.volume.value = isMuted ? -Infinity : 1;
     }, [isMuted, synth.volume]);
 
     const updateSynth = React.useCallback((notesTurnedOn: [NoteChannel, number][], notesTurnedOff: [NoteChannel, number][]) => {
@@ -87,9 +141,23 @@ function useSoundEngine() {
         updateSynth(notesTurnedOn, notesTurnedOff);
         updateMIDIOutWithFiltering(notesTurnedOn, notesTurnedOff);
     });
-    return null;
+    return <synthContext.Provider value={synth}>
+        <synthOutContext.Provider value={output}>
+            {props.children}
+        </synthOutContext.Provider>
+    </synthContext.Provider>
 }
-export default useSoundEngine;
+export default SoundEngine;
+
+export function useSynth() {
+    const synth = React.useContext(synthContext);
+    return synth;
+}
+
+export function useSynthOut() {
+    const synthOut = React.useContext(synthOutContext);
+    return synthOut;
+}
 
 export function useExecuteOnPlayingNoteStateChange(callback: (notesTurnedOn: [NoteChannel, number][], notesTurnedOff: [NoteChannel, number][], playingNotes: [NoteChannel, number][]) => void) {
     const activeNotes = useNoteSet(NoteSet.Active).notes;

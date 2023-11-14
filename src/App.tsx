@@ -2,11 +2,9 @@ import React from 'react';
 import './App.css';
 import SoundEngine from './sound/SoundEngine';
 import NoteProvider from './sound/NoteProvider';
-import useSoundEngine from './sound/SoundEngine';
 import ViewManager from './view/ViewManager';
 import SettingsProvider from './view/SettingsProvider';
 function App() {
-  useSoundEngine();
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth)
   const [windowHeight, setWindowHeight] = React.useState(window.innerHeight)
   const setWindowDimensions = () => {
@@ -25,10 +23,9 @@ function App() {
       <header className="App-header">
         <SettingsProvider>
           <NoteProvider>
-            <div>
+            <SoundEngine>
               <ViewManager width={windowWidth} height={windowHeight} />
-              <SoundEngine />
-            </div>
+            </SoundEngine>
           </NoteProvider>
         </SettingsProvider>
       </header>

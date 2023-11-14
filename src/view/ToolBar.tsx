@@ -10,6 +10,8 @@ import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import PianoIcon from '@mui/icons-material/Piano';
 import SettingsIcon from '@mui/icons-material/Settings';
+import SquareFootIcon from '@mui/icons-material/SquareFoot';
+import TimelineIcon from '@mui/icons-material/Timeline';
 import VideogameAssetIcon from '@mui/icons-material/VideogameAsset';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
@@ -225,6 +227,12 @@ function ToolBar(props: Props) {
                                         </ListItemIcon>
                                         <ListItemText>Guitar</ListItemText>
                                     </MenuItem>
+                                    <MenuItem onClick={() => addNewWidget(WidgetType.Oscilloscope)}>
+                                        <ListItemIcon>
+                                            <TimelineIcon style={{ color: "white" }} fontSize="small" />
+                                        </ListItemIcon>
+                                        <ListItemText>Oscilloscope</ListItemText>
+                                    </MenuItem>
                                     <MenuItem onClick={() => addNewWidget(WidgetType.Tonnetz)}>
                                         <ListItemIcon>
                                             <ConstructionIcon style={{ color: "white" }} fontSize="small" />
@@ -242,7 +250,7 @@ function ToolBar(props: Props) {
                                     </MenuItem>
                                     <MenuItem onClick={() => addNewWidget(WidgetType.Analyzer)}>
                                         <ListItemIcon>
-                                            <ConstructionIcon style={{ color: "white" }} fontSize="small" />
+                                            <SquareFootIcon style={{ color: "white" }} fontSize="small" />
                                         </ListItemIcon>
                                         <ListItemText>Harmonic Analyzer</ListItemText>
                                     </MenuItem>
