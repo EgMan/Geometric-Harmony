@@ -91,6 +91,7 @@ const preventDefault = [
     "ArrowRight",
     "ArrowLeft",
     "space",
+    " ",
     ];
 
 type SingleNoteShift =
@@ -205,6 +206,10 @@ function useKeypressPlayer() {
     React.useEffect(() => {
         const onKeyDown = (event: KeyboardEvent) => {
             // console.log(event.key);
+            if (preventDefault.includes(event.key)) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
             if (event.key === "Escape"){
                 (document.activeElement as HTMLElement).blur();
             }
@@ -216,9 +221,6 @@ function useKeypressPlayer() {
                     handleKeyDownsWithoutRepeats(event.key);
                 }
                 handleKeyDownsWithRepeats(event.key);
-            }
-            if (preventDefault.includes(event.key)) {
-                event.preventDefault();
             }
         }
 

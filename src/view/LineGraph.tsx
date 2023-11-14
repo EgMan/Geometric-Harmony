@@ -19,7 +19,6 @@ function LineGraph(props: Props) {
         return props.values.map((val, idx) => {
             const x = idx * props.width / props.values.length;
             const y = -((val - medVal) * props.height / valRange);
-            console.log("all4", val, medVal, props.height, valRange);
             return [x, y];
         }).reduce((prev, point) => prev.concat(point), []);
     }, [medVal, props.height, props.values, props.width, valRange]);
