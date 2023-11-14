@@ -1,11 +1,12 @@
 import React from "react";
-import { Button, ClickAwayListener, ListItemIcon, ListItemText, DialogTitle, MenuItem, MenuList, Paper, Popover, Switch, ThemeProvider, colors, createTheme, } from "@mui/material";
+import { Button, ClickAwayListener, ListItemIcon, ListItemText, DialogTitle, MenuItem, MenuList, Paper, Popover, Switch, ThemeProvider, colors, createTheme, Select, } from "@mui/material";
 import ShapeNavigationTool from "./ShapeNavigationTool";
 import { WidgetTrackerActions, WidgetType } from "./ViewManager";
 import { Stage } from "konva/lib/Stage";
 import { getCurrentSpace } from "../utils/SpacesUtils";
 import AddIcon from '@mui/icons-material/Add';
 import AudioFileIcon from '@mui/icons-material/AudioFile';
+import CampaignIcon from '@mui/icons-material/Campaign';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import PianoIcon from '@mui/icons-material/Piano';
@@ -17,6 +18,7 @@ import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import { useSettings } from "./SettingsProvider";
 import { MidiFileDataProvider, MidiFileParser } from "../sound/MidiFileParser";
+import { LocalSynthVoice } from "../sound/SynthVoicings";
 // import useSettings from "./SettingsProvider"
 
 type Props =
@@ -306,6 +308,26 @@ function ToolBar(props: Props) {
                                         <ListItemText> Mute sound output </ListItemText>
                                         <Switch checked={settings?.isMuted} onChange={e => settings?.setIsMuted(e.target.checked)}></Switch>
                                     </MenuItem>
+                                    <MenuItem>
+                                        <ListItemIcon>
+                                            {settings?.isMuted ? <CampaignIcon style={{ color: "white" }} fontSize="small" /> : <VolumeUpIcon style={{ color: "white" }} fontSize="small" />}
+                                        </ListItemIcon>
+                                        <ListItemText> Synth voice </ListItemText>
+                                        <Select
+                                            sx={{ fontFamily: "monospace", marginLeft: "16px" }}
+                                            id="menu-dropdown"
+                                            value={settings?.localSynthVoice}
+                                            label="Octave Count"
+                                            labelId="demo-simple-select-filled-label"
+                                            onChange={e => { settings?.setLocalSynthVoice(e.target.value as LocalSynthVoice) }}
+                                        >
+                                            <MenuItem value={LocalSynthVoice.Sine}>{LocalSynthVoice.Sine}</MenuItem>
+                                            <MenuItem value={LocalSynthVoice.Triangle}>{LocalSynthVoice.Triangle}</MenuItem>
+                                            <MenuItem value={LocalSynthVoice.Square}>{LocalSynthVoice.Square}</MenuItem>
+                                            <MenuItem value={LocalSynthVoice.AMSynth}>{LocalSynthVoice.AMSynth}</MenuItem>
+                                            <MenuItem value={LocalSynthVoice.FMSynth}>{LocalSynthVoice.FMSynth}</MenuItem>
+                                        </Select>
+                                    </MenuItem>
                                 </MenuList>
                             </ClickAwayListener>
                         </Paper>
@@ -327,7 +349,7 @@ function ToolBar(props: Props) {
                                 <ClickAwayListener onClickAway={() => setMidiSettingsDropdownOpen(false)}>
                                     <MenuList>
                                         <DialogTitle sx={{ fontFamily: "monospace" }}>MIDI Stuff</DialogTitle>
-                                        <MenuItem >
+                                        <MenuItem onClick={() => { }}>
                                             <ListItemIcon>
                                                 <AudioFileIcon style={{ color: "white" }} fontSize="small" />
                                             </ListItemIcon>

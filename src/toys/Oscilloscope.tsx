@@ -4,7 +4,7 @@ import { WidgetComponentProps } from '../view/Widget';
 import LineGraph from '../view/LineGraph';
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import { Group } from 'react-konva';
-import { useSynth, useSynthOut } from '../sound/SoundEngine';
+import { useSynth, useSynthAfterEffects } from '../sound/SoundEngine';
 import { FFT, Waveform } from 'tone';
 import { MenuItem, Select } from '@mui/material';
 
@@ -15,7 +15,7 @@ type Props = {
 
 function Oscilloscope(props: Props) {
     const synth = useSynth();
-    const synthOut = useSynthOut();
+    const synthOut = useSynthAfterEffects();
     const [values, setValues] = React.useState<number[]>([]);
     const [minValue, setMinValue] = React.useState<number>(1);
     const [maxValue, setMaxValue] = React.useState<number>(-1);
