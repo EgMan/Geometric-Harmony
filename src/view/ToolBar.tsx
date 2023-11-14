@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, ClickAwayListener, ListItemIcon, ListItemText, MenuItem, MenuList, Paper, Popover, Switch, ThemeProvider, colors, createTheme, } from "@mui/material";
+import { Button, ClickAwayListener, ListItemIcon, ListItemText, DialogTitle, MenuItem, MenuList, Paper, Popover, Switch, ThemeProvider, colors, createTheme, } from "@mui/material";
 import ShapeNavigationTool from "./ShapeNavigationTool";
 import { WidgetTrackerActions, WidgetType } from "./ViewManager";
 import { Stage } from "konva/lib/Stage";
@@ -212,6 +212,7 @@ function ToolBar(props: Props) {
                                 // onClose={() => setAddDropdownOpen(false)}
                                 // anchorEl={addButtonRef.current}
                                 >
+                                    <DialogTitle sx={{ fontFamily: "monospace" }}>Toys</DialogTitle>
                                     <MenuItem onClick={() => addNewWidget(WidgetType.Piano)}>
                                         <ListItemIcon>
                                             <MusicNoteIcon style={{ color: "white" }} fontSize="small" />
@@ -227,11 +228,23 @@ function ToolBar(props: Props) {
                                         </ListItemIcon>
                                         <ListItemText>Guitar</ListItemText>
                                     </MenuItem>
+                                    <MenuItem disabled={true} onClick={() => addNewWidget(WidgetType.Guitar)}>
+                                        <ListItemIcon>
+                                            <MusicNoteIcon style={{ color: "white" }} fontSize="small" />
+                                        </ListItemIcon>
+                                        <ListItemText>Harpejji</ListItemText>
+                                    </MenuItem>
                                     <MenuItem onClick={() => addNewWidget(WidgetType.Oscilloscope)}>
                                         <ListItemIcon>
                                             <TimelineIcon style={{ color: "white" }} fontSize="small" />
                                         </ListItemIcon>
                                         <ListItemText>Oscilloscope</ListItemText>
+                                    </MenuItem>
+                                    <MenuItem disabled={true} onClick={() => addNewWidget(WidgetType.Oscilloscope)}>
+                                        <ListItemIcon>
+                                            <TimelineIcon style={{ color: "white" }} fontSize="small" />
+                                        </ListItemIcon>
+                                        <ListItemText>Frequency Visualizer</ListItemText>
                                     </MenuItem>
                                     <MenuItem onClick={() => addNewWidget(WidgetType.Tonnetz)}>
                                         <ListItemIcon>
@@ -242,11 +255,17 @@ function ToolBar(props: Props) {
                                     {/* <MenuItem onClick={() => addNewWidget(WidgetType.Wheel)}>
                                         <ListItemText>Wheel of Fifths</ListItemText>
                                     </MenuItem> */}
+                                    <MenuItem disabled={true} onClick={() => addNewWidget(WidgetType.Wheel)}>
+                                        <ListItemIcon>
+                                            <ConstructionIcon style={{ color: "white" }} fontSize="small" />
+                                        </ListItemIcon>
+                                        <ListItemText>Circle of Fifths</ListItemText>
+                                    </MenuItem>
                                     <MenuItem onClick={() => addNewWidget(WidgetType.Wheel)}>
                                         <ListItemIcon>
                                             <ConstructionIcon style={{ color: "white" }} fontSize="small" />
                                         </ListItemIcon>
-                                        <ListItemText>Wheel of Semitones</ListItemText>
+                                        <ListItemText>Circle of Semitones</ListItemText>
                                     </MenuItem>
                                     <MenuItem onClick={() => addNewWidget(WidgetType.Analyzer)}>
                                         <ListItemIcon>
@@ -279,6 +298,7 @@ function ToolBar(props: Props) {
                         <Paper>
                             <ClickAwayListener onClickAway={() => setAddDropdownOpen(false)}>
                                 <MenuList>
+                                    <DialogTitle sx={{ fontFamily: "monospace" }}>General Settings</DialogTitle>
                                     <MenuItem onClick={() => settings?.setIsMuted(muted => !muted)}>
                                         <ListItemIcon>
                                             {settings?.isMuted ? <VolumeOffIcon style={{ color: "white" }} fontSize="small" /> : <VolumeUpIcon style={{ color: "white" }} fontSize="small" />}
@@ -306,6 +326,7 @@ function ToolBar(props: Props) {
                             <Paper>
                                 <ClickAwayListener onClickAway={() => setMidiSettingsDropdownOpen(false)}>
                                     <MenuList>
+                                        <DialogTitle sx={{ fontFamily: "monospace" }}>MIDI Stuff</DialogTitle>
                                         <MenuItem >
                                             <ListItemIcon>
                                                 <AudioFileIcon style={{ color: "white" }} fontSize="small" />
