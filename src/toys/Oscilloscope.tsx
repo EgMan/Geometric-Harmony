@@ -6,6 +6,7 @@ import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import { Group } from 'react-konva';
 import { useSynth, useSynthAfterEffects } from '../sound/SoundEngine';
 import { Waveform } from 'tone';
+import { useNoteDisplays } from '../sound/NoteProvider';
 
 type Props = {
     width: number,
@@ -25,6 +26,7 @@ function Oscilloscope(props: Props) {
 
     const synth = useSynth();
     const synthOut = useSynthAfterEffects();
+    const updateTrigger = useNoteDisplays();
     const [values, setValues] = React.useState<number[]>(Array(waveformDisplaySize).fill(waveformDisplaySize));
     const [latchingValues, setLatchingValues] = React.useState<number[]>(Array(waveformLatchDataSize).fill(waveformDisplaySize));
     const [minValue, setMinValue] = React.useState<number>(1);
@@ -109,11 +111,12 @@ function Oscilloscope(props: Props) {
         }
     }, [waveform, latchWaveform, latchingValues, waveformLatchDataSize, values, waveformDisplaySize]);
 
-    // React.useEffect(() => {
-    //     setTimeout(() => {
-    //         // updateDisplay();
-    //     }, 400);
-    // }, [channelDisplays, updateDisplay]);
+    React.useEffect(() => {
+        setTimeout(() => {
+            updateDisplay();
+        }, 250);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [updateTrigger]);
 
     // const updateTick = React.useCallback(() => {
     //     updateDisplay();
