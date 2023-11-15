@@ -13,23 +13,26 @@ type Props = {
 } & WidgetComponentProps
 
 function Oscilloscope(props: Props) {
-    const updatePeriod = 50;
+    const updatePeriod = 30;
 
     const waveformSampleSize = 4096;
-    const waveformDownsampleRate = 8;
+    const latchDownsampleRate = 4;
+    const waveformDownsampleRate = 2;
     const latchRatio = 4;
-    const waveformDisplaySize = waveformSampleSize / (waveformDownsampleRate * latchRatio);
-    const waveformPanSpeed = 1;
+    const waveformDisplaySize = waveformSampleSize / (waveformDownsampleRate * latchDownsampleRate * latchRatio);
+    const waveformLatchDataSize = waveformSampleSize / (latchDownsampleRate * latchRatio);
+    const waveformPanSpeed = 3;
 
     const synth = useSynth();
     const synthOut = useSynthAfterEffects();
     const [values, setValues] = React.useState<number[]>(Array(waveformDisplaySize).fill(waveformDisplaySize));
+    const [latchingValues, setLatchingValues] = React.useState<number[]>(Array(waveformLatchDataSize).fill(waveformDisplaySize));
     const [minValue, setMinValue] = React.useState<number>(1);
     const [maxValue, setMaxValue] = React.useState<number>(-1);
 
     const waveform = React.useMemo(() => {
         return new Waveform(waveformSampleSize);
-    }, []);
+    }, [waveformSampleSize]);
 
     React.useEffect(() => {
         if (!synthOut || !synth) {
@@ -41,13 +44,18 @@ function Oscilloscope(props: Props) {
     const latchWaveform = React.useCallback((oldVals: number[], newVals: number[]) => {
         let latchIdx = 0;
         let minDivergence = -1;
+        // let minInflectionChanges = -1;
+        // let minDivergencedeltaYsArePositive: boolean[] = [];
 
-        console.log("for loop range", newVals.length - oldVals.length);
+        console.log("for loop range", newVals.length - oldVals.length, newVals.length, oldVals.length);
         const highestLatchIdx = newVals.length - oldVals.length;
         for (let window = 0; window <= highestLatchIdx; window++) {
+            // let inflectionChanges = 0;
             let divergence = 0;
+            // let deltaYsPositivity = [];
             for (var i = 0; i < oldVals.length; i++) {
-                divergence += Math.abs(oldVals[i] - newVals[i + window]);
+                const deltaY = newVals[i + window] - oldVals[i];
+                divergence += Math.pow(Math.abs(deltaY), 2);
             }
             if (divergence < minDivergence || minDivergence === -1) {
                 minDivergence = divergence;
@@ -55,16 +63,16 @@ function Oscilloscope(props: Props) {
             }
         }
 
-        latchIdx = Math.min(highestLatchIdx, latchIdx + waveformPanSpeed);
+        latchIdx = Math.max(0, Math.min(highestLatchIdx, latchIdx + waveformPanSpeed));
 
         // adjust for differences in last values size and current display size
         // should only really be needed when changing sample/size value
-        if (latchIdx + waveformDisplaySize > newVals.length) {
-            latchIdx -= waveformDisplaySize - newVals.length;
+        if (latchIdx + waveformLatchDataSize > newVals.length) {
+            latchIdx -= waveformLatchDataSize - newVals.length;
         }
 
         return latchIdx;
-    }, [waveformDisplaySize]);
+    }, [waveformLatchDataSize]);
 
     const updateDisplay = React.useCallback(() => {
         let minVal = 0;
@@ -72,27 +80,34 @@ function Oscilloscope(props: Props) {
 
         let rawValues: Float32Array;
         rawValues = waveform.getValue();
-        let displayValues = Array.from(rawValues).filter((val, idx) => {
-            return idx % waveformDownsampleRate === 0;
-        }).map(val => {
+        let displayValues = Array.from(rawValues).map(val => {
             if (isFinite(val) && !isNaN(val)) {
                 minVal = Math.min(val, minVal);
                 maxVal = Math.max(val, maxVal);
                 return val;
             }
             return 0;
+        }).filter((val, idx) => {
+            return idx % latchDownsampleRate === 0;
         });
 
-        const latchIdx = latchWaveform(values, displayValues);
-        displayValues = displayValues.slice(latchIdx, latchIdx + waveformDisplaySize);
+        const latchIdx = latchWaveform(latchingValues, displayValues);
+        displayValues = displayValues.slice(latchIdx, latchIdx + waveformLatchDataSize);
+
+        setLatchingValues(displayValues);
+
+        displayValues = displayValues.filter((val, idx) => {
+            return idx % waveformDownsampleRate === 0;
+        })
 
         setMinValue(-1);
         setMaxValue(1);
 
         if (maxVal - minVal > 0 || values.some(val => val !== 0)) {
             setValues(displayValues);
+            console.log("VALS", values.length, displayValues.length, waveformDisplaySize)
         }
-    }, [latchWaveform, values, waveform, waveformDisplaySize]);
+    }, [waveform, latchWaveform, latchingValues, waveformLatchDataSize, values, waveformDisplaySize]);
 
     // React.useEffect(() => {
     //     setTimeout(() => {
@@ -125,7 +140,7 @@ function Oscilloscope(props: Props) {
     ) => {
         return (
             <Group y={props.height * 0.5}>
-                <LineGraph width={props.width} height={props.height} minVal={minValue} maxVal={maxValue} values={values} lineProps={{ opacity: 0.1, strokeWidth: 2 }
+                <LineGraph width={props.width} height={props.height} minVal={minValue} maxVal={maxValue} values={values} lineProps={{ opacity: 0.1, strokeWidth: 2, tension: 0.5 }
                 } />
             </Group>
         );
