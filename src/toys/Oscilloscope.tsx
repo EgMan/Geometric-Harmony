@@ -22,7 +22,11 @@ function Oscilloscope(props: Props) {
     const [isFFT, setIsFFT] = React.useState<boolean>(false);
 
     const updatePeriod = 50;
+
+    const waveformSampleSize = 2048;
     const waveformDownsampleRate = 8;
+    const latchRatio = 2;
+    const waveformDisplaySize = waveformSampleSize / (waveformDownsampleRate * latchRatio);
 
     const settingsMenuItems = [
         (<tr key={"tr1"}>
@@ -60,6 +64,30 @@ function Oscilloscope(props: Props) {
         synth.connect(analyser);
     }, [analyser, waveform, synthOut, synth]);
 
+    const latchWaveform = React.useCallback((oldVals: number[], newVals: number[]) => {
+        let latchIdx = 0;
+        let minDivergence = -1;
+        
+        for (let window = 0; window <= newVals.length - oldVals.length; window++) {
+            let divergence = 0;
+            for (let i = 0; i < oldVals.length; i++) {
+                divergence += Math.abs(oldVals[i] - newVals[i + window]);
+            }
+            if (divergence < minDivergence) {
+                minDivergence = divergence;
+                latchIdx = i;
+            }
+        }
+
+        // adjust for differences in last values size and current display size
+        // should only really be needed when changing sample/size value
+        if (latchIdx + waveformDisplaySize > newVals.length) {
+            latchIdx -= latchIdx + waveformDisplaySize - newVals.length;
+        }
+
+        return latchIdx;
+    }, []);
+
     const updateDisplay = React.useCallback(() => {
         let minVal = 0;
         let maxVal = 0;
@@ -91,11 +119,17 @@ function Oscilloscope(props: Props) {
             }
             return 0;
         });
+
+        
+
         if (isFFT) {
             setMinValue(minVal);
             setMaxValue(maxVal);
         }
         else {
+            latchIdx = latchWaveform(values, displayValues);
+            displayValues = displayValues.slice(latchIdx, latchIdx + waveformDisplaySize);
+
             setMinValue(-1);
             setMaxValue(1);
         }
