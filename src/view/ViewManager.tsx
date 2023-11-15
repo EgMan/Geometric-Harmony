@@ -14,6 +14,7 @@ import ToolBar from "./ToolBar";
 import { realignSpaces } from "../utils/SpacesUtils";
 import PlayTheShapeGame from "../toys/PlayTheShapeGame";
 import Oscilloscope from "../toys/Oscilloscope";
+import FrequencyVisualizer from "../toys/FrequencyVisualizer";
 
 export type WidgetTracker = {
     type: WidgetType,
@@ -41,6 +42,7 @@ export enum WidgetType {
     Tonnetz,
     PlayShapeGame,
     Oscilloscope,
+    FrequencyVis,
 }
 
 export const widgetNameByType = (type: WidgetType) => {
@@ -58,7 +60,9 @@ export const widgetNameByType = (type: WidgetType) => {
         case WidgetType.PlayShapeGame:
             return "Quiz";
         case WidgetType.Oscilloscope:
-            return "FrequencyVisualizer";
+            return "Waveform";
+        case WidgetType.FrequencyVis:
+            return "Frequency";
     }
 }
 
@@ -350,6 +354,21 @@ function ViewManager(props: Props) {
                 />
             case WidgetType.Oscilloscope:
                 return <Widget of={Oscilloscope}
+                    uid={uid}
+                    actions={trackerActions}
+                    tracker={widget}
+                    key={`${uid}`}
+                    isPeaceModeEnabled={isPeaceModeEnabled}
+                    isMaxamized={widget.isMaxamized ?? true}
+                    initialPosition={widget.initialPosition}
+                    draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
+                    setDraggedPosition={setDraggedPosition(uid)}
+                    contextMenuOffset={{ x: wheelRadius * 0.6, y: -20 }}
+                    width={wheelRadius * 1.2}
+                    height={wheelRadius / 2}
+                />
+            case WidgetType.FrequencyVis:
+                return <Widget of={FrequencyVisualizer}
                     uid={uid}
                     actions={trackerActions}
                     tracker={widget}

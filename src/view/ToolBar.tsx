@@ -242,7 +242,7 @@ function ToolBar(props: Props) {
                                         </ListItemIcon>
                                         <ListItemText>Oscilloscope</ListItemText>
                                     </MenuItem>
-                                    <MenuItem disabled={true} onClick={() => addNewWidget(WidgetType.Oscilloscope)}>
+                                    <MenuItem onClick={() => addNewWidget(WidgetType.FrequencyVis)}>
                                         <ListItemIcon>
                                             <TimelineIcon style={{ color: "white" }} fontSize="small" />
                                         </ListItemIcon>
@@ -273,13 +273,13 @@ function ToolBar(props: Props) {
                                         <ListItemIcon>
                                             <SquareFootIcon style={{ color: "white" }} fontSize="small" />
                                         </ListItemIcon>
-                                        <ListItemText>Harmonic Analyzer</ListItemText>
+                                        <ListItemText>Chord Identifier</ListItemText>
                                     </MenuItem>
                                     <MenuItem onClick={() => addNewWidget(WidgetType.PlayShapeGame)}>
                                         <ListItemIcon>
                                             <VideogameAssetIcon style={{ color: "white" }} fontSize="small" />
                                         </ListItemIcon>
-                                        <ListItemText>Play the chord game</ListItemText>
+                                        <ListItemText>Chord Game</ListItemText>
                                     </MenuItem>
                                 </MenuList>
                             </ClickAwayListener>
