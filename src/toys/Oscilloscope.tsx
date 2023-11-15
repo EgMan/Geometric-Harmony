@@ -5,8 +5,7 @@ import LineGraph from '../view/LineGraph';
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import { Group } from 'react-konva';
 import { useSynth, useSynthAfterEffects } from '../sound/SoundEngine';
-import { FFT, Waveform } from 'tone';
-import { MenuItem, Select } from '@mui/material';
+import { Waveform } from 'tone';
 
 type Props = {
     width: number,
@@ -27,31 +26,6 @@ function Oscilloscope(props: Props) {
     const [values, setValues] = React.useState<number[]>(Array(waveformDisplaySize).fill(waveformDisplaySize));
     const [minValue, setMinValue] = React.useState<number>(1);
     const [maxValue, setMaxValue] = React.useState<number>(-1);
-    const [isFFT, setIsFFT] = React.useState<boolean>(false);
-
-    const settingsMenuItems = [
-        (<tr key={"tr1"}>
-            <td>Mode</td>
-            <td colSpan={2}>  <Select
-                id="menu-dropdown"
-                value={isFFT ? 1 : 0}
-                label="Octave Count"
-                labelId="demo-simple-select-filled-label"
-                onChange={e => {
-                    setIsFFT(e.target.value === 1);
-                }}
-            >
-                <MenuItem value={0}>Waveform</MenuItem>
-                <MenuItem value={1}>Spectrogram</MenuItem>
-            </Select></td>
-        </tr>),
-    ];
-    const size = 512;
-
-    // const analyser = useSynthAnalyser();
-    const analyser = React.useMemo(() => {
-        return new FFT({ size: 1024 * 8, normalRange: false, smoothing: 1 });
-    }, []);
 
     const waveform = React.useMemo(() => {
         return new Waveform(waveformSampleSize);
@@ -62,8 +36,7 @@ function Oscilloscope(props: Props) {
             throw new Error("No synth found");
         }
         synthOut.connect(waveform);
-        synth.connect(analyser);
-    }, [analyser, waveform, synthOut, synth]);
+    }, [waveform, synthOut, synth]);
 
     const latchWaveform = React.useCallback((oldVals: number[], newVals: number[]) => {
         let latchIdx = 0;
@@ -98,25 +71,10 @@ function Oscilloscope(props: Props) {
         let maxVal = 0;
 
         let rawValues: Float32Array;
-        if (isFFT) {
-            rawValues = analyser.getValue();
-        }
-        else {
-            rawValues = waveform.getValue();
-        }
-        let displayValues = Array.from(rawValues);
-        if (isFFT) {
-            displayValues = displayValues.filter((val, idx) => {
-                const freq = analyser.getFrequencyOfIndex(idx);
-                return freq < 3000;
-            });
-        }
-        else {
-            displayValues = displayValues.filter((val, idx) => {
-                return idx % waveformDownsampleRate === 0;
-            });
-        }
-        displayValues = displayValues.map(val => {
+        rawValues = waveform.getValue();
+        let displayValues = Array.from(rawValues).filter((val, idx) => {
+            return idx % waveformDownsampleRate === 0;
+        }).map(val => {
             if (isFinite(val) && !isNaN(val)) {
                 minVal = Math.min(val, minVal);
                 maxVal = Math.max(val, maxVal);
@@ -125,21 +83,16 @@ function Oscilloscope(props: Props) {
             return 0;
         });
 
-        if (isFFT) {
-            setMinValue(minVal);
-            setMaxValue(maxVal);
-        }
-        else {
-            const latchIdx = latchWaveform(values, displayValues);
-            displayValues = displayValues.slice(latchIdx, latchIdx + waveformDisplaySize);
+        const latchIdx = latchWaveform(values, displayValues);
+        displayValues = displayValues.slice(latchIdx, latchIdx + waveformDisplaySize);
 
-            setMinValue(-1);
-            setMaxValue(1);
-        }
+        setMinValue(-1);
+        setMaxValue(1);
+
         if (maxVal - minVal > 0 || values.some(val => val !== 0)) {
             setValues(displayValues);
         }
-    }, [analyser, isFFT, latchWaveform, values, waveform, waveformDisplaySize]);
+    }, [latchWaveform, values, waveform, waveformDisplaySize]);
 
     // React.useEffect(() => {
     //     setTimeout(() => {
@@ -166,7 +119,7 @@ function Oscilloscope(props: Props) {
 
         // Clear interval on unmount
         return () => clearInterval(intervalId);
-    }, [analyser, isFFT, updateDisplay, waveform]);
+    }, [updateDisplay, waveform]);
 
     const fullRender = React.useMemo((
     ) => {
@@ -181,7 +134,7 @@ function Oscilloscope(props: Props) {
     return (
         <Group>
             {fullRender}
-            <SettingsMenuOverlay settingsRows={settingsMenuItems} fromWidget={props.fromWidget}>
+            <SettingsMenuOverlay settingsRows={[]} fromWidget={props.fromWidget}>
                 {fullRender}
             </SettingsMenuOverlay>
         </Group>
