@@ -68,8 +68,8 @@ function SoundEngine(props: Props) {
     }, [isMuted, synth.volume]);
 
     const updateSynth = React.useCallback((notesTurnedOn: [NoteChannel, number][], notesTurnedOff: [NoteChannel, number][]) => {
-        synth.triggerAttack(notesTurnedOn.map(note => getNote(note[1])))
-        synth.triggerRelease(notesTurnedOff.map(note => getNote(note[1])))
+        synth.triggerAttack(notesTurnedOn.map(note => getNote(note[1])));
+        synth.triggerRelease(notesTurnedOff.map(note => getNote(note[1])));
     }, [synth]);
 
     const updateMIDIOutWithFiltering = React.useCallback((notesTurnedOn: [NoteChannel, number][], notesTurnedOff: [NoteChannel, number][]) => {
@@ -80,6 +80,7 @@ function SoundEngine(props: Props) {
             // When priotizing MIDI audio over synchronization with visuals,
             // MIDI events are sent directly to devices, and do not go through the channel system first.
             // In this case, we shouldn't be sending MIDI events from the channel system.
+            //TODO CLEAN UP
             if (prioritizeMIDIAudio) {
                 notesTurnedOnFiltered = notesTurnedOnFiltered.filter(elem => !elem[0].channelTypes.has(NoteSet.MIDIFileInput));
                 notesTurnedOffFiltered = notesTurnedOffFiltered.filter(elem => !elem[0].channelTypes.has(NoteSet.MIDIFileInput));
@@ -115,7 +116,7 @@ export function useSynthAfterEffects() {
 export function useExecuteOnPlayingNoteStateChange(callback: (notesTurnedOn: [NoteChannel, number][], notesTurnedOff: [NoteChannel, number][], playingNotes: [NoteChannel, number][]) => void) {
     const activeNotes = useNoteSet(NoteSet.Active).notes;
     const notesToPlayWhenActive = useNotesOfType(NoteSet.Emphasized, NoteSet.Emphasized_OctaveGnostic);
-    const notesToPlayRegardless = useNotesOfType(NoteSet.KeypressInput, NoteSet.MIDIFileInput, NoteSet.PlayingInput);
+    const notesToPlayRegardless = useNotesOfType(NoteSet.KeypressInput, NoteSet.PlayingInput);
     const channelsToPlay = React.useMemo(() => {
         return Array.from(notesToPlayWhenActive).filter(note => activeNotes.has(normalizeToSingleOctave(note[1]))).concat(Array.from(notesToPlayRegardless));
     }, [activeNotes, notesToPlayRegardless, notesToPlayWhenActive]);

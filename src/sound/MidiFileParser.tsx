@@ -6,8 +6,10 @@ import { midiNoteToProgramNote } from './MIDIInterface';
 import { WebMidi } from 'webmidi';
 import { useSetActiveShape } from './HarmonicModulation';
 import { SCALE_NATURAL } from '../utils/KnownHarmonicShapes';
-import { getNoteName } from '../utils/Utils';
+import { getNote, getNoteMIDI, getNoteName } from '../utils/Utils';
 import { useSettings } from '../view/SettingsProvider';
+import { useSynth } from './SoundEngine';
+import * as Tone from 'tone';
 
 type Props = {
     closeContainer: () => void,
@@ -81,6 +83,7 @@ export function MidiFileParser(props: Props) {
 
     const setActiveShape = useSetActiveShape();
     const setHomeNote = useSetHomeNote();
+    const synth = useSynth();
 
     // const [midiData, setMidiData] = React.useState<midiManager.MidiData | null>(null);
     // const [midiEventTrackers, setMidiEventTrackers] = React.useState<MidiEventTracker[] | null>(null);
@@ -169,6 +172,25 @@ export function MidiFileParser(props: Props) {
                         }
                     });
                 }
+                // Sending events directly to synth output
+                const chan = stateContext.midiChannelTrackers.current?.[event.channel];
+                if (
+                    !(event.channel === 9 ||
+                        event.channel === 10 ||
+                        (chan && chan.programNumber > 96))) {
+                    if (event.type === 'noteOn') {
+                        const playTime = Tone.now() + Math.max(0, (time / 1000) - (audioCtx.currentTime));
+                        synth?.triggerAttack(
+                            getNote(midiNoteToProgramNote((event as MidiNoteMixins).noteNumber, Math.floor((event as MidiNoteMixins).noteNumber / 12) - 1))
+                            , playTime, (event as MidiNoteOnEvent).velocity / 127);
+                    }
+                    else {
+                        const playTime = Tone.now() + Math.max(0, (time / 1000) - (audioCtx.currentTime));
+                        synth?.triggerRelease(
+                            getNote(midiNoteToProgramNote((event as MidiNoteMixins).noteNumber, Math.floor((event as MidiNoteMixins).noteNumber / 12) - 1))
+                            , playTime);
+                    }
+                };
                 break;
             case 'programChange':
                 console.log("program change", track, (event as MidiProgramChangeEvent));
@@ -253,7 +275,7 @@ export function MidiFileParser(props: Props) {
         }
 
         totalPendingScheduled.current++;
-    }, [audioCtx.currentTime, midiEventTrackers, setActiveShape, setHomeNote, settings?.prioritizeMIDIAudio, stateContext.midiChannelTrackers, stateContext.midiEventTrackers, totalPendingScheduled, updateNotes]);
+    }, [audioCtx.currentTime, midiEventTrackers, setActiveShape, setHomeNote, settings?.prioritizeMIDIAudio, stateContext.midiChannelTrackers, stateContext.midiEventTrackers, synth, totalPendingScheduled, updateNotes]);
 
     // var lastTime = (audioCtx.currentTime * 1000);
     const tickWithDrift = React.useCallback(() => {
