@@ -113,6 +113,12 @@ function ViewManager(props: Props) {
                 width: wheelRadius,
                 height: wheelRadius,
             }],
+            ['5', {
+                type: WidgetType.Oscilloscope,
+                initialPosition: { x: (props.width / 2), y: (props.height / 2) - wheelRadius - 60 },
+                width: props.width / (8 / 3),
+                height: wheelRadius / 2,
+            }],
         ])
     );
 
@@ -314,7 +320,7 @@ function ViewManager(props: Props) {
                     key={`${uid}`}
                     isPeaceModeEnabled={isPeaceModeEnabled}
                     isMaxamized={widget.isMaxamized ?? true}
-                    contextMenuOffset={{ x: props.width / (16 / 3), y: 20 }}
+                    contextMenuOffset={{ x: props.width / (16 / 3), y: 0 }}
                     initialPosition={widget.initialPosition}
                     draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
                     setDraggedPosition={setDraggedPosition(uid)}
