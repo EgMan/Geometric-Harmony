@@ -153,14 +153,21 @@ export function blendColors(colors: string[]) {
             a += parsedColor.a;
             count++
         }
+        else {
+            console.error("Invalid color", color);
+        }
     });
+    if (count === 0) return "white";
 
-    return `rgba(${r / count}, ${g / count}, ${b / count}, ${a / count}`;
+    return `rgba(${Math.round(r / count)}, ${Math.round(g / count)}, ${Math.round(b / count)}, ${Math.round(a / count)})`;
 }
 
 export function changeLightness(color: string, multiplier: number) {
     const parsedColor = ColorConverter(color);
-    if (!parsedColor.isValid) return "black";
-    let lightness = Math.min(Math.max(parsedColor.l * multiplier, 0), 100);
+    if (!parsedColor.isValid) {
+        console.error("Invalid color", color);
+        console.error("Parsed color", parsedColor);
+    }
+    let lightness = Math.floor(Math.min(Math.max(parsedColor.l * multiplier, 0), 100));
     return `hsla(${parsedColor.h}, ${parsedColor.s}%, ${lightness}%, ${parsedColor.a})`
 }

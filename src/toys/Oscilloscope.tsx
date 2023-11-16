@@ -6,7 +6,8 @@ import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import { Group } from 'react-konva';
 import { useSynth, useSynthAfterEffects } from '../sound/SoundEngine';
 import { Waveform } from 'tone';
-import { useNoteDisplays } from '../sound/NoteProvider';
+import { useChannelDisplays, useNoteDisplays } from '../sound/NoteProvider';
+import { blendColors, changeLightness } from '../utils/Utils';
 
 type Props = {
     width: number,
@@ -26,7 +27,7 @@ function Oscilloscope(props: Props) {
 
     const synth = useSynth();
     const synthOut = useSynthAfterEffects();
-    const updateTrigger = useNoteDisplays();
+    const channelDisplays = useChannelDisplays();
     const [values, setValues] = React.useState<number[]>(Array(waveformDisplaySize).fill(waveformDisplaySize));
     const [latchingValues, setLatchingValues] = React.useState<number[]>(Array(waveformLatchDataSize).fill(waveformDisplaySize));
     const [minValue, setMinValue] = React.useState<number>(1);
@@ -49,7 +50,7 @@ function Oscilloscope(props: Props) {
         // let minInflectionChanges = -1;
         // let minDivergencedeltaYsArePositive: boolean[] = [];
 
-        console.log("for loop range", newVals.length - oldVals.length, newVals.length, oldVals.length);
+        // console.log("for loop range", newVals.length - oldVals.length, newVals.length, oldVals.length);
         const highestLatchIdx = newVals.length - oldVals.length;
         for (let window = 0; window <= highestLatchIdx; window++) {
             // let inflectionChanges = 0;
@@ -107,7 +108,9 @@ function Oscilloscope(props: Props) {
 
         if (maxVal - minVal > 0 || values.some(val => val !== 0)) {
             setValues(displayValues);
-            console.log("VALS", values.length, displayValues.length, waveformDisplaySize)
+            if (values.length !== displayValues.length || values.length !== waveformDisplaySize) {
+                console.warn("Oscilloscope vals should be the same", values.length, displayValues.length, waveformDisplaySize);
+            }
         }
     }, [waveform, latchWaveform, latchingValues, waveformLatchDataSize, values, waveformDisplaySize]);
 
@@ -116,7 +119,7 @@ function Oscilloscope(props: Props) {
             updateDisplay();
         }, 250);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [updateTrigger]);
+    }, []);
 
     // const updateTick = React.useCallback(() => {
     //     updateDisplay();
@@ -129,6 +132,13 @@ function Oscilloscope(props: Props) {
     //     updateTick();
     //     // eslint-disable-next-line react-hooks/exhaustive-deps
     // }, []);
+
+    const blendedColor =
+        changeLightness(
+            blendColors(
+                channelDisplays.map(channel => channel.color ?? "")
+            )
+            , 1.15);
 
     React.useEffect(() => {
         const intervalId = setInterval(() => {
@@ -143,11 +153,11 @@ function Oscilloscope(props: Props) {
     ) => {
         return (
             <Group y={props.height * 0.5}>
-                <LineGraph width={props.width} height={props.height} minVal={minValue} maxVal={maxValue} values={values} lineProps={{ opacity: 0.1, strokeWidth: 2, tension: 0.5 }
+                <LineGraph width={props.width} height={props.height} minVal={minValue} maxVal={maxValue} values={values} lineProps={{ opacity: 0.1, strokeWidth: 3, tension: 1, stroke: blendedColor }
                 } />
             </Group>
         );
-    }, [maxValue, minValue, props.height, props.width, values]);
+    }, [blendedColor, maxValue, minValue, props.height, props.width, values]);
 
     return (
         <Group>
