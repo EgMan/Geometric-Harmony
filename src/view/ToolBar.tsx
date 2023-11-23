@@ -380,4 +380,5 @@ function ToolBar(props: Props) {
         </div >
     );
 }
+
 export default ToolBar;

@@ -112,7 +112,10 @@ function ShapeNavigationTool(props: Props) {
     }, []);
 
     const dropdownValue: AutocompleteOptionType | null = React.useMemo(() => {
-        if (homeNote === null || activeExactFit === null) return null;
+        if (activeExactFit === null) return null;
+        if (homeNote === null) {
+            return explorerElementMap.get(getElemKey(activeExactFit?.shape, 0)) ?? null;
+        }
         return explorerElementMap.get(getElemKey(activeExactFit?.shape, homeNote + activeExactFit.noteToFirstNoteInShapeIdxOffset)) ?? null;
     }, [activeExactFit, explorerElementMap, getElemKey, homeNote]);
 
