@@ -86,10 +86,10 @@ const keyToScaleDegree = new Map<string, number>(
 );
 
 const preventDefault = [
-    "ArrowUp",
-    "ArrowDown",
-    "ArrowRight",
-    "ArrowLeft",
+    "arrowup",
+    "arrowdown",
+    "arrowright",
+    "arrowleft",
     "space",
     " ",
     ];
@@ -205,8 +205,7 @@ function useKeypressPlayer() {
     }, [modulateActiveNotes]);
     React.useEffect(() => {
         const onKeyDown = (event: KeyboardEvent) => {
-            // console.log(event.key);
-            if (preventDefault.includes(event.key)) {
+            if (preventDefault.includes(event.key.toLocaleLowerCase()) && document.activeElement?.nodeName.toLocaleLowerCase() !== 'input') {
                 event.preventDefault();
                 event.stopPropagation();
             }
