@@ -168,7 +168,7 @@ tr, td {
 
 #menu-dropdown {
   background-color: rgba(255, 255, 255, 0.309);
-  /* color: black;  */
+  color: white;
   font-family: monospace;
   padding: 8px;
   padding-right: 32px;

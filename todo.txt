@@ -4,3 +4,7 @@ Give string instrument support for new note API
 Add center hoverable to play/arpegiate all active notes
 Add chord hoverables
 Remove magic 12s
+
+Implement note bendable PolySynth
+Add connected midi device info
+synth drum vocices

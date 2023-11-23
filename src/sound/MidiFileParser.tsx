@@ -8,7 +8,7 @@ import { useSetActiveShape } from './HarmonicModulation';
 import { SCALE_NATURAL } from '../utils/KnownHarmonicShapes';
 import { getNote, getNoteMIDI, getNoteName } from '../utils/Utils';
 import { useSettings } from '../view/SettingsProvider';
-import { useSynth } from './SoundEngine';
+import { useSynth, useSynthDrum } from './SoundEngine';
 import * as Tone from 'tone';
 
 type Props = {
@@ -84,6 +84,7 @@ export function MidiFileParser(props: Props) {
     const setActiveShape = useSetActiveShape();
     const setHomeNote = useSetHomeNote();
     const synth = useSynth();
+    const synthDrum = useSynthDrum();
 
     // const [midiData, setMidiData] = React.useState<midiManager.MidiData | null>(null);
     // const [midiEventTrackers, setMidiEventTrackers] = React.useState<MidiEventTracker[] | null>(null);
@@ -135,6 +136,7 @@ export function MidiFileParser(props: Props) {
         totalPendingScheduled.current--;
         const tracker = stateContext.midiEventTrackers.current?.[track];
         if (!tracker) { return; }
+
         switch (event.type) {
             case 'noteOn':
             case 'noteOff':
@@ -142,9 +144,10 @@ export function MidiFileParser(props: Props) {
                     const midiChannel = stateContext.midiChannelTrackers.current?.[event.channel];
                     if (
                         // midiChannel && midiChannel.programNumber > 112
-                        event.channel === 9 ||
-                        event.channel === 10 ||
-                        (midiChannel && midiChannel.programNumber > 96)) {
+                        event.channel === 9
+                        || event.channel === 10
+                        // || (midiChannel && midiChannel.programNumber > 96)
+                    ) {
                         console.log("Is this drums?", track, midiEventTrackers.current);
                         return;
                     };
@@ -175,9 +178,10 @@ export function MidiFileParser(props: Props) {
                 // Sending events directly to synth output
                 const chan = stateContext.midiChannelTrackers.current?.[event.channel];
                 if (
-                    !(event.channel === 9 ||
-                        event.channel === 10 ||
-                        (chan && chan.programNumber > 96))) {
+                    !(event.channel === 9
+                        || event.channel === 10
+                        // || (chan && chan.programNumber > 96)
+                    )) {
                     if (event.type === 'noteOn') {
                         const playTime = Tone.now() + Math.max(0, (time / 1000) - (audioCtx.currentTime));
                         synth?.triggerAttack(
@@ -190,7 +194,18 @@ export function MidiFileParser(props: Props) {
                             getNote(midiNoteToProgramNote((event as MidiNoteMixins).noteNumber, Math.floor((event as MidiNoteMixins).noteNumber / 12) - 1))
                             , playTime);
                     }
-                };
+                } else {
+                    // Drums
+                    const playTime = Tone.now() + Math.max(0.1, (time / 1000) - (audioCtx.currentTime));
+                    console.log("time", playTime);
+                    const freq = Tone.Frequency(getNoteMIDI(midiNoteToProgramNote((event as MidiNoteMixins).noteNumber, Math.floor((event as MidiNoteMixins).noteNumber / 12) - 1))).toFrequency();
+                    if (event.type === 'noteOn') {
+                        synthDrum?.triggerAttack(freq, playTime, (event as MidiNoteOnEvent).velocity / 127)
+                    }
+                    else {
+                        synthDrum?.triggerRelease(freq, playTime);
+                    }
+                }
                 break;
             case 'programChange':
                 console.log("program change", track, (event as MidiProgramChangeEvent));
@@ -275,7 +290,7 @@ export function MidiFileParser(props: Props) {
         }
 
         totalPendingScheduled.current++;
-    }, [audioCtx.currentTime, midiEventTrackers, setActiveShape, setHomeNote, settings?.prioritizeMIDIAudio, stateContext.midiChannelTrackers, stateContext.midiEventTrackers, synth, totalPendingScheduled, updateNotes]);
+    }, [audioCtx.currentTime, midiEventTrackers, setActiveShape, setHomeNote, settings?.prioritizeMIDIAudio, stateContext.midiChannelTrackers, stateContext.midiEventTrackers, synth, synthDrum, totalPendingScheduled, updateNotes]);
 
     // var lastTime = (audioCtx.currentTime * 1000);
     const tickWithDrift = React.useCallback(() => {

@@ -6,12 +6,15 @@ import { midiNoteToProgramNote, useConnectToMidi } from './MIDIInterface';
 import { Input, NoteMessageEvent, WebMidi } from "webmidi";
 import * as Tone from 'tone';
 import { useSettings } from '../view/SettingsProvider';
-import { useSynthVoiceFromSettings } from './SynthVoicings';
+import { useSynthDrumFromSettings, useSynthVoiceFromSettings } from './SynthVoicings';
 
 export type SpeakerSoundType = "AMSynth";
 
 const synthContext = React.createContext<Tone.PolySynth | null>(null);
 const synthOutContext = React.createContext<Tone.ToneAudioNode | null>(null);
+
+const synthDrumContext = React.createContext<Tone.PolySynth | null>(null);
+const synthDrumOutContext = React.createContext<Tone.ToneAudioNode | null>(null);
 
 type Props = {
     children: JSX.Element
@@ -59,13 +62,20 @@ function SoundEngine(props: Props) {
 
     const settings = useSettings();
     const isMuted = settings?.isMuted ?? false;
+    const isPercussionMuted = settings?.isPercussionMuted ?? false;
+
     const prioritizeMIDIAudio = settings?.prioritizeMIDIAudio ?? false;
 
     const { synth, synthAfterEffects } = useSynthVoiceFromSettings();
+    const { synthDrum, synthDrumAfterEffects } = useSynthDrumFromSettings();
 
     React.useEffect(() => {
         synth.volume.value = isMuted ? -Infinity : 1;
     }, [isMuted, synth.volume]);
+
+    React.useEffect(() => {
+        synthDrum.volume.value = isPercussionMuted ? -Infinity : 1;
+    }, [isPercussionMuted, synthDrum.volume]);
 
     const updateSynth = React.useCallback((notesTurnedOn: [NoteChannel, number][], notesTurnedOff: [NoteChannel, number][]) => {
         synth.triggerAttack(notesTurnedOn.map(note => getNote(note[1])));
@@ -97,7 +107,11 @@ function SoundEngine(props: Props) {
     });
     return <synthContext.Provider value={synth}>
         <synthOutContext.Provider value={synthAfterEffects}>
-            {props.children}
+            <synthDrumContext.Provider value={synthDrum}>
+                <synthDrumOutContext.Provider value={synthDrumAfterEffects}>
+                    {props.children}
+                </synthDrumOutContext.Provider>
+            </synthDrumContext.Provider>
         </synthOutContext.Provider>
     </synthContext.Provider>
 }
@@ -111,6 +125,16 @@ export function useSynth() {
 export function useSynthAfterEffects() {
     const synthOut = React.useContext(synthOutContext);
     return synthOut;
+}
+
+export function useSynthDrum() {
+    const synthDrum = React.useContext(synthDrumContext);
+    return synthDrum;
+}
+
+export function useSynthDrumAfterEffects() {
+    const synthDrumOut = React.useContext(synthDrumOutContext);
+    return synthDrumOut;
 }
 
 export function useExecuteOnPlayingNoteStateChange(callback: (notesTurnedOn: [NoteChannel, number][], notesTurnedOff: [NoteChannel, number][], playingNotes: [NoteChannel, number][]) => void) {

@@ -305,12 +305,19 @@ function ToolBar(props: Props) {
                                         <ListItemIcon>
                                             {settings?.isMuted ? <VolumeOffIcon style={{ color: "white" }} fontSize="small" /> : <VolumeUpIcon style={{ color: "white" }} fontSize="small" />}
                                         </ListItemIcon>
-                                        <ListItemText> Mute sound output </ListItemText>
-                                        <Switch checked={settings?.isMuted} onChange={e => settings?.setIsMuted(e.target.checked)}></Switch>
+                                        <ListItemText> In-browser Synth </ListItemText>
+                                        <Switch checked={!settings?.isMuted} onChange={e => settings?.setIsMuted(!e.target.checked)}></Switch>
+                                    </MenuItem>
+                                    <MenuItem onClick={() => settings?.setIsPercussionMuted(muted => !muted)}>
+                                        <ListItemIcon>
+                                            {settings?.isPercussionMuted ? <VolumeOffIcon style={{ color: "white" }} fontSize="small" /> : <VolumeUpIcon style={{ color: "white" }} fontSize="small" />}
+                                        </ListItemIcon>
+                                        <ListItemText> In-browser Percussion (beta) </ListItemText>
+                                        <Switch checked={!settings?.isPercussionMuted} onChange={e => settings?.setIsPercussionMuted(!e.target.checked)}></Switch>
                                     </MenuItem>
                                     <MenuItem>
                                         <ListItemIcon>
-                                            {settings?.isMuted ? <CampaignIcon style={{ color: "white" }} fontSize="small" /> : <VolumeUpIcon style={{ color: "white" }} fontSize="small" />}
+                                            <CampaignIcon style={{ color: "white" }} fontSize="small" />
                                         </ListItemIcon>
                                         <ListItemText> Synth voice </ListItemText>
                                         <Select

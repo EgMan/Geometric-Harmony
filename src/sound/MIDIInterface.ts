@@ -34,6 +34,11 @@ export function useConnectToMidi(onReady: () => void) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [browserType]);
 }
+
 export function midiNoteToProgramNote (midiNote: number, octaveNumber: number){
         return normalizeToSingleOctave(midiNote) + (12 * (octaveNumber - 3))
+}
+
+export function connectedDevices() {
+    return WebMidi.inputs.map(input => input.name);
 }
