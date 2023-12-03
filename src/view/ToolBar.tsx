@@ -27,6 +27,7 @@ type Props =
         stageRef: React.RefObject<Stage>,
         isPeaceModeEnabled: boolean,
         setIsPeaceModeEnabled: React.Dispatch<React.SetStateAction<boolean>>,
+        setIsHeartModalOpen: React.Dispatch<React.SetStateAction<boolean>>,
     }
 export const toolbarTheme = createTheme({
     palette: {
@@ -168,6 +169,30 @@ function ToolBar(props: Props) {
                     }
                 </div>
                 <div>
+                    {
+                        props.isPeaceModeEnabled ? null :
+                            <Button type="submit" variant="contained"
+                                onClick={() => props.setIsHeartModalOpen(enabled => !enabled)}
+                                sx={{
+                                    fontSize: "0.7em",
+                                    color: 'white',
+                                    backgroundColor: 'transparent',
+                                    boxShadow: 'none',
+                                    padding: "1.8px",
+                                    borderTopLeftRadius: '9px',
+                                    borderTopRightRadius: '0px',
+                                    borderBottomLeftRadius: '9px',
+                                    borderBottomRightRadius: '9px',
+                                    '&:hover': {
+                                        backgroundColor: 'rgb(255,255,255,0.1)',
+                                    },
+                                    "&.Mui-disabled": {
+                                        background: 'transparent',
+                                        color: "grey"
+                                    }
+                                }}
+                            >♥</Button>
+                    }
                     <Button type="submit" variant="contained"
                         onClick={() => props.setIsPeaceModeEnabled(enabled => !enabled)}
                         sx={{

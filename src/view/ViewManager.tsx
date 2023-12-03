@@ -15,6 +15,7 @@ import { realignSpaces } from "../utils/SpacesUtils";
 import PlayTheShapeGame from "../toys/PlayTheShapeGame";
 import Oscilloscope from "../toys/Oscilloscope";
 import FrequencyVisualizer from "../toys/FrequencyVisualizer";
+import HeartModal from "./HeartModal";
 
 export type WidgetTracker = {
     type: WidgetType,
@@ -82,6 +83,7 @@ function ViewManager(props: Props) {
     // const pianoWidth = (props.width) - .5;
     const pianoWidth = (props.width) + 1.5;
     const [isPeaceModeEnabled, setIsPeaceModeEnabled] = React.useState(false);
+    const [isHeartModalOpen, setIsHeartModalOpen] = React.useState(false);
 
     const [trackedWidgets, setTrackedWidgets] = React.useState<Map<String, WidgetTracker>>(
         new Map<String, WidgetTracker>([
@@ -421,7 +423,7 @@ function ViewManager(props: Props) {
 
     return (
         <div>
-            <ToolBar widgetTrackerActions={trackerActions} stageRef={stageRef} isPeaceModeEnabled={isPeaceModeEnabled} setIsPeaceModeEnabled={setIsPeaceModeEnabled} />
+            <ToolBar widgetTrackerActions={trackerActions} stageRef={stageRef} isPeaceModeEnabled={isPeaceModeEnabled} setIsPeaceModeEnabled={setIsPeaceModeEnabled} setIsHeartModalOpen={setIsHeartModalOpen} />
             <div id="stage-scroll-container" onScroll={onContainerScroll}>
                 <div id="spaces-container">
                     <div className="desktop-space space1" >
@@ -438,6 +440,7 @@ function ViewManager(props: Props) {
                             >
                                 <Layer>
                                     <BackPlate width={props.width} height={props.height} />
+                                    <HeartModal isOpen={isHeartModalOpen} setIsOpen={setIsHeartModalOpen} />
                                     {widgetElements}
                                 </Layer>
                             </Stage>

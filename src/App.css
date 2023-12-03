@@ -107,6 +107,7 @@ body {
   background-color: #7c7c7c37;
   /* background:rgba(0,0,0,0.8); */
   backdrop-filter: blur(16px);
+  height: 100%;
 }
 
 #overlay-content {
@@ -229,4 +230,15 @@ tr, td {
   display: inline-block;
   padding: 6px 12px;
   cursor: pointer;
+}
+
+#heart-message-div {
+  font-family: monospace;
+  font-size: large;
+  text-align: left;
+}
+
+a {
+  text-decoration: none;
+  color: rgb(0, 225, 255);
 }

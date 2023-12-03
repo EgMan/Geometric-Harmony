@@ -8,3 +8,8 @@ Remove magic 12s
 Implement note bendable PolySynth
 Add connected midi device info
 synth drum vocices
+Add tooltip class
+Add ianring links to title bar
+Make better favicon
+Add translations
+Fill in heart message with real links
