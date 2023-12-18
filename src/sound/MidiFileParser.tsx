@@ -10,6 +10,8 @@ import { getNote, getNoteMIDI, getNoteName } from '../utils/Utils';
 import { useSettings } from '../view/SettingsProvider';
 import { useSynth, useSynthDrum } from './SoundEngine';
 import * as Tone from 'tone';
+import { ListItemIcon, MenuItem } from '@mui/material';
+import AudioFileIcon from '@mui/icons-material/AudioFile';
 
 type Props = {
     closeContainer: () => void,
@@ -392,11 +394,14 @@ export function MidiFileParser(props: Props) {
     }, [audioCtx.currentTime, clearChannels, inputRef, midiChannelTrackers, midiData, midiEventTrackers, preprocessData, preprocessedData, props, setLoadedFilename, startTime, tickWithDrift, updateNotes]);
 
     return (
-        <div>
-            <label className="midi-file-input-label">
-                <input className="midi-file-input" accept=".mid,.midi" onChange={loadMidiData} ref={inputRef} type="file" id="filereader" />
-                {loadedFileName ?? "Play a MIDI file"}
+        <MenuItem sx={{ padding: "0" }}>
+            <label className="midi-file-input-label" style={{ width: "100%", height: "100%", paddingTop: 6, paddingBottom: 6, paddingLeft: 16, paddingRight: 16 }}>
+                <ListItemIcon>
+                    <AudioFileIcon style={{ color: "white" }} fontSize="small" />
+                </ListItemIcon>
+                <input style={{ width: "100%", height: "100%" }} className="midi-file-input" accept=".mid,.midi" onChange={loadMidiData} ref={inputRef} type="file" id="filereader" />
+                {loadedFileName ?? "Open MIDI file"}
             </label>
-        </div>
+        </MenuItem>
     );
 }

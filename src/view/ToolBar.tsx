@@ -1,11 +1,10 @@
 import React from "react";
-import { Button, ClickAwayListener, ListItemIcon, ListItemText, DialogTitle, MenuItem, MenuList, Paper, Popover, Switch, ThemeProvider, colors, createTheme, Select, } from "@mui/material";
+import { Button, ClickAwayListener, ListItemIcon, ListItemText, DialogTitle, MenuItem, MenuList, Paper, Popover, Switch, ThemeProvider, colors, createTheme, Select, Divider, } from "@mui/material";
 import ShapeNavigationTool from "./ShapeNavigationTool";
 import { WidgetTrackerActions, WidgetType } from "./ViewManager";
 import { Stage } from "konva/lib/Stage";
 import { getCurrentSpace } from "../utils/SpacesUtils";
 import AddIcon from '@mui/icons-material/Add';
-import AudioFileIcon from '@mui/icons-material/AudioFile';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import ConstructionIcon from '@mui/icons-material/Construction';
@@ -19,6 +18,7 @@ import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import { useSettings } from "./SettingsProvider";
 import { MidiFileDataProvider, MidiFileParser } from "../sound/MidiFileParser";
 import { LocalSynthVoice } from "../sound/SynthVoicings";
+import MIDIConnectionManager from "../sound/MIDIConnectionManager";
 // import useSettings from "./SettingsProvider"
 
 type Props =
@@ -239,7 +239,7 @@ function ToolBar(props: Props) {
                                 // onClose={() => setAddDropdownOpen(false)}
                                 // anchorEl={addButtonRef.current}
                                 >
-                                    <DialogTitle sx={{ fontFamily: "monospace" }}>Toys</DialogTitle>
+                                    <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>Toys</DialogTitle>
                                     <MenuItem onClick={() => addNewWidget(WidgetType.Piano)}>
                                         <ListItemIcon>
                                             <MusicNoteIcon style={{ color: "white" }} fontSize="small" />
@@ -325,7 +325,7 @@ function ToolBar(props: Props) {
                         <Paper>
                             <ClickAwayListener onClickAway={() => setAddDropdownOpen(false)}>
                                 <MenuList>
-                                    <DialogTitle sx={{ fontFamily: "monospace" }}>General Settings</DialogTitle>
+                                    <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>General Settings</DialogTitle>
                                     <MenuItem onClick={() => settings?.setIsMuted(muted => !muted)}>
                                         <ListItemIcon>
                                             {settings?.isMuted ? <VolumeOffIcon style={{ color: "white" }} fontSize="small" /> : <VolumeUpIcon style={{ color: "white" }} fontSize="small" />}
@@ -380,21 +380,22 @@ function ToolBar(props: Props) {
                             <Paper>
                                 <ClickAwayListener onClickAway={() => setMidiSettingsDropdownOpen(false)}>
                                     <MenuList>
-                                        <DialogTitle sx={{ fontFamily: "monospace" }}>MIDI Stuff</DialogTitle>
+                                        {/* <DialogTitle sx={{ fontFamily: "monospace" }}>MIDI Stuff</DialogTitle> */}
+                                        <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>MIDI Devices</DialogTitle>
                                         <MenuItem onClick={() => { }}>
-                                            <ListItemIcon>
-                                                <AudioFileIcon style={{ color: "white" }} fontSize="small" />
-                                            </ListItemIcon>
-                                            <MidiFileParser key={"midifileparser"} closeContainer={() => setMidiSettingsDropdownOpen(false)} />
+                                            <MIDIConnectionManager key={"midiconnectionmanager"} />
                                         </MenuItem>
-                                        <MenuItem onClick={() => settings?.setPrioritizeMIDIAudio(val => !val)}>
+                                        {/* <Divider style={{ backgroundColor: "darkgrey" }} /> */}
+                                        <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>MIDI File</DialogTitle>
+                                        <MidiFileParser key={"midifileparser"} closeContainer={() => setMidiSettingsDropdownOpen(false)} />
+                                        {/* TODO: Clean up this code */}
+                                        {/* <MenuItem onClick={() => settings?.setPrioritizeMIDIAudio(val => !val)}>
                                             <ListItemIcon>
                                                 <SettingsIcon style={{ color: "white" }} fontSize="small" />
                                             </ListItemIcon>
-                                            {/* <ListItemText> Prioritize accurate audio timings over synchronicity with onscreen visuals </ListItemText> */}
                                             <ListItemText>Send midi events directly to devices</ListItemText>
                                             <Switch checked={settings?.prioritizeMIDIAudio} onChange={e => settings?.setPrioritizeMIDIAudio(e.target.checked)}></Switch>
-                                        </MenuItem>
+                                        </MenuItem> */}
                                     </MenuList>
                                 </ClickAwayListener>
                             </Paper>
