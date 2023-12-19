@@ -186,7 +186,7 @@ export function emitSnackbar(message: string, duration: number = 3000) {
             },
             anchorOrigin: {
                 vertical: "top",
-                horizontal: "center"
+                horizontal: "right"
             },
         });
 }
