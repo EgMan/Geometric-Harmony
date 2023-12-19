@@ -31,10 +31,10 @@ export function useConnectToMidi(onReady: () => void) {
             });
 
             WebMidi.addListener("connected", (e) => {
-                emitSnackbar(`MIDI device ${e.port.name} connected`, 5000);
+                emitSnackbar(`MIDI device ${e.port.name} connected`, 3000);
             });
             WebMidi.addListener("disconnected", (e) => {
-                emitSnackbar(`MIDI device ${e.port.name} disconnected`, 5000);
+                emitSnackbar(`MIDI device ${e.port.name} disconnected`, 3000);
             });
 
             onReady();

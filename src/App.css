@@ -244,6 +244,6 @@ a {
 }
 
 .notistack-MuiContent {
-  position: fixed !important;
-  top: 16.5px !important;
+  position: relative !important;
+  top: 24px !important;
 }

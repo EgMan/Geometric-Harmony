@@ -25,7 +25,7 @@ function App() {
         <SettingsProvider>
           <NoteProvider>
             <SoundEngine>
-              <SnackbarProvider>
+              <SnackbarProvider dense={true}>
                 <ViewManager width={windowWidth} height={windowHeight} />
               </SnackbarProvider>
             </SoundEngine>

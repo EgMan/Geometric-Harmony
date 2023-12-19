@@ -177,15 +177,16 @@ export function emitSnackbar(message: string, duration: number = 3000) {
     enqueueSnackbar(message,
         {
             preventDuplicate: true,
+            hideIconVariant: true,
             variant: "info",
             autoHideDuration: duration,
             style: {
-                backgroundColor: "rgba(255, 255, 255, 0.1)",
-                backdropFilter: "blur(16px)"
+                backgroundColor: "rgba(255, 255, 255, 0.05)",
+                backdropFilter: "blur(16px)",
             },
             anchorOrigin: {
                 vertical: "top",
                 horizontal: "center"
-            }
+            },
         });
 }
