@@ -173,12 +173,13 @@ export function changeLightness(color: string, multiplier: number) {
     return `hsla(${parsedColor.h}, ${parsedColor.s}%, ${lightness}%, ${parsedColor.a})`
 }
 
-export function emitSnackbar(message: string, duration: number = 3000) {
+type SnackVariant = "default" | "success" | "error" | "warning" | "info";
+
+export function emitSnackbar(message: string, duration: number = 3000, variant: SnackVariant = "default") {
     enqueueSnackbar(message,
         {
+            variant,
             preventDuplicate: true,
-            hideIconVariant: true,
-            variant: "info",
             autoHideDuration: duration,
             style: {
                 backgroundColor: "rgba(255, 255, 255, 0.05)",

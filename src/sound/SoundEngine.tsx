@@ -1,6 +1,6 @@
 import useKeypressPlayer from './KeypressPlayer';
 import React from 'react';
-import { getNote, getNoteMIDI, usePrevious } from '../utils/Utils';
+import { emitSnackbar, getNote, getNoteMIDI, usePrevious } from '../utils/Utils';
 import { NoteChannel, NoteSet, normalizeToSingleOctave, useNoteSet, useNotesOfType, useUpdateNoteSet } from './NoteProvider';
 import { midiNoteToProgramNote, useConnectToMidi } from './MIDIInterface';
 import { Input, NoteMessageEvent, WebMidi } from "webmidi";
@@ -76,6 +76,19 @@ function SoundEngine(props: Props) {
     React.useEffect(() => {
         synthDrum.volume.value = isPercussionMuted ? -Infinity : 1;
     }, [isPercussionMuted, synthDrum.volume]);
+
+    React.useEffect(() => {
+        Tone.start().then(
+            () => {
+                if (Tone.context.state !== "running") {
+                    emitSnackbar("Audio prevented from starting by browser.", 3000, "warning");
+                }
+            },
+            () => {
+                emitSnackbar("Audio prevented from starting by browser.", 3000, "warning");
+            }
+        );
+    }, []);
 
     const updateSynth = React.useCallback((notesTurnedOn: [NoteChannel, number][], notesTurnedOff: [NoteChannel, number][]) => {
         synth.triggerAttack(notesTurnedOn.map(note => getNote(note[1])));
