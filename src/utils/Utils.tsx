@@ -3,6 +3,7 @@ import { normalizeToSingleOctave } from "../sound/NoteProvider";
 import { Vector2d } from "konva/lib/types";
 import { KonvaEventObject } from "konva/lib/Node";
 import ColorConverter from "string-color-converter";
+import { enqueueSnackbar } from "notistack";
 
 // const numberToNote = ["C-1", "C#3", "D3", "D#3", "E3", "F3", "F#3", "G3", "G#3", "A3", "A#3", "B3"];
 const numberToPlayableNote = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
@@ -170,4 +171,21 @@ export function changeLightness(color: string, multiplier: number) {
     }
     let lightness = Math.floor(Math.min(Math.max(parsedColor.l * multiplier, 0), 100));
     return `hsla(${parsedColor.h}, ${parsedColor.s}%, ${lightness}%, ${parsedColor.a})`
+}
+
+export function emitSnackbar(message: string, duration: number = 3000) {
+    enqueueSnackbar(message,
+        {
+            preventDuplicate: true,
+            variant: "info",
+            autoHideDuration: duration,
+            style: {
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+                backdropFilter: "blur(16px)"
+            },
+            anchorOrigin: {
+                vertical: "top",
+                horizontal: "center"
+            }
+        });
 }

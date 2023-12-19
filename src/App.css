@@ -242,3 +242,8 @@ a {
   text-decoration: none;
   color: rgb(0, 225, 255);
 }
+
+.notistack-MuiContent {
+  position: fixed !important;
+  top: 16.5px !important;
+}

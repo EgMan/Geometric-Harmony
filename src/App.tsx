@@ -4,6 +4,7 @@ import SoundEngine from './sound/SoundEngine';
 import NoteProvider from './sound/NoteProvider';
 import ViewManager from './view/ViewManager';
 import SettingsProvider from './view/SettingsProvider';
+import { SnackbarProvider } from 'notistack';
 function App() {
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth)
   const [windowHeight, setWindowHeight] = React.useState(window.innerHeight)
@@ -24,7 +25,9 @@ function App() {
         <SettingsProvider>
           <NoteProvider>
             <SoundEngine>
-              <ViewManager width={windowWidth} height={windowHeight} />
+              <SnackbarProvider>
+                <ViewManager width={windowWidth} height={windowHeight} />
+              </SnackbarProvider>
             </SoundEngine>
           </NoteProvider>
         </SettingsProvider>

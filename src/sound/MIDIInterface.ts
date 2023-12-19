@@ -1,7 +1,8 @@
 import React from "react";
 import { WebMidi } from "webmidi";
-import { BrowserType, useBrowserVersion } from "../utils/Utils";
+import { BrowserType, emitSnackbar, useBrowserVersion } from "../utils/Utils";
 import { normalizeToSingleOctave } from "./NoteProvider";
+import { enqueueSnackbar } from "notistack";
 
 export function useConnectToMidi(onReady: () => void) {
     const browserType = useBrowserVersion();
@@ -27,6 +28,13 @@ export function useConnectToMidi(onReady: () => void) {
                 console.log("Midi output found: ", output.manufacturer, output.name, output.id);
                 output.sendAllNotesOff();
                 output.sendAllSoundOff();
+            });
+
+            WebMidi.addListener("connected", (e) => {
+                emitSnackbar(`MIDI device ${e.port.name} connected`, 5000);
+            });
+            WebMidi.addListener("disconnected", (e) => {
+                emitSnackbar(`MIDI device ${e.port.name} disconnected`, 5000);
             });
 
             onReady();

@@ -51,7 +51,7 @@ export default function MIDIConnectionManager(props: Props) {
             </MenuItem>;
         }
         if (deviceDisplay.length === 0) {
-            return <MenuItem disabled={true}>s
+            return <MenuItem disabled={true}>
                 <PianoOffIcon />
                 <ListItemText sx={{ paddingLeft: "16px" }}> No MIDI devices found</ListItemText>
             </MenuItem>;
