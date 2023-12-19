@@ -379,13 +379,12 @@ function ToolBar(props: Props) {
                                 <ClickAwayListener onClickAway={() => setMidiSettingsDropdownOpen(false)}>
                                     <MenuList>
                                         {/* <DialogTitle sx={{ fontFamily: "monospace" }}>MIDI Stuff</DialogTitle> */}
+                                        <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>MIDI File</DialogTitle>
+                                        <MidiFileParser key={"midifileparser"} closeContainer={() => setMidiSettingsDropdownOpen(false)} />
                                         <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>MIDI Devices</DialogTitle>
                                         <MenuItem onClick={() => { }}>
                                             <MIDIConnectionManager key={"midiconnectionmanager"} />
                                         </MenuItem>
-                                        {/* <Divider style={{ backgroundColor: "darkgrey" }} /> */}
-                                        <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>MIDI File</DialogTitle>
-                                        <MidiFileParser key={"midifileparser"} closeContainer={() => setMidiSettingsDropdownOpen(false)} />
                                         {/* TODO: Clean up this code */}
                                         {/* <MenuItem onClick={() => settings?.setPrioritizeMIDIAudio(val => !val)}>
                                             <ListItemIcon>
