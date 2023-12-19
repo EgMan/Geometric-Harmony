@@ -25,8 +25,6 @@ type Props =
     {
         widgetTrackerActions: WidgetTrackerActions,
         stageRef: React.RefObject<Stage>,
-        isPeaceModeEnabled: boolean,
-        setIsPeaceModeEnabled: React.Dispatch<React.SetStateAction<boolean>>,
         setIsHeartModalOpen: React.Dispatch<React.SetStateAction<boolean>>,
     }
 export const toolbarTheme = createTheme({
@@ -80,10 +78,10 @@ function ToolBar(props: Props) {
 
     return (
         <div>
-            <div ref={addButtonRef} style={{ position: "fixed", transform: "translate(0, 0px)", zIndex: 1, width: "100vw", backgroundColor: props.isPeaceModeEnabled ? "transparent" : "rgb(255,255,255,0.04)", borderBottomLeftRadius: "9px", borderBottomRightRadius: "9px", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <div ref={addButtonRef} style={{ position: "fixed", transform: "translate(0, 0px)", zIndex: 1, width: "100vw", backgroundColor: settings?.isPeaceModeEnabled ? "transparent" : "rgb(255,255,255,0.04)", borderBottomLeftRadius: "9px", borderBottomRightRadius: "9px", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                 <div>
                     {
-                        props.isPeaceModeEnabled ? null :
+                        settings?.isPeaceModeEnabled ? null :
                             <><Button type="submit" variant="contained"
                                 sx={{
                                     fontSize: "0.7em",
@@ -164,13 +162,13 @@ function ToolBar(props: Props) {
                 </div>
                 <div>
                     {
-                        props.isPeaceModeEnabled ? null :
+                        settings?.isPeaceModeEnabled ? null :
                             <ShapeNavigationTool width={600} subdivisionCount={12} />
                     }
                 </div>
                 <div>
                     {
-                        props.isPeaceModeEnabled ? null :
+                        settings?.isPeaceModeEnabled ? null :
                             <Button type="submit" variant="contained"
                                 onClick={() => props.setIsHeartModalOpen(enabled => !enabled)}
                                 sx={{
@@ -194,7 +192,7 @@ function ToolBar(props: Props) {
                             >♥</Button>
                     }
                     <Button type="submit" variant="contained"
-                        onClick={() => props.setIsPeaceModeEnabled(enabled => !enabled)}
+                        onClick={() => settings?.setIsPeaceModeEnabled(enabled => !enabled)}
                         sx={{
                             fontSize: "0.7em",
                             color: 'white',

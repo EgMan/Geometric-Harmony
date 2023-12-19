@@ -6,6 +6,7 @@ import { getIntervalColor, getIntervalDistance, getNoteName } from '../utils/Uti
 import { NoteSet, normalizeToSingleOctave, useCheckNoteEmphasis, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
 import { KonvaEventObject } from 'konva/lib/Node';
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
+import { useSettings } from '../view/SettingsProvider';
 
 type Props = {
     height: number
@@ -28,6 +29,8 @@ function StringInstrument(props: Props) {
 
     const homeNote = useHomeNote();
     const setHomeNote = useSetHomeNote();
+
+    const settings = useSettings();
 
     enum NoteLabling {
         None = 1,
@@ -132,12 +135,12 @@ function StringInstrument(props: Props) {
                 else if (activeNotes.has(note)) {
                     const noteColor = (note === homeNote) ? "yellow" : "white";
                     activeNoteIndicators.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={noteColor}></Circle>)
-                    if ([NoteLabling.ActiveNoteNames, NoteLabling.NoteNames].includes(noteLabeling) || fretNum === 0) {
+                    if (!settings?.isPeaceModeEnabled && ([NoteLabling.ActiveNoteNames, NoteLabling.NoteNames].includes(noteLabeling) || fretNum === 0)) {
                         noteNames.push(
                             <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note, activeNotes)} fontSize={12} fontFamily='monospace' fill={"black"} align="center" verticalAlign="middle" />
                         )
                     }
-                } else if (noteLabeling === NoteLabling.NoteNames || fretNum === 0) {
+                } else if (!settings?.isPeaceModeEnabled && (noteLabeling === NoteLabling.NoteNames || fretNum === 0)) {
                     if (fretNum !== 0) stringElements.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={"rgb(55,55,55)"}></Circle>)
                     noteNames.push(
                         <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note, activeNotes)} fontSize={12} fontFamily='monospace' fill={"grey"} align="center" verticalAlign="middle" />
@@ -155,7 +158,7 @@ function StringInstrument(props: Props) {
             emphasized,
             clickListeners,
         }
-    }, [NoteLabling.ActiveNoteNames, NoteLabling.NoteNames, activeNotes, checkEmphasis, circleElemRadius, fretElemYOffset, fretSpacing, getXPos, getYPos, homeNote, noteLabeling, props.fretCount, props.tuning, props.width, setHomeNote, stringSpacing, updateNotes]);
+    }, [NoteLabling.ActiveNoteNames, NoteLabling.NoteNames, activeNotes, checkEmphasis, circleElemRadius, fretElemYOffset, fretSpacing, getXPos, getYPos, homeNote, noteLabeling, props.fretCount, props.tuning, props.width, setHomeNote, settings?.isPeaceModeEnabled, stringSpacing, updateNotes]);
 
     const getOrgnogonalUnitVect = (x: number, y: number) => {
         const mag = Math.sqrt(x * x + y * y);

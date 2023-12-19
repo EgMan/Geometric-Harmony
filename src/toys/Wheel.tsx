@@ -8,6 +8,7 @@ import { getIntervalColor, getIntervalDistance, getNoteName } from '../utils/Uti
 import { NoteSet, normalizeToSingleOctave, useChannelDisplays, useGetCombinedModdedEmphasis, useHomeNote, useNoteDisplays, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import useRenderingTrace from '../utils/ProfilingUtils';
+import { useSettings } from '../view/SettingsProvider';
 type Props = {
     width: number,
     height: number,
@@ -47,6 +48,8 @@ function Wheel(props: Props) {
     const [isCircleOfFifths, setIsCircleOfFiths] = React.useState(props.isCircleOfFifths);
 
     const [showNoteNames, setShowNoteNames] = React.useState(true);
+
+    const settings = useSettings();
 
     enum IntervalDisplayType {
         Active,
@@ -212,7 +215,7 @@ function Wheel(props: Props) {
             if (highlightedNotes.has(i)) {
                 highlighted.push(<Circle key={`highlighted${i}`} x={noteLoc.x} y={noteLoc.y} fill="white" radius={20} />);
             }
-            if (showNoteNames) {
+            if (showNoteNames && !settings?.isPeaceModeEnabled) {
                 noteNames.push(<Text key={`noteName${i}`} width={40} height={40} x={noteLoc.x - 20} y={noteLoc.y - 20} text={getNoteName(i, activeNotes)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(i) ? "rgb(37,37,37)" : "grey"} align="center" verticalAlign="middle" />);
             }
             notesHaloArr.push(<Circle key={`halo${i}`} x={noteLoc.x} y={noteLoc.y} stroke="rgba(255,255,255,0.1)" radius={20} />);
@@ -226,7 +229,7 @@ function Wheel(props: Props) {
             clickListeners: clickListenersArr,
             names: noteNames,
         }
-    }, [getNoteLocation, rotatingStartingNote, props.subdivisionCount, isCircleOfFifths, getNotesInCommon, updateNotes, modulateActiveNotes, activeNotes, noteDisplays.normalized, highlightedNotes, showNoteNames, setHomeNote, homeNote]);
+    }, [getNoteLocation, rotatingStartingNote, props.subdivisionCount, isCircleOfFifths, getNotesInCommon, updateNotes, modulateActiveNotes, activeNotes, noteDisplays.normalized, highlightedNotes, showNoteNames, settings, setHomeNote, homeNote]);
 
     const intervals = React.useMemo(() => {
         var intervalLines: JSX.Element[] = [];

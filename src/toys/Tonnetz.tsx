@@ -8,6 +8,7 @@ import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import { Vector2d } from 'konva/lib/types';
 import { KonvaEventObject } from 'konva/lib/Node';
 import useRenderingTrace from '../utils/ProfilingUtils';
+import { useSettings } from '../view/SettingsProvider';
 
 const sqrt3over2 = Math.sqrt(3) / 2;
 
@@ -21,6 +22,8 @@ function Tonnetz(props: Props) {
     const activeNotes = useNoteSet(NoteSet.Active).notes;
     const noteDisplays = useNoteDisplays();
     const channelDisplays = useChannelDisplays();
+
+    const settings = useSettings();
 
     // TODO
     // const updateNotes = useUpdateNoteSet();
@@ -332,7 +335,9 @@ function Tonnetz(props: Props) {
                 dragListeners.push(<Line key={`majorDragListener${x}-${y}`} closed={true} x={xPos} y={yPos} points={[0, 0, spacing * 0.5, spacing * sqrt3over2, spacing, 0]} />);
                 dragListeners.push(<Line key={`minorTriadListener${x}-${y}`} closed={true} x={xPos} y={yPos} points={[0, 0, spacing * 0.5, -spacing * sqrt3over2, spacing, 0]} />);
 
-                notes.push(<Text key={`noteName${x}-${y}`} width={40} height={40} x={xPos - 20} y={yPos - 20} text={getNoteName(normalizedNote, activeNotes)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(note) ? "rgb(37,37,37)" : "grey"} align="center" verticalAlign="middle" listening={false} />);
+                if (!settings?.isPeaceModeEnabled) {
+                    notes.push(<Text key={`noteName${x}-${y}`} width={40} height={40} x={xPos - 20} y={yPos - 20} text={getNoteName(normalizedNote, activeNotes)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(note) ? "rgb(37,37,37)" : "grey"} align="center" verticalAlign="middle" listening={false} />);
+                }
                 // notes.push(<Text key={`noteName${x}-${y}`} width={40} height={40} x={xPos - 20} y={yPos - 20} text={"" + note} fontSize={14} fontFamily='monospace' fill={activeNotes.has(note) ? "rgb(37,37,37)" : "grey"} align="center" verticalAlign="middle" />);
                 notes.push(<Circle key={`halo${x}-${y}`} x={xPos} y={yPos} stroke="rgba(255,255,255,0.1)" radius={20} listening={false} />);
             }
@@ -340,7 +345,7 @@ function Tonnetz(props: Props) {
         return {
             notes, intervals, triads, dragListeners, noteListeners, noteEmphasis
         }
-    }, [activeNotes, channelDisplays, cordsToNote, cordsToPosition, displayInterval, distFromCenter, homeNote, intervalEmphasis, noteDisplays.normalized, updateNotes, xDraggedOffset, yDraggedOffset]);
+    }, [activeNotes, channelDisplays, cordsToNote, cordsToPosition, displayInterval, distFromCenter, homeNote, intervalEmphasis, noteDisplays.normalized, settings?.isPeaceModeEnabled, updateNotes, xDraggedOffset, yDraggedOffset]);
 
     const fullRender = React.useMemo((
     ) => {
