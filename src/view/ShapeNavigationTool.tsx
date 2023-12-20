@@ -5,9 +5,9 @@ import { NoteSet, normalizeToSingleOctave, useHomeNote, useNoteSet, useSetHomeNo
 import { MenuItem, FormGroup, Select, Autocomplete, TextField, ThemeProvider, styled, InputAdornment, } from "@mui/material";
 import { useSetActiveShape } from "../sound/HarmonicModulation";
 import { getModeNameInShape, useGetAllExactFits } from "../toys/HarmonyAnalyzer";
-import { toolbarTheme } from "./ToolBar";
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
+import { useAppTheme } from "./ThemeManager";
 
 const inputBoxNoteNameRegex = /^([aAbBcCdDeEfFgG][b#♭♯]?)\s/
 
@@ -43,6 +43,7 @@ const AutocompleteGroupItems = styled('ul')({
 });
 
 function ShapeNavigationTool(props: Props) {
+    const { muiTheme } = useAppTheme()!;
 
     const setActiveShape = useSetActiveShape();
     const setHomeNote = useSetHomeNote();
@@ -122,7 +123,7 @@ function ShapeNavigationTool(props: Props) {
     return (
         <div id="shape-tool-div">
             <form onSubmit={evt => { evt.preventDefault() }}>
-                <ThemeProvider theme={toolbarTheme}>
+                <ThemeProvider theme={muiTheme}>
                     <FormGroup row sx={{ backgroundColor: 'rgb(255,255,255,0)', borderRadius: '0px' }}>
                         <Select
                             id="explorer-dropdown"

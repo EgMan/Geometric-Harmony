@@ -9,6 +9,7 @@ import { NoteSet, normalizeToSingleOctave, useChannelDisplays, useGetCombinedMod
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import useRenderingTrace from '../utils/ProfilingUtils';
 import { useSettings } from '../view/SettingsProvider';
+import { useAppTheme } from '../view/ThemeManager';
 type Props = {
     width: number,
     height: number,
@@ -50,6 +51,7 @@ function Wheel(props: Props) {
     const [showNoteNames, setShowNoteNames] = React.useState(true);
 
     const settings = useSettings();
+    const { colorPalette } = useAppTheme()!;
 
     enum IntervalDisplayType {
         Active,
@@ -73,32 +75,32 @@ function Wheel(props: Props) {
     const settingsMenuItems = [
         (<tr key={'tr0'}>
             <td>Show Minor Seconds (Major Sevenths)</td>
-            <td style={{ color: getIntervalColor(1), textAlign: "center" }}>■</td>
+            <td style={{ color: getIntervalColor(1, colorPalette), textAlign: "center" }}>■</td>
             <td><Switch color={"primary"} checked={displayInterval[0]} onChange={e => setDisplayInterval(0, e.target.checked)} /></td>
         </tr>),
         (<tr key={'tr1'}>
             <td>Show Major Seconds (Minor Sevenths)</td>
-            <td style={{ color: getIntervalColor(2), textAlign: "center" }}>■</td>
+            <td style={{ color: getIntervalColor(2, colorPalette), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[1]} onChange={e => setDisplayInterval(1, e.target.checked)} /></td>
         </tr>),
         (<tr key={'tr2'}>
             <td>Show Minor Thirds (Major Sixths)</td>
-            <td style={{ color: getIntervalColor(3), textAlign: "center" }}>■</td>
+            <td style={{ color: getIntervalColor(3, colorPalette), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[2]} onChange={e => setDisplayInterval(2, e.target.checked)} /></td>
         </tr>),
         (<tr key={'tr3'}>
             <td>Show Major Thirds (Minor Sixths)</td>
-            <td style={{ color: getIntervalColor(4), textAlign: "center" }}>■</td>
+            <td style={{ color: getIntervalColor(4, colorPalette), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[3]} onChange={e => setDisplayInterval(3, e.target.checked)} /></td>
         </tr>),
         (<tr key={'tr4'}>
             <td>Show Perfect Fourths (Perfect Fifths)</td>
-            <td style={{ color: getIntervalColor(5), textAlign: "center" }}>■</td>
+            <td style={{ color: getIntervalColor(5, colorPalette), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[4]} onChange={e => setDisplayInterval(4, e.target.checked)} /></td>
         </tr>),
         (<tr key={'tr5'}>
             <td>Show Tritones</td>
-            <td style={{ color: getIntervalColor(6), textAlign: "center" }}>■</td>
+            <td style={{ color: getIntervalColor(6, colorPalette), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[5]} onChange={e => setDisplayInterval(5, e.target.checked)} /></td>
         </tr>),
         (<tr key={'tr6'}>
@@ -216,7 +218,7 @@ function Wheel(props: Props) {
                 highlighted.push(<Circle key={`highlighted${i}`} x={noteLoc.x} y={noteLoc.y} fill="white" radius={20} />);
             }
             if (showNoteNames && !settings?.isPeaceModeEnabled) {
-                noteNames.push(<Text key={`noteName${i}`} width={40} height={40} x={noteLoc.x - 20} y={noteLoc.y - 20} text={getNoteName(i, activeNotes)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(i) ? "rgb(37,37,37)" : "grey"} align="center" verticalAlign="middle" />);
+                noteNames.push(<Text key={`noteName${i}`} width={40} height={40} x={noteLoc.x - 20} y={noteLoc.y - 20} text={getNoteName(i, activeNotes)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(i) ? "rgb(37,37,37)" : colorPalette.Widget_Primary} align="center" verticalAlign="middle" />);
             }
             notesHaloArr.push(<Circle key={`halo${i}`} x={noteLoc.x} y={noteLoc.y} stroke="rgba(255,255,255,0.1)" radius={20} />);
             clickListenersArr.push(<Circle key={`clickListen${i}`} draggable x={noteLoc.x} y={noteLoc.y} radius={20} onClick={toggleActive} onTap={toggleActive} onTouchStart={emphasize} onTouchEnd={unemphasize} onMouseOver={emphasize} onMouseOut={unemphasize} onDragMove={onRotateDrag} onDragStart={(e) => onRotateDragStart(e, i)} onDragEnd={onRotateDragEnd} />);
@@ -229,7 +231,7 @@ function Wheel(props: Props) {
             clickListeners: clickListenersArr,
             names: noteNames,
         }
-    }, [getNoteLocation, rotatingStartingNote, props.subdivisionCount, isCircleOfFifths, getNotesInCommon, updateNotes, modulateActiveNotes, activeNotes, noteDisplays.normalized, highlightedNotes, showNoteNames, settings, setHomeNote, homeNote]);
+    }, [getNoteLocation, rotatingStartingNote, props.subdivisionCount, isCircleOfFifths, getNotesInCommon, updateNotes, modulateActiveNotes, activeNotes, noteDisplays.normalized, highlightedNotes, showNoteNames, settings?.isPeaceModeEnabled, setHomeNote, homeNote, colorPalette.Widget_Primary]);
 
     const intervals = React.useMemo(() => {
         var intervalLines: JSX.Element[] = [];
@@ -241,7 +243,7 @@ function Wheel(props: Props) {
                 const aLoc = getNoteLocation(noteA);
                 const bLoc = getNoteLocation(noteB);
                 const dist = getIntervalDistance(noteA, noteB, props.subdivisionCount);
-                const discColor = getIntervalColor(dist);
+                const discColor = getIntervalColor(dist, colorPalette);
                 if (intervalDisplay === IntervalDisplayType.Playing && (!emphasizedNotes.has(noteA) || !emphasizedNotes.has(noteB))) {
                     continue;
                 }
@@ -265,7 +267,7 @@ function Wheel(props: Props) {
 
                 const isActiveNoteInterval = activeNotes.has(noteA) && activeNotes.has(noteB);
                 if (isActiveNoteInterval) {
-                    intervalLines.push(<Line key={`3-${noteA}-${noteB}`} stroke={"grey"} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} opacity={0.25} />);
+                    intervalLines.push(<Line key={`3-${noteA}-${noteB}`} stroke={colorPalette.Widget_Primary} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} opacity={0.25} />);
                     intervalLines.push(<Line key={`4-${noteA}-${noteB}`} stroke={'rgba(0,0,0,0)'} strokeWidth={5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize} />);
                 }
             }
@@ -276,7 +278,7 @@ function Wheel(props: Props) {
                 const aLoc = getNoteLocation(noteA);
                 const bLoc = getNoteLocation(noteB);
                 const dist = getIntervalDistance(noteA, noteB, props.subdivisionCount);
-                const discColor = getIntervalColor(dist);
+                const discColor = getIntervalColor(dist, colorPalette);
                 intervalLines.push(<Line key={`5-${noteA}-${noteB}`} stroke={discColor} strokeWidth={3} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />);
             });
         });
@@ -286,7 +288,7 @@ function Wheel(props: Props) {
             emphasized: emphasized,
             highlighted: highlighted,
         }
-    }, [IntervalDisplayType.Playing, activeNotes, channelDisplays, displayInterval, emphasizedNotes, getNoteLocation, highlightedNotes, inputNotes, intervalDisplay, props.subdivisionCount, updateNotes]);
+    }, [IntervalDisplayType.Playing, activeNotes, channelDisplays, colorPalette, displayInterval, emphasizedNotes, getNoteLocation, highlightedNotes, inputNotes, intervalDisplay, props.subdivisionCount, updateNotes]);
 
     const fullRender = React.useMemo((
     ) => {

@@ -4,9 +4,10 @@ import ShapeNavigationTool from "./ShapeNavigationTool";
 import { WidgetTrackerActions, WidgetType } from "./ViewManager";
 import { Stage } from "konva/lib/Stage";
 import { getCurrentSpace } from "../utils/SpacesUtils";
-import AddIcon from '@mui/icons-material/Add';
+import AddBoxIcon from '@mui/icons-material/AddBox';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import ColorLensIcon from '@mui/icons-material/ColorLens';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import PianoIcon from '@mui/icons-material/Piano';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -19,6 +20,8 @@ import { useSettings } from "./SettingsProvider";
 import { MidiFileDataProvider, MidiFileParser } from "../sound/MidiFileParser";
 import { LocalSynthVoice } from "../sound/SynthVoicings";
 import MIDIConnectionManager from "../sound/MIDIConnectionManager";
+import { useAppTheme, useChangeAppTheme } from "./ThemeManager";
+import { getRandomColor } from "../utils/Utils";
 // import useSettings from "./SettingsProvider"
 
 type Props =
@@ -27,28 +30,6 @@ type Props =
         stageRef: React.RefObject<Stage>,
         setIsHeartModalOpen: React.Dispatch<React.SetStateAction<boolean>>,
     }
-export const toolbarTheme = createTheme({
-    palette: {
-        primary: {
-            main: colors.yellow[400],
-        },
-    },
-    typography: {
-        fontFamily: 'monospace',
-    },
-    components: {
-        MuiPaper: {
-            styleOverrides: {
-                root: {
-                    backgroundColor: 'rgb(255,255,255,0.04)',
-                    backdropFilter: 'blur(13px)',
-                    color: "white",
-                    boxShadow: 'none',
-                },
-            },
-        },
-    },
-});
 
 function ToolBar(props: Props) {
     const addButtonRef = React.useRef(null);
@@ -63,6 +44,8 @@ function ToolBar(props: Props) {
         setAddDropdownOpen(false);
     }, [props.widgetTrackerActions]);
     const settings = useSettings();
+    const changeTheme = useChangeAppTheme();
+    const { muiTheme, colorPalette } = useAppTheme()!;
 
     React.useEffect(() => {
         if (!addDropdownOpen) {
@@ -78,7 +61,7 @@ function ToolBar(props: Props) {
 
     return (
         <div>
-            <div ref={addButtonRef} style={{ position: "fixed", transform: "translate(0, 0px)", zIndex: 1, width: "100vw", backgroundColor: settings?.isPeaceModeEnabled ? "transparent" : "rgb(255,255,255,0.04)", borderBottomLeftRadius: "9px", borderBottomRightRadius: "9px", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <div ref={addButtonRef} style={{ position: "fixed", transform: "translate(0, 0px)", zIndex: 1, width: "100vw", backgroundColor: settings?.isPeaceModeEnabled ? "transparent" : colorPalette.UI_Background, borderBottomLeftRadius: "9px", borderBottomRightRadius: "9px", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                 <div>
                     {
                         settings?.isPeaceModeEnabled ? null :
@@ -105,7 +88,7 @@ function ToolBar(props: Props) {
                                     setAddDropdownOpen(true);
                                 }}
                             >
-                                <AddIcon fontSize="small" />
+                                <AddBoxIcon fontSize="small" />
                             </Button>
                                 <Button type="submit" variant="contained"
                                     sx={{
@@ -157,6 +140,45 @@ function ToolBar(props: Props) {
                                 >
                                     <PianoIcon fontSize="small" />
                                 </Button>
+                                <Button type="submit" variant="contained"
+                                    sx={{
+                                        fontSize: "0.7em",
+                                        color: 'white',
+                                        backgroundColor: 'transparent',
+                                        boxShadow: 'none',
+                                        padding: "1.8px",
+                                        borderTopLeftRadius: '0px',
+                                        borderTopRightRadius: '9px',
+                                        borderBottomLeftRadius: '9px',
+                                        borderBottomRightRadius: '9px',
+                                        '&:hover': {
+                                            backgroundColor: 'rgb(255,255,255,0.1)',
+                                        },
+                                        "&.Mui-disabled": {
+                                            background: 'transparent',
+                                            color: "grey"
+                                        }
+                                    }}
+                                    onClick={
+                                        () => changeTheme?.(prev => (
+                                            {
+                                                ...prev,
+                                                UI_Background: getRandomColor(),
+                                                Main_Background: getRandomColor(),
+                                                UI_Primary: getRandomColor(),
+                                                Interval_Semitone: getRandomColor(),
+                                                Interval_Wholetone: getRandomColor(),
+                                                Interval_MinorThird: getRandomColor(),
+                                                Interval_MajorThird: getRandomColor(),
+                                                Interval_PerfectFourth: getRandomColor(),
+                                                Interval_Tritone: getRandomColor(),
+                                                Widget_Primary: getRandomColor(),
+                                            }
+                                        ))
+                                    }
+                                >
+                                    <ColorLensIcon fontSize="small" />
+                                </Button>
                             </>
                     }
                 </div>
@@ -173,7 +195,7 @@ function ToolBar(props: Props) {
                                 onClick={() => props.setIsHeartModalOpen(enabled => !enabled)}
                                 sx={{
                                     fontSize: "0.7em",
-                                    color: 'white',
+                                    color: colorPalette.UI_Primary,
                                     backgroundColor: 'transparent',
                                     boxShadow: 'none',
                                     padding: "1.8px",
@@ -195,7 +217,7 @@ function ToolBar(props: Props) {
                         onClick={() => settings?.setIsPeaceModeEnabled(enabled => !enabled)}
                         sx={{
                             fontSize: "0.7em",
-                            color: 'white',
+                            color: colorPalette.UI_Primary,
                             backgroundColor: 'transparent',
                             boxShadow: 'none',
                             padding: "1.8px",
@@ -215,7 +237,7 @@ function ToolBar(props: Props) {
                 </div>
             </div>
             <div style={{ width: 320, maxWidth: '100%', zIndex: 1 }}>
-                <ThemeProvider theme={toolbarTheme}>
+                <ThemeProvider theme={muiTheme}>
                     <Popover
                         open={addDropdownOpen}
                         onClose={() => setAddDropdownOpen(false)}

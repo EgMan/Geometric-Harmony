@@ -4,6 +4,7 @@ import { Vector2d } from "konva/lib/types";
 import { KonvaEventObject } from "konva/lib/Node";
 import ColorConverter from "string-color-converter";
 import { enqueueSnackbar } from "notistack";
+import { ColorPalette } from "../view/ThemeManager";
 
 // const numberToNote = ["C-1", "C#3", "D3", "D#3", "E3", "F3", "F#3", "G3", "G#3", "A3", "A#3", "B3"];
 const numberToPlayableNote = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
@@ -49,22 +50,22 @@ export function getNoteNum(noteName: string) {
     return noteNum;
 }
 
-export const getIntervalColor = (distance: number) => {
+export const getIntervalColor = (distance: number, colorPalette: ColorPalette) => {
     switch (distance) {
         case 0:
             return "black"
         case 1:
-            return "violet"
+            return colorPalette.Interval_Semitone
         case 2:
-            return "rgb(100, 61, 255)"
+            return colorPalette.Interval_Wholetone
         case 3:
-            return "blue"
+            return colorPalette.Interval_MinorThird
         case 4:
-            return "green"
+            return colorPalette.Interval_MajorThird
         case 5:
-            return "orange"
+            return colorPalette.Interval_PerfectFourth
         case 6:
-            return "red"
+            return colorPalette.Interval_Tritone
         default:
             return "white"
     }
@@ -171,6 +172,15 @@ export function changeLightness(color: string, multiplier: number) {
     }
     let lightness = Math.floor(Math.min(Math.max(parsedColor.l * multiplier, 0), 100));
     return `hsla(${parsedColor.h}, ${parsedColor.s}%, ${lightness}%, ${parsedColor.a})`
+}
+
+export function getRandomColor() {
+    var max = 255;
+    var r = Math.floor(Math.random() * max);
+    var g = Math.floor(Math.random() * max);
+    var b = Math.floor(Math.random() * max);
+    var a = Math.random();
+    return "rgba(" + r + "," + g + "," + b + "," + a + ")";
 }
 
 type SnackVariant = "default" | "success" | "error" | "warning" | "info";
