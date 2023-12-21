@@ -7,6 +7,7 @@ import { NoteSet, normalizeToSingleOctave, useCheckNoteEmphasis, useGetCombinedM
 import { KonvaEventObject } from 'konva/lib/Node';
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import { useSettings } from '../view/SettingsProvider';
+import { useAppTheme } from '../view/ThemeManager';
 
 type Props = {
     height: number
@@ -16,6 +17,7 @@ type Props = {
 } & WidgetComponentProps
 
 function StringInstrument(props: Props) {
+    const { colorPalette } = useAppTheme()!;
     const stringSpacing = props.width / (props.tuning.length - 1);
     const fretSpacing = props.height / props.fretCount;
     const fretElemYOffset = -fretSpacing / 2;
@@ -92,19 +94,19 @@ function StringInstrument(props: Props) {
         for (let fretNum = 0; fretNum < props.fretCount; fretNum++) {
             const posY = getYPos(fretNum);
             fretElements.push(
-                <Line key={`l1-${fretNum}`} stroke={"grey"} strokeWidth={3} points={[0, posY, props.width, posY]} />
+                <Line key={`l1-${fretNum}`} stroke={colorPalette.Widget_Primary} strokeWidth={3} points={[0, posY, props.width, posY]} />
             );
             if ([3, 5, 7, 9,].includes(fretNum % 12)) {
                 fretElements.push(
-                    <Circle key={`c1-${fretNum}`} x={props.width / 2} y={posY + fretElemYOffset} radius={stringSpacing / 6} fill={"grey"} />
+                    <Circle key={`c1-${fretNum}`} x={props.width / 2} y={posY + fretElemYOffset} radius={stringSpacing / 6} fill={colorPalette.Widget_Primary} />
                 );
             }
             if (fretNum % 12 === 0 && fretNum > 0) {
                 fretElements.push(
-                    <Circle key={`c2-${fretNum}`} x={3 * props.width / 10} y={posY + fretElemYOffset} radius={stringSpacing / 6} fill={"grey"} />
+                    <Circle key={`c2-${fretNum}`} x={3 * props.width / 10} y={posY + fretElemYOffset} radius={stringSpacing / 6} fill={colorPalette.Widget_Primary} />
                 );
                 fretElements.push(
-                    <Circle key={`c3-${fretNum}`} x={7 * props.width / 10} y={posY + fretElemYOffset} radius={stringSpacing / 6} fill={"grey"} />
+                    <Circle key={`c3-${fretNum}`} x={7 * props.width / 10} y={posY + fretElemYOffset} radius={stringSpacing / 6} fill={colorPalette.Widget_Primary} />
                 );
             }
             props.tuning.forEach((openNote, stringNum) => {
@@ -123,27 +125,27 @@ function StringInstrument(props: Props) {
                 };
                 if (fretNum !== props.fretCount - 1) {
                     stringElements.push(
-                        <Line key={`l2-${fretNum}-${stringNum}`} stroke={"grey"} strokeWidth={1} points={[posX, posY, posX, posY + fretSpacing]} />
+                        <Line key={`l2-${fretNum}-${stringNum}`} stroke={colorPalette.Widget_Primary} strokeWidth={1} points={[posX, posY, posX, posY + fretSpacing]} />
                     );
                 }
                 if (checkEmphasis(absoluteNote, true)) {
                     emphasized.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={"red"}></Circle>)
                     noteNames.push(
-                        <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note, activeNotes)} fontSize={12} fontFamily='monospace' fill={"black"} align="center" verticalAlign="middle" />
+                        <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note, activeNotes)} fontSize={12} fontFamily='monospace' fill={colorPalette.Main_Background} align="center" verticalAlign="middle" />
                     )
                 }
                 else if (activeNotes.has(note)) {
-                    const noteColor = (note === homeNote) ? "yellow" : "white";
+                    const noteColor = (note === homeNote) ? colorPalette.Note_Home : colorPalette.Note_Active;
                     activeNoteIndicators.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={noteColor}></Circle>)
                     if (!settings?.isPeaceModeEnabled && ([NoteLabling.ActiveNoteNames, NoteLabling.NoteNames].includes(noteLabeling) || fretNum === 0)) {
                         noteNames.push(
-                            <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note, activeNotes)} fontSize={12} fontFamily='monospace' fill={"black"} align="center" verticalAlign="middle" />
+                            <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note, activeNotes)} fontSize={12} fontFamily='monospace' fill={colorPalette.Main_Background} align="center" verticalAlign="middle" />
                         )
                     }
                 } else if (!settings?.isPeaceModeEnabled && (noteLabeling === NoteLabling.NoteNames || fretNum === 0)) {
-                    if (fretNum !== 0) stringElements.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={"rgb(55,55,55)"}></Circle>)
+                    if (fretNum !== 0) stringElements.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={colorPalette.Main_Background}></Circle>)
                     noteNames.push(
-                        <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note, activeNotes)} fontSize={12} fontFamily='monospace' fill={"grey"} align="center" verticalAlign="middle" />
+                        <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note, activeNotes)} fontSize={12} fontFamily='monospace' fill={colorPalette.Widget_Primary} align="center" verticalAlign="middle" />
                     )
                 }
 
@@ -158,7 +160,7 @@ function StringInstrument(props: Props) {
             emphasized,
             clickListeners,
         }
-    }, [NoteLabling.ActiveNoteNames, NoteLabling.NoteNames, activeNotes, checkEmphasis, circleElemRadius, fretElemYOffset, fretSpacing, getXPos, getYPos, homeNote, noteLabeling, props.fretCount, props.tuning, props.width, setHomeNote, settings?.isPeaceModeEnabled, stringSpacing, updateNotes]);
+    }, [NoteLabling.ActiveNoteNames, NoteLabling.NoteNames, activeNotes, checkEmphasis, circleElemRadius, colorPalette.Main_Background, colorPalette.Note_Active, colorPalette.Note_Home, colorPalette.Widget_Primary, fretElemYOffset, fretSpacing, getXPos, getYPos, homeNote, noteLabeling, props.fretCount, props.tuning, props.width, setHomeNote, settings?.isPeaceModeEnabled, stringSpacing, updateNotes]);
 
     const getOrgnogonalUnitVect = (x: number, y: number) => {
         const mag = Math.sqrt(x * x + y * y);
@@ -199,7 +201,7 @@ function StringInstrument(props: Props) {
 
 
                         const dist = getIntervalDistance(noteA, noteB, 12);
-                        const discColor = getIntervalColor(dist);
+                        const discColor = getIntervalColor(dist, colorPalette);
                         const absoluteDist = Math.abs(absoluteNoteA - absoluteNoteB);
                         if (dist === 0) continue;
 
@@ -289,7 +291,7 @@ function StringInstrument(props: Props) {
             emphasized: emphasized,
             listeners: touchListeners,
         }
-    }, [combinedEmphasis, emphasizedNotesOctaveGnostic, fretElemYOffset, fretSpacing, getXPos, getYPos, props.fretCount, props.height, props.tuning, stringSpacing, updateNotes]);
+    }, [colorPalette, combinedEmphasis, emphasizedNotesOctaveGnostic, fretElemYOffset, fretSpacing, getXPos, getYPos, props.fretCount, props.height, props.tuning, stringSpacing, updateNotes]);
 
     const fullRender = React.useMemo((
     ) => {

@@ -5,9 +5,9 @@ import { NoteSet, normalizeToSingleOctave, useHomeNote, useNoteSet, useSetHomeNo
 import { MenuItem, FormGroup, Select, Autocomplete, TextField, ThemeProvider, styled, InputAdornment, } from "@mui/material";
 import { useSetActiveShape } from "../sound/HarmonicModulation";
 import { getModeNameInShape, useGetAllExactFits } from "../toys/HarmonyAnalyzer";
-import { toolbarTheme } from "./ToolBar";
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
+import { useAppTheme } from "./ThemeManager";
 
 const inputBoxNoteNameRegex = /^([aAbBcCdDeEfFgG][b#♭♯]?)\s/
 
@@ -43,6 +43,7 @@ const AutocompleteGroupItems = styled('ul')({
 });
 
 function ShapeNavigationTool(props: Props) {
+    const { muiTheme, colorPalette } = useAppTheme()!;
 
     const setActiveShape = useSetActiveShape();
     const setHomeNote = useSetHomeNote();
@@ -122,7 +123,7 @@ function ShapeNavigationTool(props: Props) {
     return (
         <div id="shape-tool-div">
             <form onSubmit={evt => { evt.preventDefault() }}>
-                <ThemeProvider theme={toolbarTheme}>
+                <ThemeProvider theme={muiTheme}>
                     <FormGroup row sx={{ backgroundColor: 'rgb(255,255,255,0)', borderRadius: '0px' }}>
                         <Select
                             id="explorer-dropdown"
@@ -144,11 +145,14 @@ function ShapeNavigationTool(props: Props) {
                             style={{ height: '33.5px' }}
                             sx={{
                                 width: keySelectorExplorerWidth,
-                                color: "white",
+                                color: colorPalette.UI_Primary,
                                 // backgroundColor: "rbga(0,0,0,0.5)",
                                 // '.explorer-dropdown': {
                                 //     color: "yellow",
                                 // },
+                                ".MuiSelect-select": {
+                                    color: colorPalette.Note_Home,
+                                },
                                 "& .MuiSvgIcon-root": {
                                     right: "unset",
                                     left: "6px",
@@ -170,7 +174,7 @@ function ShapeNavigationTool(props: Props) {
                                     border: '0px solid transparent',
                                 },
                                 '.MuiSvgIcon-root ': {
-                                    fill: "white !important",
+                                    fill: `${colorPalette.UI_Primary} !important`,
                                 }
                             }}
                         >
@@ -238,10 +242,10 @@ function ShapeNavigationTool(props: Props) {
                                     border: '1px solid transparent',
                                 },
                                 '.MuiSvgIcon-root ': {
-                                    fill: "white !important",
+                                    fill: `${colorPalette.UI_Primary} !important`,
                                 },
                                 '.MuiAutocomplete-inputRoot': {
-                                    color: "yellow",
+                                    color: colorPalette.Note_Home,
                                     fontFamily: "monospace",
                                     border: '1px solid transparent',
                                 },
@@ -249,7 +253,7 @@ function ShapeNavigationTool(props: Props) {
                                     paddingRight: "10px!important",
                                 },
                                 '.MuiAutocomplete-groupLabel': {
-                                    color: "yellow",
+                                    color: colorPalette.Note_Home,
                                     backgroundColor: "rgb(255,255,255,0.1)",
                                     fontFamily: "monospace",
                                     border: '1px solid transparent',

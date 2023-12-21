@@ -6,7 +6,7 @@ import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import { Group } from 'react-konva';
 import { useSynth, useSynthAfterEffects } from '../sound/SoundEngine';
 import { Waveform } from 'tone';
-import { useChannelDisplays, useNoteDisplays } from '../sound/NoteProvider';
+import { useChannelDisplays } from '../sound/NoteProvider';
 import { blendColors, changeLightness } from '../utils/Utils';
 
 type Props = {
@@ -153,8 +153,7 @@ function Oscilloscope(props: Props) {
     ) => {
         return (
             <Group y={props.height * 0.5}>
-                <LineGraph width={props.width} height={props.height} minVal={minValue} maxVal={maxValue} values={values} lineProps={{ opacity: 0.1, strokeWidth: 3, tension: 1, stroke: blendedColor }
-                } />
+                <LineGraph width={props.width} height={props.height} minVal={minValue} maxVal={maxValue} values={values} lineProps={{ opacity: 0.5, strokeWidth: 2, tension: 1, stroke: blendedColor }} />
             </Group>
         );
     }, [blendedColor, maxValue, minValue, props.height, props.width, values]);

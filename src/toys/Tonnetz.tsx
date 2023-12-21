@@ -7,8 +7,8 @@ import { NoteSet, normalizeToSingleOctave, useChannelDisplays, useGetCombinedMod
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import { Vector2d } from 'konva/lib/types';
 import { KonvaEventObject } from 'konva/lib/Node';
-import useRenderingTrace from '../utils/ProfilingUtils';
 import { useSettings } from '../view/SettingsProvider';
+import { useAppTheme } from '../view/ThemeManager';
 
 const sqrt3over2 = Math.sqrt(3) / 2;
 
@@ -24,6 +24,7 @@ function Tonnetz(props: Props) {
     const channelDisplays = useChannelDisplays();
 
     const settings = useSettings();
+    const { colorPalette } = useAppTheme()!;
 
     // TODO
     // const updateNotes = useUpdateNoteSet();
@@ -45,32 +46,32 @@ function Tonnetz(props: Props) {
     const settingsMenuItems: JSX.Element[] = [
         (<tr key={'tr0'}>
             <td>Show Minor Seconds (Major Sevenths)</td>
-            <td style={{ color: getIntervalColor(1), textAlign: "center" }}>■</td>
+            <td style={{ color: getIntervalColor(1, colorPalette), textAlign: "center" }}>■</td>
             <td><Switch color={"primary"} checked={displayInterval[0]} onChange={e => setDisplayInterval(0, e.target.checked)} /></td>
         </tr>),
         (<tr key={'tr1'}>
             <td>Show Major Seconds (Minor Sevenths)</td>
-            <td style={{ color: getIntervalColor(2), textAlign: "center" }}>■</td>
+            <td style={{ color: getIntervalColor(2, colorPalette), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[1]} onChange={e => setDisplayInterval(1, e.target.checked)} /></td>
         </tr>),
         (<tr key={'tr2'}>
             <td>Show Minor Thirds (Major Sixths)</td>
-            <td style={{ color: getIntervalColor(3), textAlign: "center" }}>■</td>
+            <td style={{ color: getIntervalColor(3, colorPalette), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[2]} onChange={e => setDisplayInterval(2, e.target.checked)} /></td>
         </tr>),
         (<tr key={'tr3'}>
             <td>Show Major Thirds (Minor Sixths)</td>
-            <td style={{ color: getIntervalColor(4), textAlign: "center" }}>■</td>
+            <td style={{ color: getIntervalColor(4, colorPalette), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[3]} onChange={e => setDisplayInterval(3, e.target.checked)} /></td>
         </tr>),
         (<tr key={'tr4'}>
             <td>Show Perfect Fourths (Perfect Fifths)</td>
-            <td style={{ color: getIntervalColor(5), textAlign: "center" }}>■</td>
+            <td style={{ color: getIntervalColor(5, colorPalette), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[4]} onChange={e => setDisplayInterval(4, e.target.checked)} /></td>
         </tr>),
         (<tr key={'tr5'}>
             <td>Show Tritones</td>
-            <td style={{ color: getIntervalColor(6), textAlign: "center" }}>■</td>
+            <td style={{ color: getIntervalColor(6, colorPalette), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[5]} onChange={e => setDisplayInterval(5, e.target.checked)} /></td>
         </tr>),
     ];
@@ -92,18 +93,18 @@ function Tonnetz(props: Props) {
         if (channelName === NoteSet.Active) {
             return {
                 isEmphasized: true,
-                opacity: 0.25,
+                opacity: 1,
                 strokeWidth: 1.5,
-                strokeColor: "grey",
+                strokeColor: colorPalette.Widget_MutedPrimary,
             }
         }
         return {
             isEmphasized: true,
             opacity: 1,
             strokeWidth: 3,
-            strokeColor: getIntervalColor(getIntervalDistance(noteA, noteB, 12)),
+            strokeColor: getIntervalColor(getIntervalDistance(noteA, noteB, 12), colorPalette),
         }
-    }, [])
+    }, [colorPalette])
 
     const [draggedPosition, setDraggedPosition] = React.useState<Vector2d>({ x: 0, y: 0 });
     const onDrag = React.useCallback((event: KonvaEventObject<DragEvent>) => {
@@ -297,20 +298,20 @@ function Tonnetz(props: Props) {
                 const up2Cord = { x: x, y: y - 2 };
                 const up2Note = cordsToNote(up2Cord);
 
+                renderIntervalLines(activeNotes, x, y, NoteSet.Active);
+
                 channelDisplays.forEach((channel, idx) => {
                     // TODO normalize in noteprovider instead
                     const normalizedNotes = new Set(Array.from(channel.notes).map(note => normalizeToSingleOctave(note)));
                     renderIntervalLines(normalizedNotes, x, y, channel.name);
                 });
 
-                renderIntervalLines(activeNotes, x, y, NoteSet.Active);
-
                 if (activeNotes.has(normalizedNote)) {
                     const minorTriadEmphasizeProps = getEmphasizeProps([note, upRightNote, rightNote]);
                     const majorTriadEmphasizeProps = getEmphasizeProps([note, downRightNote, rightNote]);
 
                     // Note
-                    const color = (homeNote === normalizedNote ? "yellow" : "white");
+                    const color = (homeNote === normalizedNote ? colorPalette.Note_Home : colorPalette.Note_Active);
                     notes.push(<Circle key={`${x}-${y}`} x={xPos} y={yPos} fill={color} radius={10} />);
 
                     // Triad triangle listeners
@@ -336,16 +337,16 @@ function Tonnetz(props: Props) {
                 dragListeners.push(<Line key={`minorTriadListener${x}-${y}`} closed={true} x={xPos} y={yPos} points={[0, 0, spacing * 0.5, -spacing * sqrt3over2, spacing, 0]} />);
 
                 if (!settings?.isPeaceModeEnabled) {
-                    notes.push(<Text key={`noteName${x}-${y}`} width={40} height={40} x={xPos - 20} y={yPos - 20} text={getNoteName(normalizedNote, activeNotes)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(note) ? "rgb(37,37,37)" : "grey"} align="center" verticalAlign="middle" listening={false} />);
+                    notes.push(<Text key={`noteName${x}-${y}`} width={40} height={40} x={xPos - 20} y={yPos - 19} text={getNoteName(normalizedNote, activeNotes)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(normalizeToSingleOctave(note)) ? colorPalette.Main_Background : colorPalette.Widget_Primary} align="center" verticalAlign="middle" listening={false} />);
                 }
-                // notes.push(<Text key={`noteName${x}-${y}`} width={40} height={40} x={xPos - 20} y={yPos - 20} text={"" + note} fontSize={14} fontFamily='monospace' fill={activeNotes.has(note) ? "rgb(37,37,37)" : "grey"} align="center" verticalAlign="middle" />);
-                notes.push(<Circle key={`halo${x}-${y}`} x={xPos} y={yPos} stroke="rgba(255,255,255,0.1)" radius={20} listening={false} />);
+                // notes.push(<Text key={`noteName${x}-${y}`} width={40} height={40} x={xPos - 20} y={yPos - 20} text={"" + note} fontSize={14} fontFamily='monospace' fill={activeNotes.has(note) ? "rgb(37,37,37)" : colorPalette.Widget_Primary} align="center" verticalAlign="middle" />);
+                notes.push(<Circle key={`halo${x}-${y}`} x={xPos} y={yPos} stroke={colorPalette.Widget_Primary} strokeWidth={1.5} radius={20} listening={false} />);
             }
         }
         return {
             notes, intervals, triads, dragListeners, noteListeners, noteEmphasis
         }
-    }, [activeNotes, channelDisplays, cordsToNote, cordsToPosition, displayInterval, distFromCenter, homeNote, intervalEmphasis, noteDisplays.normalized, settings?.isPeaceModeEnabled, updateNotes, xDraggedOffset, yDraggedOffset]);
+    }, [activeNotes, channelDisplays, colorPalette.Main_Background, colorPalette.Note_Active, colorPalette.Note_Home, colorPalette.Widget_Primary, cordsToNote, cordsToPosition, displayInterval, distFromCenter, homeNote, intervalEmphasis, noteDisplays.normalized, settings?.isPeaceModeEnabled, updateNotes, xDraggedOffset, yDraggedOffset]);
 
     const fullRender = React.useMemo((
     ) => {
@@ -354,7 +355,7 @@ function Tonnetz(props: Props) {
                 x={radius} y={radius}
                 clipFunc={(ctx) => ctx.arc(0, 0, radius, 0, Math.PI * 2, false)}
             >
-                <Circle radius={radius} stroke="rgba(255,255,255,0.1)"></Circle>
+                <Circle radius={radius} stroke={colorPalette.Widget_MutedPrimary}></Circle>
                 <Group draggable onDragMove={onDrag}>
                     {elements.dragListeners}
                     {elements.triads}
@@ -368,7 +369,7 @@ function Tonnetz(props: Props) {
             </Group >
         );
 
-    }, [draggedPosition.x, draggedPosition.y, elements.dragListeners, elements.intervals, elements.noteEmphasis, elements.noteListeners, elements.notes, elements.triads, onDrag, radius]);
+    }, [colorPalette.Widget_MutedPrimary, draggedPosition.x, draggedPosition.y, elements.dragListeners, elements.intervals, elements.noteEmphasis, elements.noteListeners, elements.notes, elements.triads, onDrag, radius]);
 
     return (
         <Group>

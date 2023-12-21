@@ -3,12 +3,12 @@ import { Circle, Group, Rect, Shape, Text } from 'react-konva';
 import { WidgetComponentProps } from '../view/Widget';
 import { MenuItem, Select, Switch } from '@mui/material';
 import { getIntervalColor, getIntervalDistance, getNoteName } from '../utils/Utils';
-import { NoteSet, normalizeToSingleOctave, useChannelDisplays, useCheckNoteEmphasis, useGetCombinedModdedEmphasis, useHomeNote, useNoteDisplays, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
+import { NoteSet, normalizeToSingleOctave, useChannelDisplays, useGetCombinedModdedEmphasis, useHomeNote, useNoteDisplays, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
 import { KonvaEventObject } from 'konva/lib/Node';
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import { useSettings } from '../view/SettingsProvider';
+import { useAppTheme } from '../view/ThemeManager';
 
-const keyColor = "grey";
 const noteToXOffsetFactor = [0, 1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 6];
 const blackKeyNums = [1, 3, 6, 8, 10];
 const whiteKeyNums = [0, 2, 4, 5, 7, 9, 11];
@@ -23,6 +23,7 @@ const octaveOffset = -2;
 
 function Piano(props: Props) {
     // Settings Storage
+    const { colorPalette } = useAppTheme()!;
 
     const [octaveCount, setOctaveCount] = React.useState(props.octaveCount);
     const octaveWidth = props.width / octaveCount;
@@ -65,32 +66,32 @@ function Piano(props: Props) {
         </tr>),
         (<tr key={"tr2"}>
             <td>Show Minor Seconds (Major Sevenths)</td>
-            <td style={{ color: getIntervalColor(1), textAlign: "center" }}>■</td>
+            <td style={{ color: getIntervalColor(1, colorPalette), textAlign: "center" }}>■</td>
             <td><Switch color={"primary"} checked={displayInterval[0]} onChange={e => setDisplayInterval(0, e.target.checked)} /></td>
         </tr>),
         (<tr key={"tr3"}>
             <td>Show Major Seconds (Minor Sevenths)</td>
-            <td style={{ color: getIntervalColor(2), textAlign: "center" }}>■</td>
+            <td style={{ color: getIntervalColor(2, colorPalette), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[1]} onChange={e => setDisplayInterval(1, e.target.checked)} /></td>
         </tr>),
         (<tr key={"tr4"}>
             <td>Show Minor Thirds (Major Sixths)</td>
-            <td style={{ color: getIntervalColor(3), textAlign: "center" }}>■</td>
+            <td style={{ color: getIntervalColor(3, colorPalette), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[2]} onChange={e => setDisplayInterval(2, e.target.checked)} /></td>
         </tr>),
         (<tr key={"tr5"}>
             <td>Show Major Thirds (Minor Sixths)</td>
-            <td style={{ color: getIntervalColor(4), textAlign: "center" }}>■</td>
+            <td style={{ color: getIntervalColor(4, colorPalette), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[3]} onChange={e => setDisplayInterval(3, e.target.checked)} /></td>
         </tr>),
         (<tr key={"tr6"}>
             <td>Show Perfect Fourths (Perfect Fifths)</td>
-            <td style={{ color: getIntervalColor(5), textAlign: "center" }}>■</td>
+            <td style={{ color: getIntervalColor(5, colorPalette), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[4]} onChange={e => setDisplayInterval(4, e.target.checked)} /></td>
         </tr>),
         (<tr key={"tr7"}>
             <td>Show Tritones</td>
-            <td style={{ color: getIntervalColor(6), textAlign: "center" }}>■</td>
+            <td style={{ color: getIntervalColor(6, colorPalette), textAlign: "center" }}>■</td>
             <td><Switch checked={displayInterval[5]} onChange={e => setDisplayInterval(5, e.target.checked)} /></td>
         </tr>),
         (<tr key={"tr8"}>
@@ -118,7 +119,7 @@ function Piano(props: Props) {
     const activeNotes = useNoteSet(NoteSet.Active).notes;
     const combinedEmphasis = useGetCombinedModdedEmphasis();
     const emphasizedNotesOctaveGnostic = useNoteSet(NoteSet.Emphasized_OctaveGnostic).notes;
-    const checkEmphasis = useCheckNoteEmphasis();
+    // const checkEmphasis = useCheckNoteEmphasis();
     const updateNotes = useUpdateNoteSet();
 
     const noteDisplays = useNoteDisplays();
@@ -148,7 +149,7 @@ function Piano(props: Props) {
         const activeIndicatorWidth = keyWidth / 3;
         const activeIndicatorY = 5 * keyHeight / 6;
         const xpos = (noteToXOffsetFactor[note] * octaveWidth / 7);
-        const extraProps = { stroke: keyColor, strokeWidth: 2 }
+        const extraProps = { stroke: colorPalette.Widget_Primary, strokeWidth: 2 }
         return {
             keyWidth,
             keyHeight,
@@ -159,7 +160,7 @@ function Piano(props: Props) {
             xpos,
             extraProps,
         }
-    }, [props.height, octaveWidth]);
+    }, [octaveWidth, props.height, colorPalette.Widget_Primary]);
 
     const getPropsForBlackNote: (note: number, octave: number) => NoteProps = React.useCallback((note: number, octave: number) => {
         const individualKeyOffset = (octave * octaveWidth) - octaveWidth / 24 + 1;
@@ -169,7 +170,7 @@ function Piano(props: Props) {
         const activeIndicatorWidth = keyWidth * 2 / 3;
         const activeIndicatorY = 3 * keyHeight / 4;
         const xpos = noteToXOffsetFactor[note] * octaveWidth / 7;
-        const extraProps = { stroke: keyColor, fill: keyColor }
+        const extraProps = { stroke: colorPalette.Widget_Primary, fill: colorPalette.Widget_Primary }
         return {
             keyWidth,
             keyHeight,
@@ -180,7 +181,7 @@ function Piano(props: Props) {
             xpos,
             extraProps,
         }
-    }, [props.height, octaveWidth]);
+    }, [octaveWidth, props.height, colorPalette.Widget_Primary]);
 
     const getPropsForNote: (note: number, octave: number) => NoteProps = React.useCallback((note: number, octave: number) => {
         if (blackKeyNums.includes(note)) {
@@ -228,7 +229,7 @@ function Piano(props: Props) {
                     blackkeys.push(key);
                 }
                 if (activeNotes.has(note)) {
-                    const noteColor = note === homeNote ? "yellow" : "white";
+                    const noteColor = note === homeNote ? colorPalette.Note_Home : colorPalette.Note_Active;
                     activeNoteIndicators.push(
                         <Circle
                             key={`activeInd${i}-${note}`}
@@ -313,7 +314,7 @@ function Piano(props: Props) {
             emphasized,
             clickListenersArr,
         };
-    }, [activeNotes, getAbsoluteNoteNum, getPropsForNote, homeNote, noteDisplays.normalized, noteDisplays.octaveGnostic, octaveCount, setHomeNote, settings?.isPeaceModeEnabled, showGhostOctaves, showNoteNames, updateNotes]);
+    }, [activeNotes, colorPalette.Note_Active, colorPalette.Note_Home, getAbsoluteNoteNum, getPropsForNote, homeNote, noteDisplays.normalized, noteDisplays.octaveGnostic, octaveCount, setHomeNote, settings?.isPeaceModeEnabled, showGhostOctaves, showNoteNames, updateNotes]);
 
     const intervals = React.useMemo(() => {
         var intervalLines: JSX.Element[] = [];
@@ -343,7 +344,7 @@ function Piano(props: Props) {
 
 
                     const dist = getIntervalDistance(noteA, noteB, 12);
-                    const discColor = getIntervalColor(dist);
+                    const discColor = getIntervalColor(dist, colorPalette);
                     const absoluteDist = Math.abs((noteA + (12 * octaveA)) - (noteB + (12 * octaveB)));
 
                     if (onlyShowIntervalsOnHover) {
@@ -432,7 +433,7 @@ function Piano(props: Props) {
             emphasized: emphasized,
             listeners: touchListeners,
         }
-    }, [activeNotes, channelDisplays, combinedEmphasis, displayInterval, emphasizedNotesOctaveGnostic, getPropsForNote, onlyShowIntervalsOnHover, props.height, showInverseIntervals, updateNotes]);
+    }, [activeNotes, channelDisplays, colorPalette, combinedEmphasis, displayInterval, emphasizedNotesOctaveGnostic, getPropsForNote, onlyShowIntervalsOnHover, props.height, showInverseIntervals, updateNotes]);
 
     const fullRender = React.useMemo((
     ) => {

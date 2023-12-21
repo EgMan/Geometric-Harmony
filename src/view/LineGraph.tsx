@@ -1,6 +1,6 @@
 import React from 'react';
-import { WidgetComponentProps } from './Widget';
 import { Line } from 'react-konva';
+import { useAppTheme } from './ThemeManager';
 
 type Props = {
     width: number
@@ -14,6 +14,7 @@ type Props = {
 function LineGraph(props: Props) {
     const valRange = props.maxVal - props.minVal;
     const medVal = (props.minVal + props.maxVal) / 2;
+    const { colorPalette } = useAppTheme()!;
 
     const points = React.useMemo(() => {
         return props.values.map((val, idx) => {
@@ -25,7 +26,7 @@ function LineGraph(props: Props) {
 
     return <Line
         points={points}
-        stroke={"white"}
+        stroke={colorPalette.Widget_MutedPrimary}
         opacity={1}
         strokeWidth={3}
         {...props.lineProps}
