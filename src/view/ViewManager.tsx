@@ -75,9 +75,16 @@ type Props = {
 
 function ViewManager(props: Props) {
     const limitingAxisIsHeight = props.width > props.height;
-    const limitingAxisSize = limitingAxisIsHeight ? props.height : props.width;
-    const padding = limitingAxisSize / 5;
-    const wheelRadius = limitingAxisSize / 2 - padding;
+    // const limitingAxisSize = limitingAxisIsHeight ? props.height : props.width;
+    const PortraitMaxXScreenWheelDiameter = props.width / 3;
+    const PortraitmaxYScreenWheelDiameter = props.height * 2 / 3;
+    const LandscapeMaxXScreenWheelDiameter = props.width * 2 / 3;
+    const LandscapemaxYScreenWheelDiameter = props.height * 2 / 3;
+
+    const wheelDiameter = limitingAxisIsHeight ?
+        Math.min(PortraitMaxXScreenWheelDiameter, PortraitmaxYScreenWheelDiameter) :
+        Math.min(LandscapeMaxXScreenWheelDiameter, LandscapemaxYScreenWheelDiameter);
+    const wheelRadius = wheelDiameter / 2;
     const pianoOctaveCount = limitingAxisIsHeight ? 7 : 2;
     const pianoHeight = ((props.height / 2) - wheelRadius) * 2 / 3;
     const guitarHeight = props.height - 200;
@@ -89,42 +96,72 @@ function ViewManager(props: Props) {
     const [isHeartModalOpen, setIsHeartModalOpen] = React.useState(false);
 
     const [trackedWidgets, setTrackedWidgets] = React.useState<Map<String, WidgetTracker>>(
-        new Map<String, WidgetTracker>([
-            ['1', {
-                type: WidgetType.Analyzer,
-                initialPosition: { x: (props.width / 2), y: (props.height / 2) - wheelRadius - 40 },
-                width: props.width / (8 / 3),
-                height: 0,
-            }],
-            ['2', {
-                type: WidgetType.Piano,
-                initialPosition: { x: props.width / 2, y: props.height - pianoHeight - 19 },
-                width: props.width,
-                height: pianoHeight,
-            }],
-            // ['3', {
-            //     type: WidgetType.Guitar,
-            //     initialPosition: { x: (4 * props.width / 5) - 50 + (wheelRadius / 2), y: (props.height / 8) - (guitarHeight / 13) },
-            // }],
-            ['3', {
-                type: WidgetType.Tonnetz,
-                initialPosition: { x: 3 * props.width / 4, y: (props.height / 2) - wheelRadius - 40 },
-                width: wheelRadius,
-                height: wheelRadius,
-            }],
-            ['4', {
-                type: WidgetType.Wheel,
-                initialPosition: { x: props.width / 4, y: (props.height / 2) - wheelRadius - 40 },
-                width: wheelRadius,
-                height: wheelRadius,
-            }],
-            ['5', {
-                type: WidgetType.Oscilloscope,
-                initialPosition: { x: (props.width / 2), y: (props.height / 2) - wheelRadius - 60 },
-                width: props.width / (8 / 3),
-                height: wheelRadius / 2,
-            }],
-        ])
+        new Map<String, WidgetTracker>(limitingAxisIsHeight ?
+            // Portrait mode
+            [
+                ['1', {
+                    type: WidgetType.Analyzer,
+                    initialPosition: { x: (props.width / 2), y: (props.height / 2) + wheelRadius - 100 },
+                    width: props.width / (8 / 3),
+                    height: 0,
+                }],
+                ['2', {
+                    type: WidgetType.Piano,
+                    initialPosition: { x: props.width / 2, y: props.height - pianoHeight - 19 },
+                    width: pianoWidth,
+                    height: pianoHeight,
+                }],
+                // ['3', {
+                //     type: WidgetType.Guitar,
+                //     initialPosition: { x: (4 * props.width / 5) - 50 + (wheelRadius / 2), y: (props.height / 8) - (guitarHeight / 13) },
+                // }],
+                ['3', {
+                    type: WidgetType.Tonnetz,
+                    initialPosition: { x: 3 * props.width / 4, y: 75 },
+                    width: wheelRadius,
+                    height: wheelRadius,
+                }],
+                ['4', {
+                    type: WidgetType.Wheel,
+                    initialPosition: { x: props.width / 4, y: 75 },
+                    width: wheelDiameter,
+                    height: wheelRadius,
+                }],
+                ['5', {
+                    type: WidgetType.Oscilloscope,
+                    initialPosition: { x: (props.width / 2), y: (props.height / 2) + wheelRadius - 120 },
+                    width: props.width / (8 / 3),
+                    height: wheelRadius / 2,
+                }],
+            ]
+            // Landscape mode
+            : [
+                ['1', {
+                    type: WidgetType.Analyzer,
+                    initialPosition: { x: (props.width / 2), y: (props.height / 2) + (wheelRadius * 2 / 3) },
+                    width: props.width / (8 / 3),
+                    height: 0,
+                }],
+                ['2', {
+                    type: WidgetType.Piano,
+                    initialPosition: { x: props.width / 2, y: props.height - pianoHeight - 19 },
+                    width: props.width,
+                    height: pianoHeight,
+                }],
+                ['4', {
+                    type: WidgetType.Wheel,
+                    initialPosition: { x: props.width / 2, y: 125 },
+                    width: wheelRadius * 2,
+                    height: wheelRadius * 2,
+                }],
+                ['5', {
+                    type: WidgetType.Oscilloscope,
+                    initialPosition: { x: (props.width / 2), y: (props.height / 2) + (3 * wheelRadius / 4) },
+                    width: props.width / (8 / 3),
+                    height: wheelRadius / 2,
+                }],
+            ]
+        )
     );
 
     // React.useEffect(() => {
