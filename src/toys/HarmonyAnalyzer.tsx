@@ -6,6 +6,7 @@ import { NoteSet, normalizeToSingleOctave, useChannelDisplays, useGetCombinedMod
 import { WidgetComponentProps } from "../view/Widget";
 import SettingsMenuOverlay from "../view/SettingsMenuOverlay";
 import { Switch } from "@mui/material";
+import { useAppTheme } from "../view/ThemeManager";
 
 const inputBoxNoteNameRegex = /^([aAbBcCdDeEfFgG][b#♭♯]?)\s/
 
@@ -39,6 +40,8 @@ function HarmonyAnalyzer(props: Props) {
     const midiFileExactFit = midiFileExactFits[0];
 
     const channelDisplaysExactFits = useChannelDisplaysExactFits();
+
+    const { colorPalette } = useAppTheme()!;
 
     // TODO
     // const channelDisplays = useChannelDisplays();
@@ -137,7 +140,7 @@ function HarmonyAnalyzer(props: Props) {
             var combinedMidiFileText = getNoteNameInExactFitShape(-midiFileExactFit.noteToFirstNoteInShapeIdxOffset, midiFileExactFit);
             infos.push({
                 text: combinedMidiFileText,
-                color: midiFileCombinedDisplayColor,
+                color: midiFileCombinedDisplayColor ?? colorPalette.Widget_Primary,
             });
         }
 

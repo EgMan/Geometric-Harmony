@@ -10,7 +10,8 @@ import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import ColorLensIcon from '@mui/icons-material/ColorLens';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import PianoIcon from '@mui/icons-material/Piano';
-import SettingsIcon from '@mui/icons-material/Settings';
+// import SettingsIcon from '@mui/icons-material/Settings';
+import HeadphonesIcon from '@mui/icons-material/Headphones';
 import SquareFootIcon from '@mui/icons-material/SquareFoot';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import VideogameAssetIcon from '@mui/icons-material/VideogameAsset';
@@ -21,7 +22,7 @@ import { MidiFileDataProvider, MidiFileParser } from "../sound/MidiFileParser";
 import { LocalSynthVoice } from "../sound/SynthVoicings";
 import MIDIConnectionManager from "../sound/MIDIConnectionManager";
 import { useAppTheme, useChangeAppTheme } from "./ThemeManager";
-import { getRandomColor, getRandomColorWithAlpha } from "../utils/Utils";
+import { blendColors, changeLightness, getRandomColor, getRandomColorWithAlpha } from "../utils/Utils";
 // import useSettings from "./SettingsProvider"
 
 type Props =
@@ -109,11 +110,57 @@ function ToolBar(props: Props) {
                                             color: "grey"
                                         }
                                     }}
+                                    onClick={
+                                        () => changeTheme?.(prev => {
+                                            const Widget_Primary = changeLightness(getRandomColor(), 1.25);
+                                            const Main_Background = changeLightness(getRandomColor(), 0.75);
+                                            const Widget_MutedPrimary = blendColors([Widget_Primary, Widget_Primary, Widget_Primary, Main_Background, Main_Background])!;
+                                            return {
+                                                ...prev,
+                                                Main_Background,
+                                                UI_Background: getRandomColorWithAlpha(),
+                                                UI_Primary: getRandomColor(),
+                                                UI_Accent: getRandomColor(),
+                                                // Interval_Semitone: getRandomColor(),
+                                                // Interval_Wholetone: getRandomColor(),
+                                                // Interval_MinorThird: getRandomColor(),
+                                                // Interval_MajorThird: getRandomColor(),
+                                                // Interval_PerfectFourth: getRandomColor(),
+                                                // Interval_Tritone: getRandomColor(),
+                                                Widget_Primary,
+                                                Widget_MutedPrimary,
+                                                Note_Home: getRandomColor(),
+                                            }
+                                        }
+                                        )
+                                    }
+                                >
+                                    <ColorLensIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                </Button>
+                                <Button type="submit" variant="contained"
+                                    sx={{
+                                        fontSize: "0.7em",
+                                        color: 'white',
+                                        backgroundColor: 'transparent',
+                                        boxShadow: 'none',
+                                        padding: "1.8px",
+                                        borderTopLeftRadius: '0px',
+                                        borderTopRightRadius: '9px',
+                                        borderBottomLeftRadius: '9px',
+                                        borderBottomRightRadius: '9px',
+                                        '&:hover': {
+                                            backgroundColor: 'rgb(255,255,255,0.1)',
+                                        },
+                                        "&.Mui-disabled": {
+                                            background: 'transparent',
+                                            color: "grey"
+                                        }
+                                    }}
                                     onClick={() => {
                                         setSettingsDropdownOpen(true);
                                     }}
                                 >
-                                    <SettingsIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" style={{ height: '100%' }} />
+                                    <HeadphonesIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" style={{ height: '100%' }} />
                                 </Button>
                                 <Button type="submit" variant="contained"
                                     sx={{
@@ -139,49 +186,6 @@ function ToolBar(props: Props) {
                                     }}
                                 >
                                     <PianoIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" />
-                                </Button>
-                                <Button type="submit" variant="contained"
-                                    sx={{
-                                        fontSize: "0.7em",
-                                        color: 'white',
-                                        backgroundColor: 'transparent',
-                                        boxShadow: 'none',
-                                        padding: "1.8px",
-                                        borderTopLeftRadius: '0px',
-                                        borderTopRightRadius: '9px',
-                                        borderBottomLeftRadius: '9px',
-                                        borderBottomRightRadius: '9px',
-                                        '&:hover': {
-                                            backgroundColor: 'rgb(255,255,255,0.1)',
-                                        },
-                                        "&.Mui-disabled": {
-                                            background: 'transparent',
-                                            color: "grey"
-                                        }
-                                    }}
-                                    onClick={
-                                        () => changeTheme?.(prev => (
-                                            {
-                                                ...prev,
-                                                Main_Background: getRandomColor(),
-                                                UI_Background: getRandomColorWithAlpha(),
-                                                UI_Primary: getRandomColor(),
-                                                UI_Accent: getRandomColor(),
-                                                Interval_Semitone: getRandomColor(),
-                                                Interval_Wholetone: getRandomColor(),
-                                                Interval_MinorThird: getRandomColor(),
-                                                Interval_MajorThird: getRandomColor(),
-                                                Interval_PerfectFourth: getRandomColor(),
-                                                Interval_Tritone: getRandomColor(),
-                                                Widget_Primary: getRandomColor(),
-                                                Widget_MutedPrimary: getRandomColor(),
-                                                Note_Active: getRandomColor(),
-                                                Note_Home: getRandomColor(),
-                                            }
-                                        ))
-                                    }
-                                >
-                                    <ColorLensIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                 </Button>
                             </>
                     }

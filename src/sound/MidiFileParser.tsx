@@ -12,6 +12,7 @@ import { useSynth, useSynthDrum } from './SoundEngine';
 import * as Tone from 'tone';
 import { ListItemIcon, MenuItem } from '@mui/material';
 import AudioFileIcon from '@mui/icons-material/AudioFile';
+import { useAppTheme } from '../view/ThemeManager';
 
 type Props = {
     closeContainer: () => void,
@@ -82,6 +83,7 @@ export function MidiFileParser(props: Props) {
     const { midiData, midiEventTrackers, midiChannelTrackers, preprocessedData, startTime, microsecPerBeat, inputRef, loadedFileNameState, totalPendingScheduled, audioCtx } = stateContext;
     const [loadedFileName, setLoadedFilename] = loadedFileNameState;
     const settings = useSettings();
+    const { colorPalette } = useAppTheme()!;
 
     const setActiveShape = useSetActiveShape();
     const setHomeNote = useSetHomeNote();
@@ -397,7 +399,7 @@ export function MidiFileParser(props: Props) {
         <MenuItem sx={{ padding: "0" }}>
             <label className="midi-file-input-label" style={{ width: "100%", height: "100%", paddingTop: 6, paddingBottom: 6, paddingLeft: 16, paddingRight: 16 }}>
                 <ListItemIcon>
-                    <AudioFileIcon style={{ color: "white" }} fontSize="small" />
+                    <AudioFileIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                 </ListItemIcon>
                 <input style={{ width: "100%", height: "100%" }} className="midi-file-input" accept=".mid,.midi" onChange={loadMidiData} ref={inputRef} type="file" id="filereader" />
                 {loadedFileName ?? "Open MIDI file"}

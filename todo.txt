@@ -13,3 +13,5 @@ Add ianring links to title bar
 Make better favicon
 Add translations
 Fill in heart message with real links
+
+Button that solo views a widget

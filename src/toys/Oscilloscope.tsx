@@ -8,6 +8,7 @@ import { useSynth, useSynthAfterEffects } from '../sound/SoundEngine';
 import { Waveform } from 'tone';
 import { useChannelDisplays } from '../sound/NoteProvider';
 import { blendColors, changeLightness } from '../utils/Utils';
+import { useAppTheme } from '../view/ThemeManager';
 
 type Props = {
     width: number,
@@ -32,6 +33,7 @@ function Oscilloscope(props: Props) {
     const [latchingValues, setLatchingValues] = React.useState<number[]>(Array(waveformLatchDataSize).fill(waveformDisplaySize));
     const [minValue, setMinValue] = React.useState<number>(1);
     const [maxValue, setMaxValue] = React.useState<number>(-1);
+    const { colorPalette } = useAppTheme()!;
 
     const waveform = React.useMemo(() => {
         return new Waveform(waveformSampleSize);
@@ -137,7 +139,7 @@ function Oscilloscope(props: Props) {
         changeLightness(
             blendColors(
                 channelDisplays.map(channel => channel.color ?? "")
-            )
+            ) ?? colorPalette.Widget_Primary
             , 1.15);
 
     React.useEffect(() => {

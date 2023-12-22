@@ -159,7 +159,7 @@ export function blendColors(colors: string[]) {
             console.error("Invalid color", color);
         }
     });
-    if (count === 0) return "white";
+    if (count === 0) return null;
 
     return `rgba(${Math.round(r / count)}, ${Math.round(g / count)}, ${Math.round(b / count)}, ${Math.round(a / count)})`;
 }

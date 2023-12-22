@@ -111,7 +111,7 @@ const Theme_Classic: ColorPalette =
     UI_Background: "rgba(255, 255, 255, 0.04)",
     UI_Accent: "rgb(255, 238, 88)",
     Widget_Primary: "rgb(128,128,128)",
-    Widget_MutedPrimary: blendColors(["rgb(128,128,128)", "#373737", "#373737"]),
+    Widget_MutedPrimary: blendColors(["rgb(128,128,128)", "#373737", "#373737"])!,
 
     // Widget_MutedPrimary: "rgb(128,128,128)",
 
@@ -134,7 +134,7 @@ const Theme_BlackOnWhite: ColorPalette =
     UI_Background: "rgba(0, 0, 0, 0.04)",
     UI_Accent: "rgb(255, 238, 88)",
     Widget_Primary: "rgb(24, 20, 0)",
-    Widget_MutedPrimary: blendColors(["white", "black"]),
+    Widget_MutedPrimary: blendColors(["white", "black"])!,
 
     Interval_Semitone: "black",
     Interval_Wholetone: "black",
@@ -153,7 +153,7 @@ const Theme_WhiteOnBlack: ColorPalette =
     UI_Background: "rgba(255, 255, 255, 0.1)",
     UI_Accent: "rgb(255, 238, 88)",
     Widget_Primary: "rgb(128, 128, 128)",
-    Widget_MutedPrimary: blendColors(["rgb(128, 128, 128)", "black"]),
+    Widget_MutedPrimary: blendColors(["rgb(128, 128, 128)", "black"])!,
 
     // Interval_Semitone: "white",
     // Interval_Wholetone: "white",
