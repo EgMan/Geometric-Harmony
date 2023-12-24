@@ -15,3 +15,6 @@ Add translations
 Fill in heart message with real links
 
 Button that solo views a widget
+tooltips
+Make analyzer contain optional oscilloscope
+Fix Michelle.midi bug

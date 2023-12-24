@@ -3,7 +3,7 @@ import { Circle, Rect, Line, Text, Shape, Group } from 'react-konva';
 import { WidgetComponentProps } from '../view/Widget';
 import { MenuItem, Select } from '@mui/material';
 import { getIntervalColor, getIntervalDistance, getNoteName } from '../utils/Utils';
-import { NoteSet, normalizeToSingleOctave, useCheckNoteEmphasis, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
+import { NoteSet, normalizeToSingleOctave, useChannelDisplays, useCheckNoteEmphasis, useGetCombinedModdedEmphasis, useHomeNote, useNoteDisplays, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
 import { KonvaEventObject } from 'konva/lib/Node';
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import { useSettings } from '../view/SettingsProvider';
@@ -29,6 +29,9 @@ function StringInstrument(props: Props) {
     const emphasizedNotesOctaveGnostic = useNoteSet(NoteSet.Emphasized_OctaveGnostic).notes;
     const updateNotes = useUpdateNoteSet();
 
+    const channelDisplays = useChannelDisplays();
+    const noteDisplays = useNoteDisplays();
+
     const homeNote = useHomeNote();
     const setHomeNote = useSetHomeNote();
 
@@ -39,7 +42,7 @@ function StringInstrument(props: Props) {
         NoteNames,
         ActiveNoteNames,
     }
-    const [noteLabeling, setNoteLabeling] = React.useState(NoteLabling.NoteNames);
+    const [noteLabeling, setNoteLabeling] = React.useState(NoteLabling.None);
 
     // TODO add this back in
     // enum IntervalDisplayType {
@@ -128,13 +131,42 @@ function StringInstrument(props: Props) {
                         <Line key={`l2-${fretNum}-${stringNum}`} stroke={colorPalette.Widget_Primary} strokeWidth={1} points={[posX, posY, posX, posY + fretSpacing]} />
                     );
                 }
-                if (checkEmphasis(absoluteNote, true)) {
-                    emphasized.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={"red"}></Circle>)
+                // if (noteDisplays.octaveGnostic[]) {
+                //     emphasized.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={"red"}></Circle>)
+                //     noteNames.push(
+                //         <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note, activeNotes)} fontSize={12} fontFamily='monospace' fill={colorPalette.Main_Background} align="center" verticalAlign="middle" />
+                //     )
+                // }
+
+                noteDisplays.octaveGnostic[absoluteNote]?.forEach((channel, idx) => {
+                    emphasized.push(
+                        <Circle key={`activeInd${fretNum}-${stringNum}-${channel.name}`}
+                            x={posX}
+                            y={posY + fretElemYOffset}
+                            radius={circleElemRadius}
+                            opacity={1 / (idx + 1)}
+                            fill={channel.color ?? "green"}
+                        />);
+                    emphasized.push(
+                        <Rect key={`activeIndrect${fretNum}-${stringNum}-${channel.name}`}
+                            x={posX - (stringSpacing / 2)}
+                            y={posY + fretElemYOffset - (fretSpacing / 2)}
+                            radius={circleElemRadius}
+                            opacity={1 / (idx + 1)}
+                            fill={channel.color ?? "green"}
+                            width={stringSpacing}
+                            height={fretSpacing}
+                            cornerRadius={9}
+                        />);
+
+                });
+
+                if (noteDisplays.octaveGnostic[absoluteNote]?.length > 0) {
                     noteNames.push(
                         <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note, activeNotes)} fontSize={12} fontFamily='monospace' fill={colorPalette.Main_Background} align="center" verticalAlign="middle" />
                     )
                 }
-                else if (activeNotes.has(note)) {
+                if (activeNotes.has(note)) {
                     const noteColor = (note === homeNote) ? colorPalette.Note_Home : colorPalette.Note_Active;
                     activeNoteIndicators.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={noteColor}></Circle>)
                     if (!settings?.isPeaceModeEnabled && ([NoteLabling.ActiveNoteNames, NoteLabling.NoteNames].includes(noteLabeling) || fretNum === 0)) {
@@ -160,7 +192,7 @@ function StringInstrument(props: Props) {
             emphasized,
             clickListeners,
         }
-    }, [NoteLabling.ActiveNoteNames, NoteLabling.NoteNames, activeNotes, checkEmphasis, circleElemRadius, colorPalette.Main_Background, colorPalette.Note_Active, colorPalette.Note_Home, colorPalette.Widget_Primary, fretElemYOffset, fretSpacing, getXPos, getYPos, homeNote, noteLabeling, props.fretCount, props.tuning, props.width, setHomeNote, settings?.isPeaceModeEnabled, stringSpacing, updateNotes]);
+    }, [NoteLabling.ActiveNoteNames, NoteLabling.NoteNames, activeNotes, circleElemRadius, colorPalette.Main_Background, colorPalette.Note_Active, colorPalette.Note_Home, colorPalette.Widget_Primary, fretElemYOffset, fretSpacing, getXPos, getYPos, homeNote, noteDisplays.octaveGnostic, noteLabeling, props.fretCount, props.tuning, props.width, setHomeNote, settings?.isPeaceModeEnabled, stringSpacing, updateNotes]);
 
     const getOrgnogonalUnitVect = (x: number, y: number) => {
         const mag = Math.sqrt(x * x + y * y);
@@ -173,125 +205,142 @@ function StringInstrument(props: Props) {
         var touchListeners: JSX.Element[] = [];
         // for (let stringA = 0; stringA < props.tuning.length; stringA++) {
         //     for (let stringB = 0; stringB <= props.tuning.length; stringB++) {
-        props.tuning.forEach((openNoteA, stringA) => {
-            props.tuning.forEach((openNoteB, stringB) => {
-                for (let fretA = 0; fretA < props.fretCount; fretA++) {
-                    for (let fretB = 0; fretB < props.fretCount; fretB++) {
 
-                        const fretDist = Math.abs(fretA - fretB);
-                        const stringDist = Math.abs(stringA - stringB);
-                        if (fretDist + stringDist > 12 / 2) continue;
+        // Todo also check if note displays size is greater than one
+        if (channelDisplays.length > 0)
+            props.tuning.forEach((openNoteA, stringA) => {
+                props.tuning.forEach((openNoteB, stringB) => {
+                    for (let fretA = 0; fretA < props.fretCount; fretA++) {
+                        for (let fretB = 0; fretB < props.fretCount; fretB++) {
+                            if (stringA === stringB) continue;
 
-                        // const noteA = activeNoteArr[a];
-                        // const noteB = activeNoteArr[b];
-                        const absoluteNoteA = openNoteA + fretA;
-                        const absoluteNoteB = openNoteB + fretB;
+                            const fretDist = Math.abs(fretA - fretB);
+                            const stringDist = Math.abs(stringA - stringB);
+                            if (fretDist + stringDist > 12 / 2) continue;
 
-                        if (absoluteNoteA > absoluteNoteB) continue;
+                            // const noteA = activeNoteArr[a];
+                            // const noteB = activeNoteArr[b];
+                            const absoluteNoteA = openNoteA + fretA;
+                            const absoluteNoteB = openNoteB + fretB;
 
-                        const noteA = normalizeToSingleOctave(absoluteNoteA);
-                        const noteB = normalizeToSingleOctave(absoluteNoteB);
-                        const absoluteInverval = [absoluteNoteA, absoluteNoteB];
+                            if (absoluteNoteA > absoluteNoteB) continue;
 
-                        // const propsA = getPropsForNote(noteA, octaveA);
-                        // const propsB = getPropsForNote(noteB, octaveB);
+                            const noteA = normalizeToSingleOctave(absoluteNoteA);
+                            const noteB = normalizeToSingleOctave(absoluteNoteB);
+                            const absoluteInverval = [absoluteNoteA, absoluteNoteB];
 
-                        const aLoc = { x: getXPos(stringA), y: getYPos(fretA) + fretElemYOffset };
-                        const bLoc = { x: getXPos(stringB), y: getYPos(fretB) + fretElemYOffset };
+                            // const propsA = getPropsForNote(noteA, octaveA);
+                            // const propsB = getPropsForNote(noteB, octaveB);
+
+                            const aLoc = { x: getXPos(stringA), y: getYPos(fretA) + fretElemYOffset };
+                            const bLoc = { x: getXPos(stringB), y: getYPos(fretB) + fretElemYOffset };
 
 
-                        const dist = getIntervalDistance(noteA, noteB, 12);
-                        const discColor = getIntervalColor(dist, colorPalette);
-                        const absoluteDist = Math.abs(absoluteNoteA - absoluteNoteB);
-                        if (dist === 0) continue;
+                            const dist = getIntervalDistance(noteA, noteB, 12);
+                            const discColor = getIntervalColor(dist, colorPalette);
+                            const absoluteDist = Math.abs(absoluteNoteA - absoluteNoteB);
+                            if (dist === 0) continue;
 
-                        // todo add this in
-                        // if (onlyShowIntervalsOnHover) {
-                        if (combinedEmphasis.size === 0)
-                            continue;
-                        if (combinedEmphasis.size === 1)
-                            continue;
-                        // To instead show all intervals between the single emphasized note
-                        // if (emphasizedNotes.size === 1 && !emphasizedNotes.has(noteA) && !emphasizedNotes.has(noteB))
-                        //     continue;
-                        if (combinedEmphasis.size >= 2 && (!combinedEmphasis.has(noteA) || !combinedEmphasis.has(noteB)))
-                            continue;
-                        // }
+                            // todo add this in
+                            // if (onlyShowIntervalsOnHover) {
+                            // if (combinedEmphasis.size === 0)
+                            //     continue;
+                            // if (combinedEmphasis.size === 1)
+                            //     continue;
 
-                        // if (!displayInterval[dist - 1]) {
-                        //     continue;
-                        // }
+                            // if (noteDisplays.octaveGnostic.)
+                            //     continue;
 
-                        const showInverseIntervals = true;//todo remove this
+                            // To instead show all intervals between the single emphasized note
+                            // if (emphasizedNotes.size === 1 && !emphasizedNotes.has(noteA) && !emphasizedNotes.has(noteB))
+                            //     continue;
 
-                        // if (showInverseIntervals && absoluteDist > 12 - dist) {
-                        //     continue;
-                        // }
-                        if (!showInverseIntervals && absoluteDist > dist) {
-                            continue;
+                            // if (combinedEmphasis.size >= 2 && (!combinedEmphasis.has(noteA) || !combinedEmphasis.has(noteB))) {
+                            if ((noteDisplays.octaveGnostic[absoluteNoteA]?.length ?? 0) === 0 || (noteDisplays.octaveGnostic[absoluteNoteB]?.length ?? 0) === 0 || !noteDisplays.octaveGnostic[absoluteNoteA]?.some(someNoteA => noteDisplays.octaveGnostic[absoluteNoteB]?.some(someNoteB => someNoteA.name === someNoteB.name))) {
+                                continue;
+                            }
+                            // }
+
+                            // if (!displayInterval[dist - 1]) {
+                            //     continue;
+                            // }
+
+                            const showInverseIntervals = true;//todo remove this
+
+                            // if (showInverseIntervals && absoluteDist > 12 - dist) {
+                            //     continue;
+                            // }
+                            if (!showInverseIntervals && absoluteDist > dist) {
+                                continue;
+                            }
+
+                            const emphasize = () => {
+                                updateNotes([NoteSet.Emphasized_OctaveGnostic], absoluteInverval, true, true);
+                            };
+                            const deemphasize = () => {
+                                updateNotes([NoteSet.Emphasized_OctaveGnostic], absoluteInverval, false);
+                            };
+                            // const isIntervalEmphasized = emphasizedNotesOctaveGnostic.size > 0 ? emphasizedNotesOctaveGnostic.has(absoluteNoteA) && emphasizedNotesOctaveGnostic.has(absoluteNoteB) : combinedEmphasis.has(noteA) && combinedEmphasis.has(noteB);
+                            // if (emphasizedNotesOctaveGnostic.size > 0 && !isIntervalEmphasized) continue;
+
+                            const orthoVect = getOrgnogonalUnitVect(aLoc.x - bLoc.x, aLoc.y - bLoc.y);
+                            intervalLines.push(
+                                <Shape
+                                    key={`interval${fretA}-${fretB}-${stringA}-${stringB}`}
+                                    sceneFunc={(context, shape) => {
+                                        context.beginPath();
+                                        context.moveTo(aLoc.x, aLoc.y);
+                                        context.bezierCurveTo(
+                                            aLoc.x + 2 * (fretSpacing + stringSpacing) * (orthoVect.x / 12),
+                                            aLoc.y + 2 * (fretSpacing + stringSpacing) * (orthoVect.y / 12),
+                                            bLoc.x + 2 * (fretSpacing + stringSpacing) * (orthoVect.x / 12),
+                                            bLoc.y + 2 * (fretSpacing + stringSpacing) * (orthoVect.y / 12),
+                                            bLoc.x,
+                                            bLoc.y
+                                        );
+                                        context.strokeShape(shape);
+                                    }}
+                                    stroke={discColor}
+                                    // strokeWidth={isIntervalEmphasized ? 3 : 1.5}
+                                    strokeWidth={5}
+                                    opacity={0.225}
+                                    shadowEnabled={true}
+                                    shadowColor={'white'}
+                                    shadowOpacity={0.5}
+                                    shadowBlur={5}
+                                />
+                            );
+                            touchListeners.push(
+                                <Shape
+                                    key={`touchlisten${fretA}-${fretB}-${stringA}-${stringB}`}
+                                    sceneFunc={(context, shape) => {
+                                        context.beginPath();
+                                        context.moveTo(aLoc.x, aLoc.y);
+                                        context.bezierCurveTo(
+                                            aLoc.x,
+                                            aLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
+                                            bLoc.x,
+                                            bLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
+                                            bLoc.x,
+                                            bLoc.y
+                                        );
+                                        context.strokeShape(shape);
+                                    }}
+                                    stroke={'rgba(0,0,0,0)'}
+                                    strokeWidth={3}
+                                    onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize}
+                                />
+                            );
                         }
-
-                        const emphasize = () => {
-                            updateNotes([NoteSet.Emphasized_OctaveGnostic], absoluteInverval, true, true);
-                        };
-                        const deemphasize = () => {
-                            updateNotes([NoteSet.Emphasized_OctaveGnostic], absoluteInverval, false);
-                        };
-                        const isIntervalEmphasized = emphasizedNotesOctaveGnostic.size > 0 ? emphasizedNotesOctaveGnostic.has(absoluteNoteA) && emphasizedNotesOctaveGnostic.has(absoluteNoteB) : combinedEmphasis.has(noteA) && combinedEmphasis.has(noteB);
-                        if (emphasizedNotesOctaveGnostic.size > 0 && !isIntervalEmphasized) continue;
-
-                        const orthoVect = getOrgnogonalUnitVect(aLoc.x - bLoc.x, aLoc.y - bLoc.y);
-                        intervalLines.push(
-                            <Shape
-                                key={`interval${fretA}-${fretB}-${stringA}-${stringB}`}
-                                sceneFunc={(context, shape) => {
-                                    context.beginPath();
-                                    context.moveTo(aLoc.x, aLoc.y);
-                                    context.bezierCurveTo(
-                                        aLoc.x + 2 * (fretSpacing + stringSpacing) * (orthoVect.x / 12),
-                                        aLoc.y + 2 * (fretSpacing + stringSpacing) * (orthoVect.y / 12),
-                                        bLoc.x + 2 * (fretSpacing + stringSpacing) * (orthoVect.x / 12),
-                                        bLoc.y + 2 * (fretSpacing + stringSpacing) * (orthoVect.y / 12),
-                                        bLoc.x,
-                                        bLoc.y
-                                    );
-                                    context.strokeShape(shape);
-                                }}
-                                stroke={discColor}
-                                strokeWidth={isIntervalEmphasized ? 3 : 1.5}
-                            />
-                        );
-                        touchListeners.push(
-                            <Shape
-                                key={`touchlisten${fretA}-${fretB}-${stringA}-${stringB}`}
-                                sceneFunc={(context, shape) => {
-                                    context.beginPath();
-                                    context.moveTo(aLoc.x, aLoc.y);
-                                    context.bezierCurveTo(
-                                        aLoc.x,
-                                        aLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
-                                        bLoc.x,
-                                        bLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
-                                        bLoc.x,
-                                        bLoc.y
-                                    );
-                                    context.strokeShape(shape);
-                                }}
-                                stroke={'rgba(0,0,0,0)'}
-                                strokeWidth={3}
-                                onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize}
-                            />
-                        );
                     }
-                }
+                });
             });
-        });
         return {
             line: intervalLines,
             emphasized: emphasized,
             listeners: touchListeners,
         }
-    }, [colorPalette, combinedEmphasis, emphasizedNotesOctaveGnostic, fretElemYOffset, fretSpacing, getXPos, getYPos, props.fretCount, props.height, props.tuning, stringSpacing, updateNotes]);
+    }, [channelDisplays.length, colorPalette, fretElemYOffset, fretSpacing, getXPos, getYPos, noteDisplays.octaveGnostic, props.fretCount, props.height, props.tuning, stringSpacing, updateNotes]);
 
     const fullRender = React.useMemo((
     ) => {
@@ -299,10 +348,10 @@ function StringInstrument(props: Props) {
             <Group>
                 {elems.frets}
                 {elems.strings}
+                {elems.emphasized}
                 {intervals.line}
                 {intervals.emphasized}
                 {elems.noteIndicators}
-                {elems.emphasized}
                 {elems.noteNames}
                 {elems.clickListeners}
             </Group>
