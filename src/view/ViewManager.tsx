@@ -101,7 +101,7 @@ function ViewManager(props: Props) {
             [
                 ['1', {
                     type: WidgetType.Analyzer,
-                    initialPosition: { x: (props.width / 2), y: (props.height / 2) + wheelRadius - 100 },
+                    initialPosition: { x: (props.width / 2), y: (props.height / 2) },
                     width: props.width / (8 / 3),
                     height: 0,
                 }],
