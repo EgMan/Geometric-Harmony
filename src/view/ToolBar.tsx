@@ -23,6 +23,7 @@ import { LocalSynthVoice } from "../sound/SynthVoicings";
 import MIDIConnectionManager from "../sound/MIDIConnectionManager";
 import { useAppTheme, useChangeAppTheme } from "./ThemeManager";
 import { blendColors, changeLightness, getRandomColor, getRandomColorWithAlpha } from "../utils/Utils";
+import VolumeSlider from "../sound/VolumeSlider";
 // import useSettings from "./SettingsProvider"
 
 type Props =
@@ -196,13 +197,13 @@ function ToolBar(props: Props) {
                             <ShapeNavigationTool width={600} subdivisionCount={12} />
                     }
                 </div>
-                <div>
+                <div style={{ display: "inline-block" }}>
                     {
                         settings?.isPeaceModeEnabled ? null :
                             <Button type="submit" variant="contained"
                                 onClick={() => props.setIsHeartModalOpen(enabled => !enabled)}
                                 sx={{
-                                    fontSize: "0.7em",
+                                    fontSize: "16px",
                                     color: colorPalette.UI_Primary,
                                     backgroundColor: 'transparent',
                                     boxShadow: 'none',
@@ -224,7 +225,7 @@ function ToolBar(props: Props) {
                     <Button type="submit" variant="contained"
                         onClick={() => settings?.setIsPeaceModeEnabled(enabled => !enabled)}
                         sx={{
-                            fontSize: "0.7em",
+                            fontSize: "16px",
                             color: colorPalette.UI_Primary,
                             backgroundColor: 'transparent',
                             boxShadow: 'none',
@@ -353,6 +354,12 @@ function ToolBar(props: Props) {
                         <ClickAwayListener onClickAway={() => setAddDropdownOpen(false)}>
                             <MenuList>
                                 <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>General Settings</DialogTitle>
+                                <MenuItem >
+                                    <ListItemIcon>
+                                        {settings?.isMuted ? <VolumeOffIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <VolumeUpIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />}
+                                    </ListItemIcon>
+                                    <VolumeSlider />
+                                </MenuItem>
                                 <MenuItem onClick={() => settings?.setIsMuted(muted => !muted)}>
                                     <ListItemIcon>
                                         {settings?.isMuted ? <VolumeOffIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <VolumeUpIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />}

@@ -11,6 +11,9 @@ const numberToPlayableNote = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "
 const numberToNoteNameSharp = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const numberToNoteNameFlat = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
 
+export const bigGold = 1.6180339887;
+export const smallGold = 1 / bigGold;
+
 export function getNote(i: number) {
     const octaveNum = Math.floor(i / 12) + 3;
     return `${numberToPlayableNote[normalizeToSingleOctave(i)]}${octaveNum}`;
@@ -162,6 +165,26 @@ export function blendColors(colors: string[]) {
     if (count === 0) return null;
 
     return `rgba(${Math.round(r / count)}, ${Math.round(g / count)}, ${Math.round(b / count)}, ${Math.round(a / count)})`;
+}
+
+export function fadeColors(colorA: string, colorB: string, ratio: number) {
+    let r = 0;
+    let g = 0;
+    let b = 0;
+    let a = 0;
+
+    const parsedColorA = ColorConverter(colorA);
+    const parsedColorB = ColorConverter(colorB);
+    if (parsedColorA.isValid && parsedColorB.isValid) {
+        r += parsedColorA.r + (parsedColorB.r - parsedColorA.r) * ratio;
+        g += parsedColorA.g + (parsedColorB.g - parsedColorA.g) * ratio;
+        b += parsedColorA.b + (parsedColorB.b - parsedColorA.b) * ratio;
+        a += parsedColorA.a + (parsedColorB.a - parsedColorA.a) * ratio;
+    } else {
+        console.error("Invalid colors", colorA, colorB);
+    }
+
+    return `rgba(${r}, ${g}, ${b}, ${a})`;
 }
 
 export function changeLightness(color: string, multiplier: number) {

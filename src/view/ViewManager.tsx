@@ -17,6 +17,9 @@ import Oscilloscope from "../toys/Oscilloscope";
 import FrequencyVisualizer from "../toys/FrequencyVisualizer";
 import HeartModal from "./HeartModal";
 import { useSettings } from "./SettingsProvider";
+import Wireframe from "../toys/Wireframe";
+import Icosahedron from "../toys/Icosahedron";
+import Spiral from "../toys/Spiral";
 
 export type WidgetTracker = {
     type: WidgetType,
@@ -45,6 +48,7 @@ export enum WidgetType {
     PlayShapeGame,
     Oscilloscope,
     FrequencyVis,
+    Wireframe,
 }
 
 export const widgetNameByType = (type: WidgetType) => {
@@ -65,6 +69,8 @@ export const widgetNameByType = (type: WidgetType) => {
             return "Waveform";
         case WidgetType.FrequencyVis:
             return "Frequency";
+        case WidgetType.Wireframe:
+            return "Wireframe";
     }
 }
 
@@ -132,6 +138,12 @@ function ViewManager(props: Props) {
                     initialPosition: { x: (props.width / 2), y: (props.height / 2) + wheelRadius - 120 },
                     width: props.width / (8 / 3),
                     height: wheelRadius / 2,
+                }],
+                ['6', {
+                    type: WidgetType.Wireframe,
+                    initialPosition: { x: props.width / 2, y: 75 },
+                    width: wheelRadius,
+                    height: wheelRadius,
                 }],
             ]
             // Landscape mode
@@ -428,6 +440,22 @@ function ViewManager(props: Props) {
                     setDraggedPosition={setDraggedPosition(uid)}
                     contextMenuOffset={{ x: wheelRadius * 0.6, y: -20 }}
                     width={wheelRadius * 1.2}
+                    height={wheelRadius / 2}
+                />
+            case WidgetType.Wireframe:
+                return <Widget of={Icosahedron}
+                    lockAspectRatio
+                    uid={uid}
+                    actions={trackerActions}
+                    tracker={widget}
+                    key={`${uid}`}
+                    isPeaceModeEnabled={isPeaceModeEnabled}
+                    isMaxamized={widget.isMaxamized ?? true}
+                    initialPosition={widget.initialPosition}
+                    draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
+                    setDraggedPosition={setDraggedPosition(uid)}
+                    contextMenuOffset={{ x: wheelRadius / 4, y: -20 }}
+                    width={wheelRadius / 2}
                     height={wheelRadius / 2}
                 />
         }
