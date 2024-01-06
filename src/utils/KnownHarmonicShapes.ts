@@ -118,17 +118,35 @@ export const CHORD_MINOR7: HarmonicShape = {
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
 };
+export const CHORD_MINOR7_OMIT5: HarmonicShape = {
+    name: "Minor Seven (omit 5)",
+    notes: [[true], [false], [false], [true], [false], [false], [false], [false], [false], [false], [true]],
+    type: ShapeType.CHORD,
+    groupByOverride: "Tetradic Chords",
+};
 export const CHORD_HITCHCOCK7: HarmonicShape = {
     name: "Hitchcock Seven",
     notes: [[true], [false], [false], [true], [false], [false], [false], [true], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
 };
+export const CHORD_HITCHCOCK7_OMIT5: HarmonicShape = {
+    name: "Hitchcock Seven (omit 5)",
+    notes: [[true], [false], [false], [true], [false], [false], [false], [false], [false], [false], [false], [true]],
+    type: ShapeType.CHORD,
+    groupByOverride: "Triadic Chords",
+};
 export const CHORD_DOMINANT7: HarmonicShape = {
     name: "Dominant Seven",
     notes: [[true], [false], [false], [false], [true], [false], [false], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
+};
+export const CHORD_DOMINANT7_OMIT5: HarmonicShape = {
+    name: "Dominant Seven (omit 5)",
+    notes: [[true], [false], [false], [false], [true], [false], [false], [false], [false], [false], [true]],
+    type: ShapeType.CHORD,
+    groupByOverride: "Triadic Chords",
 };
 export const CHORD_DOMINANT7_SUS4: HarmonicShape = {
     name: "Dominant Seven Sus 4",
@@ -147,6 +165,12 @@ export const CHORD_MAJOR7: HarmonicShape = {
     notes: [[true], [false], [false], [false], [true], [false], [false], [true], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
+};
+export const CHORD_MAJOR7_OMIT5: HarmonicShape = {
+    name: "Major Seven (omit 5)",
+    notes: [[true], [false], [false], [false], [true], [false], [false], [false], [false], [false], [false], [true]],
+    type: ShapeType.CHORD,
+    groupByOverride: "Triadic Chords",
 };
 export const CHORD_MAJOR7_SUS4: HarmonicShape = {
     name: "Major Seven Sus 4",
@@ -450,6 +474,10 @@ export const knownShapes: HarmonicShape[][] = [
         // CHORD_SUS2_TRIAD,
         CHORD_SUS4_TRIAD,
         CHORD_SUS_SHARP4_TRIAD,
+        CHORD_MAJOR7_OMIT5,
+        CHORD_MINOR7_OMIT5,
+        CHORD_DOMINANT7_OMIT5,
+        CHORD_HITCHCOCK7_OMIT5,
     ],
 
     // Tetradic chords (4 notes)
