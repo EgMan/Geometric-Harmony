@@ -94,8 +94,8 @@ function Tonnetz(props: Props) {
             return {
                 isEmphasized: true,
                 opacity: 1,
-                strokeWidth: 1.5,
-                strokeColor: colorPalette.Widget_MutedPrimary,
+                strokeWidth: 1,
+                strokeColor: colorPalette.Widget_Primary,
             }
         }
         return {

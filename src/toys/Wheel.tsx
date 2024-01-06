@@ -268,7 +268,7 @@ function Wheel(props: Props) {
 
                 const isActiveNoteInterval = activeNotes.has(noteA) && activeNotes.has(noteB);
                 if (isActiveNoteInterval) {
-                    intervalLines.push(<Line key={`3-${noteA}-${noteB}`} stroke={colorPalette.Widget_MutedPrimary} strokeWidth={1.5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />);
+                    intervalLines.push(<Line key={`3-${noteA}-${noteB}`} stroke={colorPalette.Widget_Primary} strokeWidth={1} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />);
                     intervalLineListeners.push(<Line key={`4-${noteA}-${noteB}`} stroke={'rgba(0,0,0,0)'} strokeWidth={5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize} />);
                 }
             }
