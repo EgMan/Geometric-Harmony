@@ -62,6 +62,7 @@ function SoundEngine(props: Props) {
 
     const settings = useSettings();
     const isMuted = settings?.isMuted ?? false;
+    const volume = settings?.synthVolume ?? 100;
     const isPercussionMuted = settings?.isPercussionMuted ?? false;
 
     const prioritizeMIDIAudio = settings?.prioritizeMIDIAudio ?? false;
@@ -69,9 +70,16 @@ function SoundEngine(props: Props) {
     const { synth, synthAfterEffects } = useSynthVoiceFromSettings();
     const { synthDrum, synthDrumAfterEffects } = useSynthDrumFromSettings();
 
+    // TODO https://tonejs.github.io/docs/r12/Master READ THIS DUDE WTF
     React.useEffect(() => {
-        synth.volume.value = isMuted ? -Infinity : 1;
-    }, [isMuted, synth.volume]);
+        if (volume === 0) {
+            synth.volume.value = -Infinity;
+        }
+        else {
+            synth.volume.value = isMuted ? -Infinity : volume - 98;
+        }
+        synth.volume.rampTo(volume - 98, 0.5);
+    }, [isMuted, synth.volume, volume]);
 
     React.useEffect(() => {
         synthDrum.volume.value = isPercussionMuted ? -Infinity : 1;

@@ -15,6 +15,8 @@ type Settings = {
     setLocalSynthVoice: React.Dispatch<React.SetStateAction<LocalSynthVoice>>,
     isPeaceModeEnabled: boolean,
     setIsPeaceModeEnabled: React.Dispatch<React.SetStateAction<boolean>>,
+    synthVolume: number,
+    setSynthVolume: React.Dispatch<React.SetStateAction<number>>,
 }
 
 const settingsContext = React.createContext<Settings | null>(null);
@@ -23,8 +25,9 @@ function SettingsProvider(props: Props) {
     const [isMuted, setIsMuted] = React.useState(false);
     const [isPercussionMuted, setIsPercussionMuted] = React.useState(true);
     const [prioritizeMIDIAudio, setPrioritizeMIDIAudio] = React.useState(true);
-    const [localSynthVoice, setLocalSynthVoice] = React.useState<LocalSynthVoice>(LocalSynthVoice.Sine);
+    const [localSynthVoice, setLocalSynthVoice] = React.useState<LocalSynthVoice>(LocalSynthVoice.Square);
     const [isPeaceModeEnabled, setIsPeaceModeEnabled] = React.useState<boolean>(false);
+    const [synthVolume, setSynthVolume] = React.useState<number>(100);
 
     const settings = React.useMemo(() => ({
         isMuted,
@@ -37,7 +40,9 @@ function SettingsProvider(props: Props) {
         setLocalSynthVoice,
         isPeaceModeEnabled,
         setIsPeaceModeEnabled,
-    }), [isMuted, isPeaceModeEnabled, isPercussionMuted, localSynthVoice, prioritizeMIDIAudio]);
+        synthVolume,
+        setSynthVolume,
+    }), [isMuted, isPeaceModeEnabled, isPercussionMuted, localSynthVoice, prioritizeMIDIAudio, synthVolume]);
 
     return (
         <settingsContext.Provider value={settings}>
