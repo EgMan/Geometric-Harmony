@@ -2,19 +2,20 @@ import React from "react";
 import { WidgetComponentProps } from "../view/Widget";
 import { Circle, Group, Line, Rect, Text } from "react-konva";
 import SettingsMenuOverlay from "../view/SettingsMenuOverlay";
-import { Point3D, orthographicProjection, perspectiveProjection, rotateX, rotateY, rotateZ, scale2D, scale2Dflat } from "../graphics3D/Engine3D";
+import { Point3D, add, invert, multiply, orthographicProjection, perspectiveProjection, rotateX, rotateY, rotateZ, scale2D, scale2Dflat } from "../utils/Utils3D";
 import { useAppTheme } from "../view/ThemeManager";
 import { Height } from "@mui/icons-material";
 import { KonvaEventObject } from "konva/lib/Node";
 import { Vector2d } from "konva/lib/types";
-import angle from "vectorious/dist/core/angle";
 import { isNumber } from "tone";
 import { Unstable_NumberInput as NumberInput } from '@mui/base/Unstable_NumberInput';
 import { bigGold, blendColors, fadeColors, smallGold } from "../utils/Utils";
 import Konva from "konva";
 import zIndex from "@mui/material/styles/zIndex";
+import Quaternion from "quaternion";
 
 const LINE_WIDTH = 1;
+// const zDist = 9;
 const zDist = 9;
 
 export type WireframeLine = {
@@ -27,18 +28,22 @@ export type WireframeLine = {
 export type WireframePoint = {
     location3D: Point3D,
     color?: string,
+    outlineColor?: string,
     circleProps?: React.ComponentProps<typeof Circle>
+    text?: string
+    textProps?: React.ComponentProps<typeof Text>
 }
 
 type Props = {
     width: number,
     height: number,
     points: WireframePoint[],
+    center?: Point3D,
     containBoundaries?: boolean | undefined,
     autoRotateVector?: Point3D | undefined,
-    setPoints: React.Dispatch<React.SetStateAction<WireframePoint[]>>,
     lines: WireframeLine[],
-    setLines: React.Dispatch<React.SetStateAction<WireframeLine[]>>,
+    isOrthographic: boolean,
+    initialOrientation?: Quaternion,
 } & WidgetComponentProps
 
 function Wireframe(props: Props) {
@@ -53,163 +58,24 @@ function Wireframe(props: Props) {
             <td><NumberInput min={-10} max={10} /></td>
         </tr>),
     ];
-    // const [points, setPoints] = React.useState<Point3D[]>([
-    //     { x: -.5, y: -.5, z: -.5 },
-    //     { x: -.5, y: .5, z: -.5 },
-    //     { x: .5, y: .5, z: -.5 },
-    //     { x: .5, y: -.5, z: -.5 },
-    //     { x: -.5, y: -.5, z: .5 },
-    //     { x: -.5, y: .5, z: .5 },
-    //     { x: .5, y: .5, z: .5 },
-    //     { x: .5, y: -.5, z: .5 },
-    //     // { x: 0, y: 0, z: 0 },
-    // ]);
 
-    // const [lines, setLines] = React.useState<WireframeLine[]>([
-    //     { start: 0, end: 1 },
-    //     { start: 1, end: 2 },
-    //     { start: 2, end: 3 },
-    //     { start: 3, end: 0 },
-    //     { start: 4, end: 5 },
-    //     { start: 5, end: 6 },
-    //     { start: 6, end: 7 },
-    //     { start: 7, end: 4 },
-    //     { start: 0, end: 4 },
-    //     { start: 1, end: 5 },
-    //     { start: 2, end: 6 },
-    //     { start: 3, end: 7 },
+    const { lines } = props;
+    const pointsRaw = props.points;
 
-    //     // { start: 0, end: 8 },
-    //     // { start: 1, end: 8 },
-    //     // { start: 2, end: 8 },
-    //     // { start: 3, end: 8 },
-    //     // { start: 4, end: 8 },
-    //     // { start: 5, end: 8 },
-    //     // { start: 6, end: 8 },
-    //     // { start: 7, end: 8 },
-    // ]);
+    const [orientation, setOrientation] = React.useState<Quaternion>(props.initialOrientation ?? new Quaternion());
 
-    // 𝜑,1,0)
-    // (𝜑,−1,0)
-    // (−𝜑,−1,0)
-    // (−𝜑,1,0)
-
-    // (1,0,𝜑)
-    // (−1,0,𝜑)
-    // (−1,0,−𝜑)
-    // (1,0,−𝜑)
-
-    // (0,𝜑,1)
-    // (0,𝜑,−1)
-    // (0,−𝜑,−1)
-    // (0,−𝜑,1)
-    // const [points, setPoints] = React.useState<Point3D[]>([
-    //     { x: 1, y: smallGold, z: 0 },
-    //     { x: 1, y: -smallGold, z: 0 },
-    //     { x: -1, y: -smallGold, z: 0 },
-    //     { x: -1, y: smallGold, z: 0 },
-
-    //     { x: smallGold, y: 0, z: 1 },
-    //     { x: -smallGold, y: 0, z: 1 },
-    //     { x: -smallGold, y: 0, z: -1 },
-    //     { x: smallGold, y: 0, z: -1 },
-
-    //     { x: 0, y: 1, z: smallGold },
-    //     { x: 0, y: 1, z: -smallGold },
-    //     { x: 0, y: -1, z: -smallGold },
-    //     { x: 0, y: -1, z: smallGold },
-    // ]);
-    const { points, setPoints, lines, setLines } = props;
-
-
-    // const depthSortedPoints: Point3D[] = React.useMemo(() => {
-    //     const pointsCopy = [...points];
-    //     pointsCopy.sort((a, b) =>
-    //         b.z - a.z
-    //     );
-    //     return pointsCopy;
-    // }, [points]);
-
-    // const [lines, setLines] = React.useState<WireframeLine[]>([
-    //     { start: 0, end: 1 },
-    //     { start: 1, end: 4 },
-    //     { start: 4, end: 0 },
-    //     { start: 0, end: 7 },
-    //     { start: 1, end: 7 },
-
-    //     { start: 2, end: 5 },
-    //     { start: 2, end: 3 },
-    //     { start: 2, end: 6 },
-    //     { start: 3, end: 5 },
-    //     { start: 3, end: 6 },
-
-    //     { start: 8, end: 9 },
-    //     { start: 8, end: 3 },
-    //     { start: 3, end: 9 },
-    //     { start: 8, end: 4 },
-    //     { start: 8, end: 0 },
-
-    //     { start: 10, end: 11 },
-    //     { start: 10, end: 1 },
-    //     { start: 10, end: 7 },
-    //     { start: 11, end: 1 },
-    //     { start: 4, end: 11 },
-    //     { start: 8, end: 5 },
-    //     { start: 9, end: 0 },
-    //     { start: 10, end: 6 },
-    //     { start: 6, end: 7 },
-    //     { start: 2, end: 10 },
-    //     { start: 2, end: 11 },
-    //     { start: 5, end: 11 },
-    //     { start: 4, end: 5 },
-    //     { start: 7, end: 9 },
-    //     { start: 6, end: 9 },
-
-    //     // { start: 7, end: 6 },
-    //     // { start: 7, end: 11 },
-    //     // { start: 11, end: 6 },
-    //     // { start: 4, end: 5 },
-    //     // { start: 4, end: 10 },
-    //     // { start: 10, end: 5 },
-    // ]);
-
-    // const depthSortedLines: WireframeLine[] = React.useMemo(() => {
-    //     const linesCopy = [...lines];
-    //     linesCopy.sort((a, b) => {
-    //         const aStartZ = isNumber(a.start) ?
-    //             points[a.start].z :
-    //             a.start.z;
-    //         const aEndZ = isNumber(a.end) ?
-    //             points[a.end].z :
-    //             a.end.z;
-    //         const bStartZ = isNumber(b.start) ?
-    //             points[b.start].z :
-    //             b.start.z;
-    //         const bEndZ = isNumber(b.end) ?
-    //             points[b.end].z :
-    //             b.end.z;
-    //         return (bStartZ + bEndZ) - (aStartZ + aEndZ);
-    //     }
-    //     );
-    //     return linesCopy;
-    // }, [lines, points]);
 
     const scaleFactor = props.width / 2;
-    const isOrthographic = false;
 
-    const getLoc2D = React.useCallback((point: Point3D) => {
-        const pointRedistanced: Point3D = { x: point.x, y: point.y, z: point.z + zDist }
-        return scale2D(isOrthographic ?
-            orthographicProjection(pointRedistanced) :
-            perspectiveProjection(pointRedistanced, zDist)
-            , scaleFactor);
-    }, [isOrthographic, scaleFactor]);
+    const centerPoint = React.useMemo(() => props.center ?? multiply(pointsRaw.reduce((prev, point) => add(prev, point.location3D), { x: 0, y: 0, z: 0 }), 1 / pointsRaw.length), [pointsRaw, props.center]);
 
-    const pointLocs = React.useMemo(() => {
-        return points.map(point => getLoc2D(point.location3D));
-    }, [getLoc2D, points]);
-
-    const [centerpoint, farthestZ, nearestZ] = React.useMemo(() => {
+    const points: WireframePoint[] = React.useMemo(() =>
+        pointsRaw.map(point => {
+            const vect = orientation.rotateVector([point.location3D.x - centerPoint.x, point.location3D.y - centerPoint.y, point.location3D.z - centerPoint.z])
+            return { ...point, location3D: { x: vect[0] + centerPoint.x, y: vect[1] + centerPoint.y, z: vect[2] + centerPoint.z } }
+        })
+        , [centerPoint.x, centerPoint.y, centerPoint.z, orientation, pointsRaw]);
+    const [farthestZ, nearestZ] = React.useMemo(() => {
         let xTotal = 0;
         let yTotal = 0;
         let zTotal = 0;
@@ -227,44 +93,51 @@ function Wireframe(props: Props) {
                 nearestZ = p.z;
             }
         });
-        return [{ x: xTotal / points.length, y: yTotal / points.length, z: zTotal / points.length }, farthestZ, nearestZ];
+        return [farthestZ, nearestZ];
     }, [points]);
+
+
+    const getLoc2D = React.useCallback((point: Point3D) => {
+        const pointRedistanced: Point3D = { x: point.x, y: point.y, z: point.z + zDist };
+        return scale2D(props.isOrthographic ?
+            orthographicProjection(pointRedistanced) :
+            perspectiveProjection(pointRedistanced, zDist)
+            , scaleFactor);
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    }, [props.isOrthographic, scaleFactor]);
+
+    const pointLocs = React.useMemo(() => {
+        return points.map(point => getLoc2D(point.location3D));
+    }, [getLoc2D, points]);
 
     // const [dragStart, setDragStart] = React.useState<Vector2d | null>(null);
     // const [pointsWhenDragStart, setPointsWhenDragStart] = React.useState<Point3D[] | null>(null);
 
     const dragStart = React.useRef<Vector2d | null>(null);
-    const pointsWhenDragStart = React.useRef<WireframePoint[] | null>(null);
+    const orientationWhenDragStart = React.useRef<Quaternion | null>(null);
 
     const onDragStart = React.useCallback((e: KonvaEventObject<DragEvent>) => {
-        console.log("drag start");
-        // setDragStart(e.currentTarget.position());
-        // setPointsWhenDragStart(points);
         dragStart.current = e.currentTarget.position();
-        pointsWhenDragStart.current = points;
-        console.log("drag start done");
-    }, [points]);
+        orientationWhenDragStart.current = orientation;
+    }, [orientation]);
 
     const onDrag = React.useCallback((e: KonvaEventObject<DragEvent>) => {
-        console.log("drag");
-        setPoints(_ => pointsWhenDragStart.current!.map((p, idx) => {
+        setOrientation(_ => {
             const angleX = (e.currentTarget.y() - (dragStart.current?.y ?? 0)) / props.height;
-            console.log("angleX", angleX)
             const angleY = (e.currentTarget.x() - (dragStart.current?.x ?? 0)) / props.width;
-            return { ...p, location3D: rotateY(rotateX(p.location3D, angleX, centerpoint), angleY, centerpoint) };
-        }))
-        console.log("drag end");
-    }, [centerpoint, props.height, props.width, setPoints]);
+            return Quaternion.fromEuler(
+                0,
+                angleX,
+                -angleY,
+            ).mul(orientationWhenDragStart.current!);
+        });
+    }, [props.height, props.width]);
 
     const onDragEnd = React.useCallback((e: KonvaEventObject<DragEvent>) => {
-        console.log("drag complete");
         e.currentTarget.x(dragStart.current?.x ?? -props.width / 2);
         e.currentTarget.y(dragStart.current?.y ?? -props.height / 2);
-        // setDragStart(null);
-        // setPointsWhenDragStart(null);
         dragStart.current = null;
-        pointsWhenDragStart.current = null;
-        console.log("drag complete end");
+        orientationWhenDragStart.current = null;
     }, [props.height, props.width]);
 
     const dragRect = React.useMemo(() => (
@@ -279,17 +152,22 @@ function Wireframe(props: Props) {
 
     const rotateWireframe = React.useCallback(() => {
         // Only auto-rotate if not being dragged
-        // console.log("eg dragstart current", dragStart.current);
         if (dragStart.current === null) {
             const deltaT = (Date.now() - lastTime.current) / 1000;
             lastTime.current = Date.now();
-            // setPoints(oldPoints => oldPoints.map(p => (rotateZ(rotateY(rotateX(p, deltaT / (bigGold * 2), centerpoint), deltaT / 2, centerpoint), deltaT / 4, centerpoint))));
-            setPoints(oldPoints => oldPoints.map(p => ({ ...p, location3D: rotateZ(rotateY(rotateX(p.location3D, deltaT * (props.autoRotateVector?.x ?? 0), centerpoint), deltaT * (props.autoRotateVector?.y ?? 0), centerpoint), deltaT * (props.autoRotateVector?.z ?? 0), centerpoint) })));
+            setOrientation(oldOrientation =>
+                oldOrientation.mul(
+                    Quaternion.fromEuler(
+                        deltaT * (props.autoRotateVector?.x ?? 0),
+                        deltaT * (props.autoRotateVector?.y ?? 0),
+                        deltaT * (props.autoRotateVector?.z ?? 0)),
+                )
+            );
         }
         setTimeout(() => {
             rotateWireframe();
         }, 30);
-    }, [centerpoint, props.autoRotateVector?.x, props.autoRotateVector?.y, props.autoRotateVector?.z, setPoints]);
+    }, [props.autoRotateVector?.x, props.autoRotateVector?.y, props.autoRotateVector?.z]);
 
     React.useEffect(() => {
         rotateWireframe();
@@ -328,7 +206,6 @@ function Wireframe(props: Props) {
             gradient.addColorStop(0, startFadedColor);
             gradient.addColorStop(1, endFadedColor);
 
-            // console.log("line props", line.lineProps);
             return {
                 elem:
                     <Line
@@ -350,8 +227,8 @@ function Wireframe(props: Props) {
         return points.map((point, idx) => {
             const dimRatio = ((point.location3D.z - nearestZ) / (farthestZ - nearestZ)) * fogEffect;
             const fadedColor = fadeColors(point.color ?? colorPalette.Note_Active, colorPalette.Main_Background, dimRatio);
+            const fadedOutlineColor = point.outlineColor && fadeColors(point.outlineColor, colorPalette.Main_Background, dimRatio);
             const pointLoc = getLoc2D(point.location3D);
-            // console.log("point props", point.circleProps);
             const returnElem: SortableDisplayElem = {
                 elem:
                     <Group>
@@ -368,18 +245,21 @@ function Wireframe(props: Props) {
                             // filters={[Konva.Filters.Blur]}
                             // filterBlurRadius={5}
                             // fill={"yellow"}
+                            stroke={fadedOutlineColor}
                             {...point.circleProps}
                         />
-                        <Text
-                            x={pointLoc.x}
-                            y={pointLoc.y}
-                            // text={`${Math.trunc(point.z * 100)}`}
-                            stroke={"white"}
-                            strokeWidth={LINE_WIDTH}
-                            // radius={props.width / 2}
-                            radius={5}
-                        // fill={"yellow"}
-                        />
+                        {point.text &&
+                            <Text
+                                x={pointLoc.x}
+                                y={pointLoc.y}
+                                // text={`${Math.trunc(point.z * 100)}`}
+                                text={point.text}
+                                stroke={"white"}
+                                strokeWidth={LINE_WIDTH}
+                                radius={5}
+                                {...point.textProps}
+                            />
+                        }
                     </Group>,
                 zIdx: point.location3D.z - 0.75,
             };
@@ -400,8 +280,6 @@ function Wireframe(props: Props) {
                 clipFunc={props.containBoundaries ? (ctx) => ctx.rect(-props.width / 2, -props.height / 2, props.width, props.height) : undefined
                 }
             >
-                {/* {lineElems}
-                {pointElems.map((elem) => elem.elem)} */}
                 {sortedElems}
                 {dragRect}
             </Group >

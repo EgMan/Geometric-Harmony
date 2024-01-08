@@ -1,6 +1,6 @@
 import React from 'react';
 import { WidgetComponentProps } from '../view/Widget';
-import { Point3D } from '../graphics3D/Engine3D';
+import { Point3D } from '../utils/Utils3D';
 import { smallGold } from '../utils/Utils';
 import Wireframe, { WireframeLine, WireframePoint } from './Wireframe';
 
@@ -11,20 +11,20 @@ type Props = {
 
 function Icosahedron(props: Props) {
     const [points, setPoints] = React.useState<WireframePoint[]>([
-        { location3D: { x: 1, y: smallGold, z: 0 } },
-        { location3D: { x: 1, y: -smallGold, z: 0 } },
-        { location3D: { x: -1, y: -smallGold, z: 0 } },
-        { location3D: { x: -1, y: smallGold, z: 0 } },
+        { location3D: { x: 1, y: smallGold, z: 0 }, text: "0" },
+        { location3D: { x: 1, y: -smallGold, z: 0 }, text: "1" },
+        { location3D: { x: -1, y: -smallGold, z: 0 }, text: "2" },
+        { location3D: { x: -1, y: smallGold, z: 0 }, text: "3" },
 
-        { location3D: { x: smallGold, y: 0, z: 1 } },
-        { location3D: { x: -smallGold, y: 0, z: 1 } },
-        { location3D: { x: -smallGold, y: 0, z: -1 } },
-        { location3D: { x: smallGold, y: 0, z: -1 } },
+        { location3D: { x: smallGold, y: 0, z: 1 }, text: "4" },
+        { location3D: { x: -smallGold, y: 0, z: 1 }, text: "5" },
+        { location3D: { x: -smallGold, y: 0, z: -1 }, text: "6" },
+        { location3D: { x: smallGold, y: 0, z: -1 }, text: "7" },
 
-        { location3D: { x: 0, y: 1, z: smallGold } },
-        { location3D: { x: 0, y: 1, z: -smallGold } },
-        { location3D: { x: 0, y: -1, z: -smallGold } },
-        { location3D: { x: 0, y: -1, z: smallGold } },
+        { location3D: { x: 0, y: 1, z: smallGold }, text: "8" },
+        { location3D: { x: 0, y: 1, z: -smallGold }, text: "9" },
+        { location3D: { x: 0, y: -1, z: -smallGold }, text: "10" },
+        { location3D: { x: 0, y: -1, z: smallGold }, text: "11" },
     ]);
 
     const [lines, setLines] = React.useState<WireframeLine[]>([
@@ -64,10 +64,10 @@ function Icosahedron(props: Props) {
     return (
         <Wireframe
             points={points}
-            setPoints={setPoints}
             lines={lines}
-            setLines={setLines}
             autoRotateVector={{ x: smallGold / 2, y: 0.5, z: 0.25 }}
+            center={{ x: 0, y: 0, z: 0 }}
+            isOrthographic={false}
             {...props}
         />
     );

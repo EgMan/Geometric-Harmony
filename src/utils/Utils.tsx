@@ -55,8 +55,8 @@ export function getNoteNum(noteName: string) {
 
 export const getIntervalColor = (distance: number, colorPalette: ColorPalette) => {
     switch (distance) {
-        case 0:
-            return "black"
+        // case 0:
+        //     return "black"
         case 1:
             return colorPalette.Interval_Semitone
         case 2:

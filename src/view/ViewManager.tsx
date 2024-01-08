@@ -39,6 +39,7 @@ export type WidgetTrackerActions = {
     updateWidgetTracker: (uid: String, callback: (currentTracker: WidgetTracker) => WidgetTracker) => boolean,
 }
 
+
 export enum WidgetType {
     Wheel,
     Piano,
@@ -48,7 +49,8 @@ export enum WidgetType {
     PlayShapeGame,
     Oscilloscope,
     FrequencyVis,
-    Wireframe,
+    Icosahedron,
+    Spiral,
 }
 
 export const widgetNameByType = (type: WidgetType) => {
@@ -69,8 +71,8 @@ export const widgetNameByType = (type: WidgetType) => {
             return "Waveform";
         case WidgetType.FrequencyVis:
             return "Frequency";
-        case WidgetType.Wireframe:
-            return "Wireframe";
+        case WidgetType.Icosahedron:
+            return "Icosahedron";
     }
 }
 
@@ -122,11 +124,17 @@ function ViewManager(props: Props) {
                 //     initialPosition: { x: (4 * props.width / 5) - 50 + (wheelRadius / 2), y: (props.height / 8) - (guitarHeight / 13) },
                 // }],
                 ['3', {
-                    type: WidgetType.Tonnetz,
+                    type: WidgetType.Spiral,
                     initialPosition: { x: 3 * props.width / 4, y: 75 },
                     width: wheelRadius,
                     height: wheelRadius,
                 }],
+                // ['3', {
+                //     type: WidgetType.Tonnetz,
+                //     initialPosition: { x: 3 * props.width / 4, y: 75 },
+                //     width: wheelRadius,
+                //     height: wheelRadius,
+                // }],
                 ['4', {
                     type: WidgetType.Wheel,
                     initialPosition: { x: props.width / 4, y: 75 },
@@ -139,12 +147,12 @@ function ViewManager(props: Props) {
                     width: props.width / (8 / 3),
                     height: wheelRadius / 2,
                 }],
-                ['6', {
-                    type: WidgetType.Wireframe,
-                    initialPosition: { x: props.width / 2, y: 75 },
-                    width: wheelRadius,
-                    height: wheelRadius,
-                }],
+                // ['6', {
+                //     type: WidgetType.Icosahedron,
+                //     initialPosition: { x: props.width / 2, y: 75 },
+                //     width: wheelRadius,
+                //     height: wheelRadius,
+                // }],
             ]
             // Landscape mode
             : [
@@ -442,7 +450,7 @@ function ViewManager(props: Props) {
                     width={wheelRadius * 1.2}
                     height={wheelRadius / 2}
                 />
-            case WidgetType.Wireframe:
+            case WidgetType.Icosahedron:
                 return <Widget of={Icosahedron}
                     lockAspectRatio
                     uid={uid}
@@ -457,6 +465,22 @@ function ViewManager(props: Props) {
                     contextMenuOffset={{ x: wheelRadius / 4, y: -20 }}
                     width={wheelRadius / 2}
                     height={wheelRadius / 2}
+                />
+            case WidgetType.Spiral:
+                return <Widget of={Spiral}
+                    lockAspectRatio
+                    uid={uid}
+                    actions={trackerActions}
+                    tracker={widget}
+                    key={`${uid}`}
+                    isPeaceModeEnabled={isPeaceModeEnabled}
+                    isMaxamized={widget.isMaxamized ?? true}
+                    initialPosition={widget.initialPosition}
+                    draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
+                    setDraggedPosition={setDraggedPosition(uid)}
+                    contextMenuOffset={{ x: wheelRadius, y: -20 }}
+                    width={wheelRadius * 2}
+                    height={wheelRadius * 2}
                 />
         }
     }, [guitarHeight, isPeaceModeEnabled, pianoHeight, pianoOctaveCount, pianoWidth, props.width, setDraggedPosition, trackerActions, wheelRadius])

@@ -1,5 +1,3 @@
-import LinAlg from 'vectorious';
-
 export type Point3D = {x: number, y: number, z: number};
 export type Point2D = {x: number, y: number};
 
@@ -76,4 +74,21 @@ export function rotateZ(point: Point3D, angle: number, center: Point3D = {x: 0, 
         y: x * sin + y * cos + center.y,
         z: point.z
     };
+}
+
+export function normalize(point: Point3D): Point3D {
+    const length = Math.sqrt(point.x * point.x + point.y * point.y + point.z * point.z);
+    return {x: point.x / length, y: point.y / length, z: point.z / length};
+}
+
+export function invert(point: Point3D): Point3D {
+    return {x: -point.x, y: -point.y, z: -point.z};
+}
+
+export function add(point1: Point3D, point2: Point3D): Point3D {
+    return {x: point1.x + point2.x, y: point1.y + point2.y, z: point1.z + point2.z};
+}
+
+export function multiply(point: Point3D, factor: number): Point3D {
+    return {x: point.x * factor, y: point.y * factor, z: point.z * factor};
 }

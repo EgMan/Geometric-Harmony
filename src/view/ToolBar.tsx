@@ -322,6 +322,30 @@ function ToolBar(props: Props) {
                                     </ListItemIcon>
                                     <ListItemText>Circle of Semitones</ListItemText>
                                 </MenuItem>
+                                <MenuItem disabled={true} onClick={() => addNewWidget(WidgetType.Wheel)}>
+                                    <ListItemIcon>
+                                        <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                    </ListItemIcon>
+                                    <ListItemText>Spiral of Fifths</ListItemText>
+                                </MenuItem>
+                                <MenuItem onClick={() => addNewWidget(WidgetType.Spiral)}>
+                                    <ListItemIcon>
+                                        <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                    </ListItemIcon>
+                                    <ListItemText>Spiral of Semitones</ListItemText>
+                                </MenuItem>
+                                <MenuItem disabled={true} onClick={() => addNewWidget(WidgetType.Wheel)}>
+                                    <ListItemIcon>
+                                        <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                    </ListItemIcon>
+                                    <ListItemText>Icosahedron of Fifths</ListItemText>
+                                </MenuItem>
+                                <MenuItem onClick={() => addNewWidget(WidgetType.Icosahedron)}>
+                                    <ListItemIcon>
+                                        <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                    </ListItemIcon>
+                                    <ListItemText>Icosahedron of Semitones</ListItemText>
+                                </MenuItem>
                                 <MenuItem onClick={() => addNewWidget(WidgetType.Analyzer)}>
                                     <ListItemIcon>
                                         <SquareFootIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />

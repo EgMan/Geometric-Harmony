@@ -1,10 +1,11 @@
 import React from 'react';
 import { WidgetComponentProps } from '../view/Widget';
-import { Point3D } from '../graphics3D/Engine3D';
-import { blendColors, getRandomColor, smallGold } from '../utils/Utils';
+import { Point3D } from '../utils/Utils3D';
+import { blendColors, getIntervalColor, getIntervalDistance, getRandomColor, smallGold } from '../utils/Utils';
 import Wireframe, { WireframeLine, WireframePoint } from './Wireframe';
-import { NoteSet, normalizeToSingleOctave, useNoteDisplays, useNoteSet } from '../sound/NoteProvider';
+import { NoteSet, normalizeToSingleOctave, useHomeNote, useNoteDisplays, useNoteSet } from '../sound/NoteProvider';
 import { useAppTheme } from '../view/ThemeManager';
+import Quaternion from "quaternion";
 
 type Props = {
     width: number,
@@ -12,77 +13,96 @@ type Props = {
 } & WidgetComponentProps
 
 const radius = 1;
-const octaveCount = 7;
+const octaveCount = 8;
 
 function Spiral(props: Props) {
     const rungSpacing = smallGold / 2;
     const noteDisplays = useNoteDisplays();
     const activeNotes = useNoteSet(NoteSet.Active).notes;
     const { colorPalette } = useAppTheme()!;
+    const homeNote = useHomeNote();
 
 
-    const initialPoints = React.useMemo(() => {
+    const frameElems = React.useMemo(() => {
         let outPoints: WireframePoint[] = [];
-        for (let i = 0; i < 12 * octaveCount; i++) {
+        let outLines: WireframeLine[] = [];
+        for (let noteIdx = 0; noteIdx < 12 * octaveCount; noteIdx++) {
             // const a = noteDisplays.octaveGnostic[i]?.map((noteDisplay) => noteDisplay.color!);
             // const color = blendColors(a ?? []) ?? undefined;
-            const color = noteDisplays.octaveGnostic[i] ? "green" : "red";
-            const radians = -i * 2 * Math.PI / 12;
+            // const color = noteDisplays.octaveGnostic[i] ? "green" : "red";
+            const noteOffset = 24;
+            const note = noteIdx - noteOffset;
+            const radians = -note * 2 * Math.PI / 12;
+            const channelDisplay = noteDisplays.octaveGnostic[note]?.map((noteDisplay) => noteDisplay.color!);
+            const isActiveNote = activeNotes.has(normalizeToSingleOctave(note))
+            const isBeingChannelDisplayed = (channelDisplay?.length ?? 0) > 0;
+            let color = colorPalette.Widget_Primary;
+            let circleRadius = 2.5;
+            let outlineColor = undefined;
+            let opacity = 1;
+            if (isBeingChannelDisplayed) {
+                circleRadius = 5;
+                color = blendColors(channelDisplay ?? []) ?? "rgba(0,0,0,0)";
+            }
+            else if (homeNote === normalizeToSingleOctave(note)) {
+                circleRadius = 3;
+                color = colorPalette.Note_Home;
+            }
+            else if (isActiveNote) {
+                circleRadius = 2.5;
+                color = colorPalette.Note_Active;
+            } else {
+                color = colorPalette.Main_Background;
+                circleRadius = 2.5;
+                outlineColor = colorPalette.Widget_Primary;
+            }
+
             outPoints.push({
                 location3D: {
                     x: Math.sin(radians) * radius,
-                    y: -Math.cos(radians) * radius,
-                    z: i * rungSpacing,
+                    y: Math.cos(radians) * radius,
+                    z: note * rungSpacing,
                 },
                 // color: getRandomColor(),
                 color,
+                outlineColor,
                 // circleProps: { radius: 3 },
+                circleProps: {
+
+                    // opacity: isActiveNote || isBeingChannelDisplayed ? 1 : 0,
+                    radius: circleRadius,
+                },
             });
-        }
-        return outPoints;
-    }, [noteDisplays.octaveGnostic, rungSpacing]);
 
-    const [points, setPoints] = React.useState<WireframePoint[]>(initialPoints);
+            if (isBeingChannelDisplayed) {
+                for (let otherNote = note + 1; otherNote < Math.min(note + 12 + 1, 12 * octaveCount - noteOffset); otherNote++) {
+                    const otherNoteChannelDisplay = noteDisplays.octaveGnostic[otherNote]?.map((noteDisplay) => noteDisplay.color!);
+                    const isOtherNoteBeingChannelDisplayed = (otherNoteChannelDisplay?.length ?? 0) > 0;
+                    color = getIntervalColor(getIntervalDistance(normalizeToSingleOctave(otherNote), normalizeToSingleOctave(note), 12), colorPalette);
+                    if (isOtherNoteBeingChannelDisplayed) {
+                        outLines.push({
+                            start: note + noteOffset,
+                            end: otherNote + noteOffset,
+                            color,
+                            lineProps: {
+                                strokeWidth: 2,
+                            }
 
-    React.useEffect(() => {
-        setPoints(prevPoints => {
-            return prevPoints.map((point, idx) => {
-                const channelDisplay = noteDisplays.octaveGnostic[idx - 24]?.map((noteDisplay) => noteDisplay.color!);
-                const isActiveNote = activeNotes.has(normalizeToSingleOctave(idx))
-                const isBeingChannelDisplayed = (channelDisplay?.length ?? 0) > 0;
-                const color = blendColors(channelDisplay ?? []) ?? (activeNotes.has(normalizeToSingleOctave(idx)) ? colorPalette.Note_Active : "rgba(0,0,0,0)");
-                console.log(blendColors(channelDisplay ?? []), color);
-
-                return {
-                    ...point,
-                    color,
-                    pointProps: {
-                        // opacity: isActiveNote || isBeingChannelDisplayed ? 1 : 0,
-                        opacity: 0,
-                        radius: isBeingChannelDisplayed ? 6 : 3,
+                        });
                     }
-                };
-            });
-        });
-    }, [activeNotes, colorPalette.Note_Active, noteDisplays]);
-
-    const initialLines = React.useMemo(() => {
-        let outPoints: WireframeLine[] = [];
-        for (let i = 0; i < (12 * octaveCount) - 1; i++) {
-            // outPoints.push({ start: i, end: (i + 1), color: getRandomColor(), lineProps: { strokeWidth: 1 } });
+                }
+            }
         }
-        return outPoints;
-    }, []);
-
-    const [lines, setLines] = React.useState<WireframeLine[]>(initialLines);
+        return { points: outPoints, lines: outLines };
+    }, [activeNotes, colorPalette, homeNote, noteDisplays.octaveGnostic, rungSpacing]);
 
     return (
         <Wireframe
-            points={points}
-            setPoints={setPoints}
-            lines={lines}
-            setLines={setLines}
-            autoRotateVector={{ x: 0.05, y: 0, z: 0 }}
+            points={frameElems.points}
+            lines={frameElems.lines}
+            autoRotateVector={{ x: 0.15, y: 0, z: 0 }}
+            isOrthographic={false}
+            initialOrientation={Quaternion.fromEuler(3.14, .03, -.03)}
             {...props}
         />
     );
