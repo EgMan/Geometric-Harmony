@@ -1,7 +1,6 @@
 import React from 'react';
 import { WidgetComponentProps } from '../view/Widget';
-import { Point3D } from '../utils/Utils3D';
-import { blendColors, smallGold } from '../utils/Utils';
+import { blendColors, getIntervalColor, getIntervalDistance, smallGold } from '../utils/Utils';
 import Wireframe, { WireframeLine, WireframePoint } from './Wireframe';
 import { NoteSet, normalizeToSingleOctave, useHomeNote, useNoteDisplays, useNoteSet } from '../sound/NoteProvider';
 import { useAppTheme } from '../view/ThemeManager';
@@ -20,23 +19,6 @@ function Icosahedron(props: Props) {
     const idxToNote = React.useMemo(() => {
         return [0, 1, 6, 7, 3, 5, 9, 11, 4, 8, 10, 2].map(idx => normalizeToSingleOctave(idx + (homeNote ?? 0)));
     }, [homeNote]);
-
-    // const [points, setPoints] = React.useState<WireframePoint[]>([
-    //     { location3D: { x: 1, y: smallGold, z: 0 }, text: "0:" + idxToNote[0] },
-    //     { location3D: { x: 1, y: -smallGold, z: 0 }, text: "1:" + idxToNote[1] },
-    //     { location3D: { x: -1, y: -smallGold, z: 0 }, text: "2:" + idxToNote[2] },
-    //     { location3D: { x: -1, y: smallGold, z: 0 }, text: "3:" + idxToNote[3] },
-
-    //     { location3D: { x: smallGold, y: 0, z: 1 }, text: "4:" + idxToNote[4] },
-    //     { location3D: { x: -smallGold, y: 0, z: 1 }, text: "5:" + idxToNote[5] },
-    //     { location3D: { x: -smallGold, y: 0, z: -1 }, text: "6:" + idxToNote[6] },
-    //     { location3D: { x: smallGold, y: 0, z: -1 }, text: "7:" + idxToNote[7] },
-
-    //     { location3D: { x: 0, y: 1, z: smallGold }, text: "8:" + idxToNote[8] },
-    //     { location3D: { x: 0, y: 1, z: -smallGold }, text: "9:" + idxToNote[9] },
-    //     { location3D: { x: 0, y: -1, z: -smallGold }, text: "10:" + idxToNote[10] },
-    //     { location3D: { x: 0, y: -1, z: smallGold }, text: "11:" + idxToNote[11] },
-    // ]);
 
     const points: WireframePoint[] = React.useMemo(() => {
         const out: WireframePoint[] = [
@@ -58,13 +40,12 @@ function Icosahedron(props: Props) {
             const note = idxToNote[i];
             const channelDisplay = noteDisplays.normalized[note]?.map((noteDisplay) => noteDisplay.color!);
             const isActiveNote = activeNotes.has(normalizeToSingleOctave(note))
-            console.log("what", activeNotes, note, isActiveNote);
             const isBeingChannelDisplayed = (channelDisplay?.length ?? 0) > 0;
             let color = colorPalette.Widget_Primary;
             let circleRadius = 2.5;
             let outlineColor = undefined;
             let opacity = 1;
-            let moreText = "";
+            // let moreText = "";
             if (isBeingChannelDisplayed) {
                 circleRadius = 5;
                 color = blendColors(channelDisplay ?? []) ?? "rgba(0,0,0,0)";
@@ -80,14 +61,13 @@ function Icosahedron(props: Props) {
                 color = colorPalette.Main_Background;
                 circleRadius = 2.5;
                 outlineColor = colorPalette.Widget_Primary;
-                moreText += "fuck";
             }
             return {
                 color,
                 opacity,
                 outlineColor,
                 location3D: p,
-                // text: i,
+                // text: "" + note,
                 // text: `${moreText}${note}${isActiveNote ? "A" : ""}${isBeingChannelDisplayed ? "C" : ""}`,
                 radius: circleRadius,
             }
@@ -95,40 +75,59 @@ function Icosahedron(props: Props) {
         return out;
     }, [activeNotes, colorPalette.Main_Background, colorPalette.Note_Active, colorPalette.Note_Home, colorPalette.Widget_Primary, homeNote, idxToNote, noteDisplays.normalized]);
 
-    const [lines, setLines] = React.useState<WireframeLine[]>([
-        { start: 0, end: 1 },
-        { start: 1, end: 4 },
-        { start: 4, end: 0 },
-        { start: 0, end: 7 },
-        { start: 1, end: 7 },
-        { start: 2, end: 5 },
-        { start: 2, end: 3 },
-        { start: 2, end: 6 },
-        { start: 3, end: 5 },
-        { start: 3, end: 6 },
-        { start: 8, end: 9 },
-        { start: 8, end: 3 },
-        { start: 3, end: 9 },
-        { start: 8, end: 4 },
-        { start: 8, end: 0 },
-        { start: 10, end: 11 },
-        { start: 10, end: 1 },
-        { start: 10, end: 7 },
-        { start: 11, end: 1 },
-        { start: 4, end: 11 },
-        { start: 8, end: 5 },
-        { start: 9, end: 0 },
-        { start: 10, end: 6 },
-        { start: 6, end: 7 },
-        { start: 2, end: 10 },
-        { start: 2, end: 11 },
-        { start: 5, end: 11 },
-        { start: 4, end: 5 },
-        { start: 7, end: 9 },
-        { start: 6, end: 9 },
-    ]);
 
-    // setPoints(oldPoints => oldPoints.map(p => (rotateZ(rotateY(rotateX(p, deltaT / (bigGold * 2), centerpoint), deltaT / 2, centerpoint), deltaT / 4, centerpoint))));
+    const lines = React.useMemo(() => {
+        let out: WireframeLine[] = [];
+
+        const hullConnectivity = [
+            [1, 4, 7, 8, 9],
+            [4, 7, 10, 11],
+            [3, 5, 6, 10, 11],
+            [5, 6, 8, 9],
+            [5, 8, 11],
+            [8, 11],
+            [7, 9, 10],
+            [9, 10],
+            [9],
+            [],
+            [11],
+        ];
+
+        for (let start = 0; start < 12; start++) {
+            for (let end = start + 1; end < 12; end++) {
+                const startNote = idxToNote[start];
+                const endNote = idxToNote[end];
+                const startNotechannelDisplay = noteDisplays.normalized[startNote]?.length > 0;
+                const endNoteChannelDisplay = noteDisplays.normalized[endNote]?.length > 0;
+                let color = colorPalette.Widget_Primary;
+
+                // const isOtherNoteBeingChannelDisplayed = (endNoteChannelDisplay?.length ?? 0) > 0;
+                if (startNotechannelDisplay && endNoteChannelDisplay) {
+                    color = getIntervalColor(getIntervalDistance(normalizeToSingleOctave(startNote), normalizeToSingleOctave(endNote), 12), colorPalette);
+                    out.push({
+                        start: start,
+                        end: end,
+                        color: color,
+                        lineProps: {
+                            strokeWidth: 2,
+                        }
+                    });
+                }
+                else if (hullConnectivity[startNote]?.includes(endNote)) {
+                    out.push({
+                        start: startNote,
+                        end: endNote,
+                        color: colorPalette.Widget_Primary,
+                        lineProps: {
+                            opacity: 0.1,
+                        }
+                    });
+                }
+            }
+        }
+        return out;
+    }, [colorPalette, idxToNote, noteDisplays.normalized]);
+
     return (
         <Wireframe
             points={points}
