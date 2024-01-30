@@ -1,7 +1,14 @@
 import React from "react";
 
+const SPACES_WIDTH = 2;
+const SPACES_HEIGHT = 2;
+
 export default function gotoSpace(row: number, col: number) {
     const container = document.getElementById('stage-scroll-container');
+    if (row < 0 || row >= SPACES_HEIGHT || col < 0 || col >= SPACES_WIDTH) {
+        return;
+    }
+    console.log("gotoSpace", row, col);
 
     container?.scrollTo({
         top: window.innerHeight * row * 2,
