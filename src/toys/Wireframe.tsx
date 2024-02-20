@@ -180,7 +180,7 @@ function Wireframe(props: Props) {
     }
 
     const lineElems: SortableDisplayElem[] = React.useMemo(() => {
-        return lines.map((line) => {
+        return lines.map((line, lineIdx) => {
             const start = isNumber(line.start) ?
                 pointLocs[line.start] :
                 getLoc2D(line.start);
@@ -209,6 +209,7 @@ function Wireframe(props: Props) {
             return {
                 elem:
                     <Line
+                        key={`${lineIdx}-${start.x}-${start.y}-${end.x}-${end.y}`}
                         points={[
                             start.x, start.y,
                             end.x, end.y,
@@ -231,7 +232,7 @@ function Wireframe(props: Props) {
             const pointLoc = getLoc2D(point.location3D);
             const returnElem: SortableDisplayElem = {
                 elem:
-                    <Group>
+                    <Group key={idx}>
                         <Circle
                             x={pointLoc.x}
                             y={pointLoc.y}
