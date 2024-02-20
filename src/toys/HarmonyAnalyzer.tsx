@@ -269,7 +269,12 @@ export function getModeNameInShape(shapeIdx: number, shape: HarmonicShape): stri
             // If that fails, check to see note actually forms a node
             if (scaleDegree < 0) return "Not a mode";
 
-            // If does, name this mode with respect to the first mode of the shape
+            // If has no first mode name, just return an empty string
+            if (!shape.notes[0][1]) {
+                return '';
+            }
+
+            // Name this mode with respect to the first mode of the shape
             return `${shape.notes[0][1] ?? ""} mode ${scaleDegree}`;
     }
 }

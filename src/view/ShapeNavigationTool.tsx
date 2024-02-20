@@ -141,8 +141,8 @@ function ShapeNavigationTool(props: Props) {
                             labelId="demo-simple-select-filled-label"
                             onChange={e => {
                                 if (e.target.value != null) {
-                                    setHomeNote(e.target.value as number);
                                     setActiveShape(activeExactFit.shape, e.target.value as number - (dropdownValue?.startingNoteNum ?? 0));
+                                    setHomeNote(e.target.value as number);
                                 }
                             }}
                             onClose={() => {
