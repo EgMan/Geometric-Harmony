@@ -1,5 +1,5 @@
 import React from "react";
-import { HarmonicShape, ShapeType, knownShapes } from "../utils/KnownHarmonicShapes";
+import { HarmonicShape, SCALE_NATURAL, ShapeType, knownShapes } from "../utils/KnownHarmonicShapes";
 import { getNoteName, getNoteNum } from "../utils/Utils";
 import { NoteSet, normalizeToSingleOctave, useHomeNote, useNoteSet, useSetHomeNote } from "../sound/NoteProvider";
 import { MenuItem, FormGroup, Select, Autocomplete, TextField, ThemeProvider, styled, InputAdornment, } from "@mui/material";
@@ -120,6 +120,15 @@ function ShapeNavigationTool(props: Props) {
         return explorerElementMap.get(getElemKey(activeExactFit?.shape, homeNote + activeExactFit.noteToFirstNoteInShapeIdxOffset)) ?? null;
     }, [activeExactFit, explorerElementMap, getElemKey, homeNote]);
 
+    const getAutocompleteOptionSortingIndex = React.useCallback((a: AutocompleteOptionType) => {
+        if (a.shape.name === SCALE_NATURAL.name) {
+            return 0;
+        }
+        if (a.shape.type === ShapeType.CHORD)
+            return 100;
+        return a.noteCount;
+    }, []);
+
     return (
         <div id="shape-tool-div">
             <form onSubmit={evt => { evt.preventDefault() }}>
@@ -217,7 +226,9 @@ function ShapeNavigationTool(props: Props) {
                                     if (option.label.toUpperCase().includes(inputVal)) filteredOptions.push(option);
                                     else if (option.shapeName.toUpperCase().includes(inputVal)) filteredOptions.push(option);
                                 });
-                                return filteredOptions;
+                                return filteredOptions.sort((a, b) => {
+                                    return getAutocompleteOptionSortingIndex(a) - getAutocompleteOptionSortingIndex(b);
+                                });
                             }}
                             renderGroup={(params) => (
                                 <li key={params.key}>
