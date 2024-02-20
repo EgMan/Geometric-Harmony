@@ -204,6 +204,7 @@ function ShapeNavigationTool(props: Props) {
                                 if (leadingNoteName !== null) {
                                     var noteNum = getNoteNum(leadingNoteName[1]);
                                     if (noteNum !== -1) {
+                                        setActiveShape(activeExactFit.shape, noteNum);
                                         setHomeNote(noteNum);
                                     }
                                 }

@@ -172,7 +172,7 @@ function HarmonyAnalyzer(props: Props) {
         return infos.filter(info => info.text !== "").map((info) => {
             return (<Text key={`info${info.text}${idx++}`} text={info.text} x={0} y={textelemoffset * (idx) + infosYOffset} fontSize={infosFontSize} fontFamily='monospace' fill={info.color} align="center" width={props.width} />);
         });
-    }, [activeExactFit, activeExactFitName, channelDisplays, channelDisplaysExactFits, emphasizedNotes, getInfoText, getNoteNameInExactFitShape, homeNote, inputNotes, midiFileExactFit, props.width, showMidiFileCombined, showWhite, showYellow]);
+    }, [activeExactFit, activeExactFitName, channelDisplays, channelDisplaysExactFits, colorPalette.Widget_Primary, emphasizedNotes, getInfoText, getNoteNameInExactFitShape, homeNote, inputNotes, midiFileExactFit, props.width, showMidiFileCombined, showWhite, showYellow]);
 
     const fullRender = React.useMemo((
     ) => {
