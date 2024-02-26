@@ -45,10 +45,19 @@ body {
   width: calc(100vw);
   height: calc(100vh);
   overflow: auto;
-  scrollbar-color: light;
+  /* scrollbar-color: light; */
   overflow: scroll;
 
   scroll-snap-type: both mandatory;
+
+/* Hide scrollbar for IE, Edge and Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+#stage-scroll-container::-webkit-scrollbar {
+  display: none;
 }
 
 #stage-large-container {
