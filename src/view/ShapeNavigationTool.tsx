@@ -239,7 +239,7 @@ function ShapeNavigationTool(props: Props) {
                             popupIcon={null}
                             // ListboxProps={{ style: { maxHeight: window.innerHeight } }}
                             sx={{
-                                minWidth: autocompleteExplorerWidth, display: 'inline-block', bgcolor: 'transparent', color: 'red',
+                                minWidth: autocompleteExplorerWidth, height: "34px", display: 'inline-block', bgcolor: 'transparent', color: 'red',
                                 '.MuiOutlinedInput-notchedOutline': {
                                     borderColor: 'transparent',
                                     borderRadius: '9px',

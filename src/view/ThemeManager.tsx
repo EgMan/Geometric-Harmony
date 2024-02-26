@@ -67,10 +67,23 @@ function ThemeManager(props: Props) {
                             },
                         },
                     },
+                    MuiTooltip: {
+                        styleOverrides: {
+                            tooltip: {
+                                fontFamily: "monospace",
+                                color: colorPalette.UI_Primary,
+                                backgroundColor: colorPalette.UI_Background,
+                            },
+                            arrow: {
+                                color: colorPalette.UI_Background,
+                                // backgroundColor: colorPalette.UI_Background,
+                            }
+                        }
+                    }
                 },
             }
         );
-    }, [colorPalette.UI_Accent, colorPalette.UI_Primary]);
+    }, [colorPalette.UI_Accent, colorPalette.UI_Background, colorPalette.UI_Primary]);
 
     const appTheme: AppTheme = React.useMemo(() => (
         {

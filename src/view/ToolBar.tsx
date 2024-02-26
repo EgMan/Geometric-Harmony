@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, ClickAwayListener, ListItemIcon, ListItemText, DialogTitle, MenuItem, MenuList, Paper, Popover, Switch, Select, } from "@mui/material";
+import { Button, ClickAwayListener, ListItemIcon, ListItemText, DialogTitle, MenuItem, MenuList, Paper, Popover, Switch, Select, Tooltip, Toolbar as MUItoolbar } from "@mui/material";
 import ShapeNavigationTool from "./ShapeNavigationTool";
 import { WidgetTrackerActions, WidgetType } from "./ViewManager";
 import { Stage } from "konva/lib/Stage";
@@ -64,185 +64,202 @@ function ToolBar(props: Props) {
     return (
         <div>
             <div ref={addButtonRef} style={{ position: "fixed", transform: "translate(0, 0px)", zIndex: 1, width: "100vw", backgroundColor: settings?.isPeaceModeEnabled ? "transparent" : colorPalette.UI_Background, borderBottomLeftRadius: "9px", borderBottomRightRadius: "9px", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                <div>
+                <div style={{ display: "flex" }}>
                     {
                         settings?.isPeaceModeEnabled ? null :
-                            <><Button type="submit" variant="contained"
-                                sx={{
-                                    fontSize: "0.7em",
-                                    color: 'white',
-                                    backgroundColor: 'transparent',
-                                    boxShadow: 'none',
-                                    padding: "1.8px",
-                                    borderTopLeftRadius: '0px',
-                                    borderTopRightRadius: '9px',
-                                    borderBottomLeftRadius: '9px',
-                                    borderBottomRightRadius: '9px',
-                                    '&:hover': {
-                                        backgroundColor: 'rgb(255,255,255,0.1)',
-                                    },
-                                    "&.Mui-disabled": {
-                                        background: 'transparent',
-                                        color: "grey"
-                                    }
-                                }}
-                                onClick={() => {
-                                    setAddDropdownOpen(true);
-                                }}
-                            >
-                                <AddBoxIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" />
-                            </Button>
-                                <Button type="submit" variant="contained"
-                                    sx={{
-                                        fontSize: "0.7em",
-                                        color: 'white',
-                                        backgroundColor: 'transparent',
-                                        boxShadow: 'none',
-                                        padding: "1.8px",
-                                        borderTopLeftRadius: '0px',
-                                        borderTopRightRadius: '9px',
-                                        borderBottomLeftRadius: '9px',
-                                        borderBottomRightRadius: '9px',
-                                        '&:hover': {
-                                            backgroundColor: 'rgb(255,255,255,0.1)',
-                                        },
-                                        "&.Mui-disabled": {
-                                            background: 'transparent',
-                                            color: "grey"
-                                        }
-                                    }}
-                                    onClick={
-                                        () => changeTheme?.(prev => {
-                                            const Widget_Primary = changeLightness(getRandomColor(), 1.25);
-                                            const Main_Background = changeLightness(getRandomColor(), 0.75);
-                                            const Widget_MutedPrimary = blendColors([Widget_Primary, Widget_Primary, Widget_Primary, Main_Background, Main_Background])!;
-                                            return {
-                                                ...prev,
-                                                Main_Background,
-                                                UI_Background: getRandomColorWithAlpha(),
-                                                UI_Primary: getRandomColor(),
-                                                UI_Accent: getRandomColor(),
-                                                // Interval_Semitone: getRandomColor(),
-                                                // Interval_Wholetone: getRandomColor(),
-                                                // Interval_MinorThird: getRandomColor(),
-                                                // Interval_MajorThird: getRandomColor(),
-                                                // Interval_PerfectFourth: getRandomColor(),
-                                                // Interval_Tritone: getRandomColor(),
-                                                Widget_Primary,
-                                                Widget_MutedPrimary,
-                                                Note_Home: getRandomColor(),
+                            <>
+                                <Tooltip title="Toys" arrow>
+                                    <Button type="submit" variant="contained"
+                                        sx={{
+                                            height: "auto",
+                                            fontSize: "0.7em",
+                                            color: 'white',
+                                            backgroundColor: 'transparent',
+                                            boxShadow: 'none',
+                                            padding: "1.8px",
+                                            borderTopLeftRadius: '0px',
+                                            borderTopRightRadius: '9px',
+                                            borderBottomLeftRadius: '9px',
+                                            borderBottomRightRadius: '9px',
+                                            '&:hover': {
+                                                backgroundColor: 'rgb(255,255,255,0.1)',
+                                            },
+                                            "&.Mui-disabled": {
+                                                // background: 'transparent',
+                                                // color: "grey"
                                             }
+                                        }}
+                                        onClick={() => {
+                                            setAddDropdownOpen(true);
+                                        }}
+                                    >
+                                        <AddBoxIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                    </Button>
+                                </Tooltip>
+                                <Tooltip title="Color" arrow>
+                                    <Button type="submit" variant="contained"
+                                        sx={{
+                                            height: "auto",
+                                            fontSize: "0.7em",
+                                            color: 'white',
+                                            backgroundColor: 'transparent',
+                                            boxShadow: 'none',
+                                            padding: "1.8px",
+                                            borderTopLeftRadius: '0px',
+                                            borderTopRightRadius: '9px',
+                                            borderBottomLeftRadius: '9px',
+                                            borderBottomRightRadius: '9px',
+                                            '&:hover': {
+                                                backgroundColor: 'rgb(255,255,255,0.1)',
+                                            },
+                                            "&.Mui-disabled": {
+                                                background: 'transparent',
+                                                color: "grey"
+                                            }
+                                        }}
+                                        onClick={
+                                            () => changeTheme?.(prev => {
+                                                const Widget_Primary = changeLightness(getRandomColor(), 1.25);
+                                                const Main_Background = changeLightness(getRandomColor(), 0.75);
+                                                const Widget_MutedPrimary = blendColors([Widget_Primary, Widget_Primary, Widget_Primary, Main_Background, Main_Background])!;
+                                                return {
+                                                    ...prev,
+                                                    Main_Background,
+                                                    UI_Background: getRandomColorWithAlpha(),
+                                                    UI_Primary: getRandomColor(),
+                                                    UI_Accent: getRandomColor(),
+                                                    // Interval_Semitone: getRandomColor(),
+                                                    // Interval_Wholetone: getRandomColor(),
+                                                    // Interval_MinorThird: getRandomColor(),
+                                                    // Interval_MajorThird: getRandomColor(),
+                                                    // Interval_PerfectFourth: getRandomColor(),
+                                                    // Interval_Tritone: getRandomColor(),
+                                                    Widget_Primary,
+                                                    Widget_MutedPrimary,
+                                                    Note_Home: getRandomColor(),
+                                                }
+                                            }
+                                            )
                                         }
-                                        )
-                                    }
-                                >
-                                    <ColorLensIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" />
-                                </Button>
-                                <Button type="submit" variant="contained"
-                                    sx={{
-                                        fontSize: "0.7em",
-                                        color: 'white',
-                                        backgroundColor: 'transparent',
-                                        boxShadow: 'none',
-                                        padding: "1.8px",
-                                        borderTopLeftRadius: '0px',
-                                        borderTopRightRadius: '9px',
-                                        borderBottomLeftRadius: '9px',
-                                        borderBottomRightRadius: '9px',
-                                        '&:hover': {
-                                            backgroundColor: 'rgb(255,255,255,0.1)',
-                                        },
-                                        "&.Mui-disabled": {
-                                            background: 'transparent',
-                                            color: "grey"
-                                        }
-                                    }}
-                                    onClick={() => {
-                                        setSettingsDropdownOpen(true);
-                                    }}
-                                >
-                                    <HeadphonesIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" style={{ height: '100%' }} />
-                                </Button>
-                                <Button type="submit" variant="contained"
-                                    sx={{
-                                        fontSize: "0.7em",
-                                        color: 'white',
-                                        backgroundColor: 'transparent',
-                                        boxShadow: 'none',
-                                        padding: "1.8px",
-                                        borderTopLeftRadius: '0px',
-                                        borderTopRightRadius: '9px',
-                                        borderBottomLeftRadius: '9px',
-                                        borderBottomRightRadius: '9px',
-                                        '&:hover': {
-                                            backgroundColor: 'rgb(255,255,255,0.1)',
-                                        },
-                                        "&.Mui-disabled": {
-                                            background: 'transparent',
-                                            color: "grey"
-                                        }
-                                    }}
-                                    onClick={() => {
-                                        setMidiSettingsDropdownOpen(true);
-                                    }}
-                                >
-                                    <PianoIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" />
-                                </Button>
+                                    >
+                                        <ColorLensIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                    </Button>
+                                </Tooltip>
+                                <Tooltip title="Sound" arrow>
+                                    <Button type="submit" variant="contained"
+                                        sx={{
+                                            height: "auto",
+                                            fontSize: "0.7em",
+                                            color: 'white',
+                                            backgroundColor: 'transparent',
+                                            boxShadow: 'none',
+                                            padding: "1.8px",
+                                            borderTopLeftRadius: '0px',
+                                            borderTopRightRadius: '9px',
+                                            borderBottomLeftRadius: '9px',
+                                            borderBottomRightRadius: '9px',
+                                            '&:hover': {
+                                                backgroundColor: 'rgb(255,255,255,0.1)',
+                                            },
+                                            "&.Mui-disabled": {
+                                                background: 'transparent',
+                                                color: "grey"
+                                            }
+                                        }}
+                                        onClick={() => {
+                                            setSettingsDropdownOpen(true);
+                                        }}
+                                    >
+                                        <HeadphonesIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" style={{ height: '100%' }} />
+                                    </Button>
+                                </Tooltip>
+                                <Tooltip title="MIDI" arrow>
+                                    <Button type="submit" variant="contained"
+                                        sx={{
+                                            height: "34px",
+                                            fontSize: "0.7em",
+                                            color: 'white',
+                                            backgroundColor: 'transparent',
+                                            boxShadow: 'none',
+                                            padding: "1.8px",
+                                            borderTopLeftRadius: '0px',
+                                            borderTopRightRadius: '9px',
+                                            borderBottomLeftRadius: '9px',
+                                            borderBottomRightRadius: '9px',
+                                            '&:hover': {
+                                                backgroundColor: 'rgb(255,255,255,0.1)',
+                                            },
+                                            "&.Mui-disabled": {
+                                                background: 'transparent',
+                                                color: "grey"
+                                            }
+                                        }}
+                                        onClick={() => {
+                                            setMidiSettingsDropdownOpen(true);
+                                        }}
+                                    >
+                                        <PianoIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                    </Button>
+                                </Tooltip>
                             </>
                     }
                 </div>
-                <div>
+                <div style={{ display: "flex", height: "auto" }}>
                     {
                         settings?.isPeaceModeEnabled ? null :
                             <ShapeNavigationTool width={600} subdivisionCount={12} />
                     }
                 </div>
-                <div style={{ display: "inline-block" }}>
+                <div style={{ display: "flex", height: "auto" }}>
                     {
                         settings?.isPeaceModeEnabled ? null :
-                            <Button type="submit" variant="contained"
-                                onClick={() => props.setIsHeartModalOpen(enabled => !enabled)}
-                                sx={{
-                                    fontSize: "16px",
-                                    color: colorPalette.UI_Primary,
-                                    backgroundColor: 'transparent',
-                                    boxShadow: 'none',
-                                    padding: "1.8px",
-                                    borderTopLeftRadius: '9px',
-                                    borderTopRightRadius: '0px',
-                                    borderBottomLeftRadius: '9px',
-                                    borderBottomRightRadius: '9px',
-                                    '&:hover': {
-                                        backgroundColor: 'rgb(255,255,255,0.1)',
-                                    },
-                                    "&.Mui-disabled": {
-                                        background: 'transparent',
-                                        color: "grey"
-                                    }
-                                }}
-                            >♥</Button>
+                            <Tooltip title="Love" arrow>
+                                <Button type="submit" variant="contained"
+                                    onClick={() => props.setIsHeartModalOpen(enabled => !enabled)}
+                                    sx={{
+                                        fontSize: "18px",
+                                        color: colorPalette.UI_Primary,
+                                        backgroundColor: 'transparent',
+                                        boxShadow: 'none',
+                                        padding: "1.8px",
+                                        borderTopLeftRadius: '9px',
+                                        borderTopRightRadius: '0px',
+                                        borderBottomLeftRadius: '9px',
+                                        borderBottomRightRadius: '9px',
+                                        '&:hover': {
+                                            backgroundColor: 'rgb(255,255,255,0.1)',
+                                        },
+                                        "&.Mui-disabled": {
+                                            background: 'transparent',
+                                            color: "grey"
+                                        }
+                                    }}
+                                >♥</Button>
+                            </Tooltip>
                     }
-                    <Button type="submit" variant="contained"
-                        onClick={() => settings?.setIsPeaceModeEnabled(enabled => !enabled)}
-                        sx={{
-                            fontSize: "16px",
-                            color: colorPalette.UI_Primary,
-                            backgroundColor: 'transparent',
-                            boxShadow: 'none',
-                            padding: "1.8px",
-                            borderTopLeftRadius: '9px',
-                            borderTopRightRadius: '0px',
-                            borderBottomLeftRadius: '9px',
-                            borderBottomRightRadius: '9px',
-                            '&:hover': {
-                                backgroundColor: 'rgb(255,255,255,0.1)',
-                            },
-                            "&.Mui-disabled": {
-                                background: 'transparent',
-                                color: "grey"
-                            }
-                        }}
-                    >☮</Button>
+                    <Tooltip title="Peace" arrow>
+                        <Button type="submit" variant="contained"
+                            onClick={() => settings?.setIsPeaceModeEnabled(enabled => !enabled)}
+                            sx={{
+                                fontSize: "18px",
+                                color: colorPalette.UI_Primary,
+                                backgroundColor: 'transparent',
+                                boxShadow: 'none',
+                                padding: "1.8px",
+                                borderTopLeftRadius: '9px',
+                                borderTopRightRadius: '0px',
+                                borderBottomLeftRadius: '9px',
+                                borderBottomRightRadius: '9px',
+                                '&:hover': {
+                                    backgroundColor: 'rgb(255,255,255,0.1)',
+                                },
+                                "&.Mui-disabled": {
+                                    background: 'transparent',
+                                    color: "grey"
+                                }
+                            }}
+                        >☮</Button>
+                    </Tooltip>
                 </div>
             </div>
             <div style={{ width: 320, maxWidth: '100%', zIndex: 1 }}>
