@@ -197,6 +197,16 @@ export function changeLightness(color: string, multiplier: number) {
     return `hsla(${parsedColor.h}, ${parsedColor.s}%, ${lightness}%, ${parsedColor.a})`
 }
 
+export function changeAlpha(color: string, multiplier: number) {
+    const parsedColor = ColorConverter(color);
+    if (!parsedColor.isValid) {
+        console.error("Invalid color", color);
+        console.error("Parsed color", parsedColor);
+    }
+    let alpha = Math.floor(Math.min(Math.max(parsedColor.a * multiplier, 0), 1));
+    return `hsla(${parsedColor.h}, ${parsedColor.s}%, ${parsedColor.l}%, ${alpha})`
+}
+
 export function getRandomColor() {
     var max = 255;
     var r = Math.floor(Math.random() * max);

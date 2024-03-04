@@ -11,7 +11,7 @@ import Konva from "konva";
 import { Shape } from "konva/lib/Shape";
 import Tonnetz from "../toys/Tonnetz";
 import ToolBar from "./ToolBar";
-import { realignSpaces } from "../utils/SpacesUtils";
+import { SCROLL_PADDING, realignSpaces } from "../utils/SpacesUtils";
 import PlayTheShapeGame from "../toys/PlayTheShapeGame";
 import Oscilloscope from "../toys/Oscilloscope";
 import FrequencyVisualizer from "../toys/FrequencyVisualizer";
@@ -493,7 +493,6 @@ function ViewManager(props: Props) {
 
     const timeout = React.useRef<number | null>(null);
 
-    const SCROLL_PADDING = 100;
     const onContainerScroll = React.useCallback(() => {
         var scrollContainer = document.getElementById('stage-scroll-container');
         var stageContainer = document.getElementById('stage-container');
@@ -511,6 +510,10 @@ function ViewManager(props: Props) {
         timeout.current = window.setTimeout(function () {
             realignSpaces();
         }, 750)
+    }, []);
+
+    React.useEffect(() => {
+        realignSpaces();
     }, []);
 
     return (

@@ -7,7 +7,7 @@ import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import { addVectors, setPointer, useShadowVector } from "../utils/Utils";
 import { WidgetTracker, WidgetTrackerActions } from "./ViewManager";
-import { getCurrentSpace, useGotoSpaceRateLimited } from "../utils/SpacesUtils";
+import { SCROLL_PADDING, getCurrentSpace, useGotoSpaceRateLimited } from "../utils/SpacesUtils";
 
 export type WidgetComponentProps = {
     fromWidget: {
@@ -63,6 +63,29 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
     const widgetRef = React.useRef<Konva.Group>(null);
 
     const gotoSpaceRateLimited = useGotoSpaceRateLimited();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const [initialWidth, initialHeight] = React.useMemo(() => [otherProps.width ?? 1, otherProps.height ?? 1], []);
+
+    const [leftBoundBase, setLeftBoundBase] = React.useState(0);
+    const [rightBoundBase, setRightBoundBase] = React.useState(initialWidth);
+    const [topBoundBase, setTopBoundBase] = React.useState(0);
+    const [bottomBoundBase, setBottomBoundBase] = React.useState(initialHeight);
+
+    const [leftBoundDragged, setLeftBoundDragged] = React.useState(0);
+    const [rightBoundDragged, setRightBoundDragged] = React.useState(0);
+    const [topBoundDragged, setTopBoundDragged] = React.useState(0);
+    const [bottomBoundDragged, setBottomBoundDragged] = React.useState(0);
+
+    const leftBound = leftBoundBase + leftBoundDragged;
+    const rightBound = rightBoundBase + rightBoundDragged;
+    const topBound = topBoundBase + topBoundDragged;
+    const bottomBound = bottomBoundBase + bottomBoundDragged;
+    const horrizontalOffsetFromResizing = (leftBound + (rightBound - initialWidth)) / 2;
+    const verticalOffsetFromResizing = topBound;
+
+    const resizedWidth = (rightBoundDragged + rightBoundBase) - (leftBoundBase + leftBoundDragged);
+    const resizedHeight = (bottomBoundBase + bottomBoundDragged) - (topBoundBase + topBoundDragged);
 
     const [mainButtonHover, setMainButtonHover] = React.useState(false);
     const mainButtonAttr = React.useMemo(() => {
@@ -124,58 +147,55 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
         containerPosition: { x: - contextMenuOffset.x, y: - contextMenuOffset.y },
     }
 
-    const POINTER_DIST_TO_EDGE_NAVIGATE_SPACE = 20;
+    const CONSTRAIN_DRAG_FROM_TOP = 50;
+    const CONSTRAIN_DRAG_FROM_SIDES = 16;
+    const CONSTRAIN_DRAG_FROM_BOTTOM = 16;
     const onDrag = React.useCallback((event: KonvaEventObject<DragEvent>) => {
-        setDraggedPosition(event.currentTarget.position());
         var stage = event.target.getStage();
+        // Constrain widget
+        // const a = event.target.absolutePosition();
+        // event.target.setAbsolutePosition({ x: a.x, y: Math.max(a.y, CONSTRAIN_DRAG_FROM_TOP) });
+        // event.target.y(Math.max(event.target.y(), 50));
+        // console.log("ypos", event.target.absolutePosition().y, event.target.y(), event.target.absolutePosition().y - event.target.y())
+
 
         // Scroll to adjacent space if dragging near edge
         if (stage !== null) {
+            // console.log("stagepos", stage.getAbsolutePosition());
             var pointerPos = stage.getPointerPosition();
+
             if (pointerPos !== null) {
+                // Spaces logic
                 const { row, col } = getCurrentSpace();
-                pointerPos = stage.getAbsoluteTransform().copy().invert().point(pointerPos);
-                pointerPos = { x: pointerPos.x - (col * window.innerWidth), y: pointerPos.y - (row * window.innerHeight) };
-                if (pointerPos.y + POINTER_DIST_TO_EDGE_NAVIGATE_SPACE > window.innerHeight) {
+
+                const stagePos = stage.getAbsolutePosition();
+                const minY = CONSTRAIN_DRAG_FROM_TOP + stagePos.y + (row * window.innerHeight);
+                const maxY = window.innerHeight - CONSTRAIN_DRAG_FROM_BOTTOM + stagePos.y + (row * window.innerHeight);
+                const minX = CONSTRAIN_DRAG_FROM_SIDES + stagePos.x + (col * window.innerWidth);
+                const maxX = window.innerWidth - CONSTRAIN_DRAG_FROM_SIDES + stagePos.x + (col * window.innerWidth);
+                event.target.setAbsolutePosition({ x: Math.min(Math.max(pointerPos.x - horrizontalOffsetFromResizing, minX), maxX), y: Math.min(Math.max(pointerPos.y, minY) - verticalOffsetFromResizing, maxY) });
+
+                if (pointerPos.y > maxY) {
                     gotoSpaceRateLimited(row + 1, col);
                 }
-                if (pointerPos.y - POINTER_DIST_TO_EDGE_NAVIGATE_SPACE < 0) {
+                if (pointerPos.y < minY) {
+                    console.log("gotoSpaceRateLimited", row - 1, col);
                     gotoSpaceRateLimited(row - 1, col);
                 }
-                if (pointerPos.x + POINTER_DIST_TO_EDGE_NAVIGATE_SPACE > window.innerWidth) {
+                if (pointerPos.x > maxX) {
                     gotoSpaceRateLimited(row, col + 1);
                 }
-                if (pointerPos.x - POINTER_DIST_TO_EDGE_NAVIGATE_SPACE < 0) {
+                if (pointerPos.x < minX) {
                     gotoSpaceRateLimited(row, col - 1);
                 }
             }
         }
-    }, [gotoSpaceRateLimited, setDraggedPosition]);
+        setDraggedPosition(event.currentTarget.position());
+    }, [gotoSpaceRateLimited, horrizontalOffsetFromResizing, setDraggedPosition, verticalOffsetFromResizing]);
 
     const onDragEnd = React.useCallback((event: KonvaEventObject<DragEvent>) => {
         setDragComplete?.({ x: event.currentTarget.x() + initialPosition.x, y: event.currentTarget.y() + initialPosition.y });
     }, [initialPosition.x, initialPosition.y, setDragComplete]);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const [testWidth, testHeight] = React.useMemo(() => [otherProps.width ?? 1, otherProps.height ?? 1], []);
-
-    const [leftBoundBase, setLeftBoundBase] = React.useState(0);
-    const [rightBoundBase, setRightBoundBase] = React.useState(testWidth);
-    const [topBoundBase, setTopBoundBase] = React.useState(0);
-    const [bottomBoundBase, setBottomBoundBase] = React.useState(testHeight);
-
-    const [leftBoundDragged, setLeftBoundDragged] = React.useState(0);
-    const [rightBoundDragged, setRightBoundDragged] = React.useState(0);
-    const [topBoundDragged, setTopBoundDragged] = React.useState(0);
-    const [bottomBoundDragged, setBottomBoundDragged] = React.useState(0);
-
-    const leftBound = leftBoundBase + leftBoundDragged;
-    const rightBound = rightBoundBase + rightBoundDragged;
-    const topBound = topBoundBase + topBoundDragged;
-    const bottomBound = bottomBoundBase + bottomBoundDragged;
-
-    const resizedWidth = (rightBoundDragged + rightBoundBase) - (leftBoundBase + leftBoundDragged);
-    const resizedHeight = (bottomBoundBase + bottomBoundDragged) - (topBoundBase + topBoundDragged);
 
     const resizeComplete = React.useCallback((event: KonvaEventObject<DragEvent>) => {
         setLeftBoundBase(oldVal => (oldVal + leftBoundDragged));
@@ -373,7 +393,7 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                         </animated.Group>
                         {/* <Rect ref={contextMenuRef} cornerRadius={15} fill="black" width={90} height={60} x={-45} y={-45} /> */}
                         {/* @ts-ignore: https://github.com/pmndrs/react-spring/issues/1515 */}
-                        <Group x={(leftBound + (rightBound - testWidth)) / 2} y={topBound} >
+                        <Group x={horrizontalOffsetFromResizing} y={topBound} >
                             <animated.Group {...fullContextMenuProps} listening={fullContextMenuOpen} >
                                 <Rect cornerRadius={15} fill="rgba(255,255,255,0.1)" width={90} height={60} x={-45} y={-45} />
                                 <Rect cornerRadius={15} fill="rgba(255,255,255,0)" width={110} height={80} x={-55} y={-55} />

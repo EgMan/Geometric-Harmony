@@ -63,12 +63,12 @@ function ToolBar(props: Props) {
 
     return (
         <div>
-            <div ref={addButtonRef} style={{ position: "fixed", transform: "translate(0, 0px)", zIndex: 1, width: "100vw", backgroundColor: settings?.isPeaceModeEnabled ? "transparent" : colorPalette.UI_Background, borderBottomLeftRadius: "9px", borderBottomRightRadius: "9px", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <div ref={addButtonRef} style={{ position: "fixed", transform: "translate(0, 0px)", zIndex: 1, width: "100vw", backgroundColor: "transparent", borderBottomLeftRadius: "9px", borderBottomRightRadius: "9px", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ display: "flex" }}>
                     {
                         settings?.isPeaceModeEnabled ? null :
                             <>
-                                <Tooltip title="Toys" arrow>
+                                <Tooltip title="Toys">
                                     <Button type="submit" variant="contained"
                                         sx={{
                                             height: "auto",
@@ -96,7 +96,7 @@ function ToolBar(props: Props) {
                                         <AddBoxIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                     </Button>
                                 </Tooltip>
-                                <Tooltip title="Color" arrow>
+                                <Tooltip title="Color">
                                     <Button type="submit" variant="contained"
                                         sx={{
                                             height: "auto",
@@ -145,7 +145,7 @@ function ToolBar(props: Props) {
                                         <ColorLensIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                     </Button>
                                 </Tooltip>
-                                <Tooltip title="Sound" arrow>
+                                <Tooltip title="Sound">
                                     <Button type="submit" variant="contained"
                                         sx={{
                                             height: "auto",
@@ -173,7 +173,7 @@ function ToolBar(props: Props) {
                                         <HeadphonesIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" style={{ height: '100%' }} />
                                     </Button>
                                 </Tooltip>
-                                <Tooltip title="MIDI" arrow>
+                                <Tooltip title="MIDI">
                                     <Button type="submit" variant="contained"
                                         sx={{
                                             height: "34px",
@@ -213,7 +213,7 @@ function ToolBar(props: Props) {
                 <div style={{ display: "flex", height: "auto" }}>
                     {
                         settings?.isPeaceModeEnabled ? null :
-                            <Tooltip title="Love" arrow>
+                            <Tooltip title="Love">
                                 <Button type="submit" variant="contained"
                                     onClick={() => props.setIsHeartModalOpen(enabled => !enabled)}
                                     sx={{
@@ -237,7 +237,7 @@ function ToolBar(props: Props) {
                                 >♥</Button>
                             </Tooltip>
                     }
-                    <Tooltip title="Peace" arrow>
+                    <Tooltip title="Peace">
                         <Button type="submit" variant="contained"
                             onClick={() => settings?.setIsPeaceModeEnabled(enabled => !enabled)}
                             sx={{
