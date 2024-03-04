@@ -1,7 +1,7 @@
 import React from 'react';
 import { WidgetComponentProps } from '../view/Widget';
 import { Point3D } from '../utils/Utils3D';
-import { blendColors, getIntervalColor, getIntervalDistance, getRandomColor, smallGold } from '../utils/Utils';
+import { bigGold, blendColors, changeAlpha, fadeColors, getIntervalColor, getIntervalDistance, getRandomColor, smallGold } from '../utils/Utils';
 import Wireframe, { WireframeLine, WireframePoint } from './Wireframe';
 import { NoteSet, normalizeToSingleOctave, useHomeNote, useNoteDisplays, useNoteSet } from '../sound/NoteProvider';
 import { useAppTheme } from '../view/ThemeManager';
@@ -16,7 +16,7 @@ const radius = 1;
 const octaveCount = 8;
 
 function Spiral(props: Props) {
-    const rungSpacing = smallGold / 2;
+    const rungSpacing = bigGold / (12 * octaveCount);
     const noteDisplays = useNoteDisplays();
     const activeNotes = useNoteSet(NoteSet.Active).notes;
     const { colorPalette } = useAppTheme()!;
@@ -75,19 +75,21 @@ function Spiral(props: Props) {
             });
 
             if (isBeingChannelDisplayed) {
-                for (let otherNote = note + 1; otherNote < Math.min(note + 12 + 1, 12 * octaveCount - noteOffset); otherNote++) {
+                for (let otherNote = note + 1; otherNote < Math.min(note + (12 * 3) + 1, 12 * octaveCount - noteOffset); otherNote++) {
                     const otherNoteChannelDisplay = noteDisplays.octaveGnostic[otherNote]?.map((noteDisplay) => noteDisplay.color!);
                     const isOtherNoteBeingChannelDisplayed = (otherNoteChannelDisplay?.length ?? 0) > 0;
-                    color = getIntervalColor(getIntervalDistance(normalizeToSingleOctave(otherNote), normalizeToSingleOctave(note), 12), colorPalette);
+
                     if (isOtherNoteBeingChannelDisplayed) {
+                        var intervalColor = getIntervalColor(getIntervalDistance(normalizeToSingleOctave(otherNote), normalizeToSingleOctave(note), 12), colorPalette);
+                        const octavesApart = Math.floor((otherNote - note) / 12);
+                        // intervalColor = changeAlpha(intervalColor, 1 / octavesApart);
                         outLines.push({
                             start: note + noteOffset,
                             end: otherNote + noteOffset,
-                            color,
+                            color: intervalColor,
                             lineProps: {
                                 strokeWidth: 2,
                             }
-
                         });
                     }
                 }
@@ -100,9 +102,9 @@ function Spiral(props: Props) {
         <Wireframe
             points={frameElems.points}
             lines={frameElems.lines}
-            autoRotateVector={{ x: 0.15, y: 0, z: 0 }}
+            autoRotateVector={{ x: 0.02, y: 0, z: 0 }}
             isOrthographic={false}
-            initialOrientation={Quaternion.fromEuler(3.14, .03, -.03)}
+            initialOrientation={Quaternion.fromEuler(3.14, 0, -.75)}
             {...props}
         />
     );
