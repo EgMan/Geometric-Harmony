@@ -73,6 +73,7 @@ function ThemeManager(props: Props) {
                                 fontFamily: "monospace",
                                 color: colorPalette.UI_Primary,
                                 backgroundColor: colorPalette.UI_Background,
+                                backdropFilter: 'blur(13px)',
                             },
                             arrow: {
                                 color: colorPalette.UI_Background,

@@ -326,6 +326,7 @@ function ViewManager(props: Props) {
         switch (widget.type) {
             case WidgetType.Piano:
                 return <Widget of={Piano}
+                    layout={{ displayName: "Piano" }}
                     uid={uid}
                     actions={trackerActions}
                     tracker={widget}
@@ -341,6 +342,7 @@ function ViewManager(props: Props) {
                     octaveCount={pianoOctaveCount} />
             case WidgetType.Wheel:
                 return <Widget of={Wheel}
+                    layout={{ displayName: "Wheel" }}
                     uid={uid}
                     actions={trackerActions}
                     tracker={widget}
@@ -359,6 +361,7 @@ function ViewManager(props: Props) {
             case WidgetType.Guitar:
                 const fretCount = 13;
                 return <Widget of={StringInstrument}
+                    layout={{ displayName: "Guitar" }}
                     uid={uid}
                     actions={trackerActions}
                     tracker={widget}
@@ -376,6 +379,7 @@ function ViewManager(props: Props) {
                 />
             case WidgetType.Analyzer:
                 return <Widget of={HarmonyAnalyzer}
+                    layout={{ displayName: "Harmony Analyzer" }}
                     uid={uid}
                     actions={trackerActions}
                     tracker={widget}
@@ -391,6 +395,7 @@ function ViewManager(props: Props) {
                 />
             case WidgetType.Tonnetz:
                 return <Widget of={Tonnetz}
+                    layout={{ displayName: "Tonnetz Diagram" }}
                     uid={uid}
                     actions={trackerActions}
                     tracker={widget}
@@ -407,6 +412,7 @@ function ViewManager(props: Props) {
                 />
             case WidgetType.PlayShapeGame:
                 return <Widget of={PlayTheShapeGame}
+                    layout={{ displayName: "Chord Game" }}
                     uid={uid}
                     actions={trackerActions}
                     tracker={widget}
@@ -422,6 +428,7 @@ function ViewManager(props: Props) {
                 />
             case WidgetType.Oscilloscope:
                 return <Widget of={Oscilloscope}
+                    layout={{ displayName: "Oscilloscope" }}
                     uid={uid}
                     actions={trackerActions}
                     tracker={widget}
@@ -437,6 +444,7 @@ function ViewManager(props: Props) {
                 />
             case WidgetType.FrequencyVis:
                 return <Widget of={FrequencyVisualizer}
+                    layout={{ displayName: "Frequency Visualizer" }}
                     uid={uid}
                     actions={trackerActions}
                     tracker={widget}
@@ -452,6 +460,7 @@ function ViewManager(props: Props) {
                 />
             case WidgetType.Icosahedron:
                 return <Widget of={Icosahedron}
+                    layout={{ displayName: "Icosahedron" }}
                     lockAspectRatio
                     uid={uid}
                     actions={trackerActions}
@@ -468,6 +477,7 @@ function ViewManager(props: Props) {
                 />
             case WidgetType.Spiral:
                 return <Widget of={Spiral}
+                    layout={{ displayName: "Spiral" }}
                     lockAspectRatio
                     uid={uid}
                     actions={trackerActions}

@@ -8,6 +8,7 @@ import { KonvaEventObject } from "konva/lib/Node";
 import { addVectors, setPointer, useShadowVector } from "../utils/Utils";
 import { WidgetTracker, WidgetTrackerActions } from "./ViewManager";
 import { SCROLL_PADDING, getCurrentSpace, useGotoSpaceRateLimited } from "../utils/SpacesUtils";
+import { useHTMLOverlay } from "./HTMLOverlayProvider";
 
 export type WidgetComponentProps = {
     fromWidget: {
@@ -17,6 +18,10 @@ export type WidgetComponentProps = {
         positionOffset: Vector2d;
         containerPosition: Vector2d;
     }
+}
+
+export interface WidgetLayout {
+    displayName: string;
 }
 
 
@@ -34,16 +39,19 @@ type WidgetProps<TElem extends React.ElementType> = {
     setDragComplete?: (val: Vector2d) => void;
     lockAspectRatio?: boolean | undefined;
     isPeaceModeEnabled: boolean;
+    layout: WidgetLayout;
     // width: number,
     // height: number,
     // setWidth: (w: number) => void,
     // trackerActions: WidgetTrackerActions,
 } & Omit<React.ComponentPropsWithoutRef<TElem>, keyof WidgetComponentProps>;
 
-function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, children, initialPosition, draggedPosition, contextMenuOffset, isMaxamized, lockAspectRatio, isPeaceModeEnabled, setDraggedPosition, setDragComplete, ...otherProps }: WidgetProps<TElem>) {
+function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, children, initialPosition, draggedPosition, contextMenuOffset, isMaxamized, lockAspectRatio, isPeaceModeEnabled, setDraggedPosition, setDragComplete, layout, ...otherProps }: WidgetProps<TElem>) {
     const Component = of || Group;
 
     const [isSettingsOverlayVisible, setIsSettingsOverlayVisible] = React.useState(false);
+
+    const overlayProvider = useHTMLOverlay();
 
     const mainGroupTransition = useTransition(isMaxamized, {
         from: { opacity: 0 },
@@ -53,7 +61,11 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
     });
     const [shadowVect] = useShadowVector(addVectors(initialPosition, draggedPosition), { x: window.innerWidth / 2, y: 0 }, 7);
 
-    const [fullContextMenuOpen, setFullContextMenuOpen] = React.useState(false);
+    const [fullContextMenuOpen, setFullContextMenuOpenRaw] = React.useState(false);
+    const setFullContextMenuOpen = React.useCallback((val: boolean) => {
+        overlayProvider?.setMouseTooltip("");
+        setFullContextMenuOpenRaw(val);
+    }, [overlayProvider]);
     const fullContextMenuProps = useSpring({ opacity: fullContextMenuOpen ? 1 : 0, scaleX: fullContextMenuOpen ? 1 : 0.8, scaleY: fullContextMenuOpen ? 1 : 0.8 });
 
     const [resizeMenuOpen, setResizeMenuOpen] = React.useState(false);
@@ -87,7 +99,16 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
     const resizedWidth = (rightBoundDragged + rightBoundBase) - (leftBoundBase + leftBoundDragged);
     const resizedHeight = (bottomBoundBase + bottomBoundDragged) - (topBoundBase + topBoundDragged);
 
-    const [mainButtonHover, setMainButtonHover] = React.useState(false);
+    const [mainButtonHover, setMainButtonHoverRaw] = React.useState(false);
+    const setMainButtonHover = React.useCallback((val: boolean) => {
+        if (val) {
+            overlayProvider?.setMouseTooltip(layout.displayName);
+        } else {
+            overlayProvider?.setMouseTooltip("");
+        }
+        setMainButtonHoverRaw(val);
+    }, [layout.displayName, overlayProvider]);
+
     const mainButtonAttr = React.useMemo(() => {
         if (isMaxamized) {
             return {

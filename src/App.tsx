@@ -6,6 +6,7 @@ import ViewManager from './view/ViewManager';
 import SettingsProvider from './view/SettingsProvider';
 import { SnackbarProvider } from 'notistack';
 import ThemeManager from './view/ThemeManager';
+import HTMLOverlayProvider from './view/HTMLOverlayProvider';
 function App() {
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth)
   const [windowHeight, setWindowHeight] = React.useState(window.innerHeight)
@@ -25,13 +26,15 @@ function App() {
       <header className="App-header">
         <ThemeManager>
           <SettingsProvider>
-            <NoteProvider>
-              <SoundEngine>
-                <SnackbarProvider dense={true} maxSnack={10} >
-                  <ViewManager width={windowWidth} height={windowHeight} />
-                </SnackbarProvider>
-              </SoundEngine>
-            </NoteProvider>
+            <HTMLOverlayProvider>
+              <NoteProvider>
+                <SoundEngine>
+                  <SnackbarProvider dense={true} maxSnack={10} >
+                    <ViewManager width={windowWidth} height={windowHeight} />
+                  </SnackbarProvider>
+                </SoundEngine>
+              </NoteProvider>
+            </HTMLOverlayProvider>
           </SettingsProvider>
         </ThemeManager>
       </header>
