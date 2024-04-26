@@ -20,6 +20,7 @@ import { useSettings } from "./SettingsProvider";
 import Wireframe from "../toys/Wireframe";
 import Icosahedron from "../toys/Icosahedron";
 import Spiral from "../toys/Spiral";
+import DiatonicChordExplorer from "../toys/DiatonicChordExplorer";
 
 export type WidgetTracker = {
     type: WidgetType,
@@ -51,6 +52,7 @@ export enum WidgetType {
     FrequencyVis,
     Icosahedron,
     Spiral,
+    DiatonicExplorer,
 }
 
 export const widgetNameByType = (type: WidgetType) => {
@@ -73,6 +75,8 @@ export const widgetNameByType = (type: WidgetType) => {
             return "Frequency";
         case WidgetType.Icosahedron:
             return "Icosahedron";
+        case WidgetType.DiatonicExplorer:
+            return "DiatonicExplorer";
     }
 }
 
@@ -124,7 +128,7 @@ function ViewManager(props: Props) {
                 //     initialPosition: { x: (4 * props.width / 5) - 50 + (wheelRadius / 2), y: (props.height / 8) - (guitarHeight / 13) },
                 // }],
                 ['3', {
-                    type: WidgetType.Spiral,
+                    type: WidgetType.DiatonicExplorer,
                     initialPosition: { x: 3 * props.width / 4, y: 75 },
                     width: wheelRadius,
                     height: wheelRadius,
@@ -492,6 +496,21 @@ function ViewManager(props: Props) {
                     width={wheelRadius * 2}
                     height={wheelRadius * 2}
                 />
+            case WidgetType.DiatonicExplorer:
+                return <Widget of={DiatonicChordExplorer}
+                    layout={{ displayName: "DiatonicChordExplorer" }}
+                    uid={uid}
+                    actions={trackerActions}
+                    tracker={widget}
+                    key={`${uid}`}
+                    isPeaceModeEnabled={isPeaceModeEnabled}
+                    isMaxamized={widget.isMaxamized ?? true}
+                    initialPosition={widget.initialPosition}
+                    draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
+                    setDraggedPosition={setDraggedPosition(uid)}
+                    contextMenuOffset={{ x: wheelRadius, y: -20 }}
+                    width={wheelRadius * 2}
+                    height={wheelRadius * 2} />
         }
     }, [guitarHeight, isPeaceModeEnabled, pianoHeight, pianoOctaveCount, pianoWidth, props.width, setDraggedPosition, trackerActions, wheelRadius])
 

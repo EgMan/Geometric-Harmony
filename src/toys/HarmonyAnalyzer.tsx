@@ -328,6 +328,44 @@ function useTryToFitShape() {
     }, []);
 }
 
+function useAllShapeFits() {
+    return React.useCallback((shape: HarmonicShape, notes: Set<number>): ExactFit[] => {
+        const noteArr = Array.from(notes);
+        const fits: ExactFit[] = [];
+
+        const findNextNoteInShape = (startingIdx: number) => {
+            for (var i = startingIdx + 1; i < shape.notes.length; i++) {
+                if (shape.notes[i][0]) return i;
+            }
+            return -1;
+        }
+
+        const doesShapeFitStartingHere = (noteStart: number) => {
+            var idx = findNextNoteInShape(-1);
+            while (idx !== -1) {
+                if (!notes.has(normalizeToSingleOctave(noteStart + idx))) {
+                    return false;
+                }
+                idx = findNextNoteInShape(idx);
+            }
+            return true;
+        }
+
+        for (const note of noteArr) {
+            if (doesShapeFitStartingHere(note)) {
+                fits.push({
+                    shape,
+                    doesFit: true,
+                    noteToFirstNoteInShapeIdxOffset: findNextNoteInShape(-1) - note,
+                    rootNote: note,
+                });
+            }
+        }
+
+        return fits;
+    }, []);
+}
+
 export function getDynamicShape(notes: Set<number>): HarmonicShape {
     return {
         name: "",
@@ -349,6 +387,37 @@ export function useGetAllExactFits(notes: Set<number>): ExactFit[] {
         const shapesOfCorrectSize = knownShapes[notes.size] ?? [];
         return shapesOfCorrectSize.map(shape => tryToFitShape(shape, notes)).filter(shapeFit => shapeFit.doesFit).concat(defaultExactFit);
     }, [notes, tryToFitShape]);
+}
+
+type DiatonicFits = {
+    exactFits: ExactFit[][],
+    maxChordsPerNote: number,
+    noteCount: number,
+}
+
+export function useGetDiatonicFits(): DiatonicFits {
+    const shapeFits = useAllShapeFits();
+    const activeNotes = useNoteSet(NoteSet.Active).notes;
+
+    return React.useMemo(() => {
+        const chordFitsByRoot: ExactFit[][] = [[], [], [], [], [], [], [], [], [], [], [], []];
+        let noteCount = 0;
+        knownShapes.forEach((shapeGroup, idx) => {
+            const chordFits = shapeGroup
+                .filter(shape => shape.type === ShapeType.CHORD)
+                .flatMap(shape => shapeFits(shape, activeNotes))
+                .filter(shapeFit => shapeFit.doesFit);
+            chordFits.forEach(chordFit => {
+                if (chordFitsByRoot[chordFit.rootNote].length === 0) noteCount++;
+                chordFitsByRoot[chordFit.rootNote].push(chordFit);
+            });
+        });
+        return {
+            exactFits: chordFitsByRoot,
+            maxChordsPerNote: Math.max(...chordFitsByRoot.map(chordFits => chordFits.length)),
+            noteCount,
+        };
+    }, [activeNotes, shapeFits]);
 }
 
 export function useChannelDisplaysExactFits() {
