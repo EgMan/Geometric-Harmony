@@ -8,7 +8,7 @@ import { NoteChannel, NoteSet, normalizeToSingleOctave, useChannelDisplays, useG
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import { useSettings } from '../view/SettingsProvider';
 import { useAppTheme } from '../view/ThemeManager';
-import { useChannelDisplaysExactFits, useGetActiveShapeScaleDegreeFromNote, useGetDiatonicFits } from './HarmonyAnalyzer';
+import { useChannelDisplaysExactFits, useDiatonicRomanNumerals, useGetActiveShapeScaleDegreeFromNote, useGetDiatonicFits } from './HarmonyAnalyzer';
 type Props = {
     width: number,
     height: number,
@@ -96,14 +96,14 @@ function DiatonicChordExplorer(props: Props) {
         return obj;
     }, [channelDisplaysExactFits]);
 
-
+    const romanNumerals = useDiatonicRomanNumerals();
 
     const chordDisplay = React.useMemo(() => {
         const elems: JSX.Element[] = [];
 
-        for (let i = 0; i < 7; i++) {
+        for (let i = 0; i < romanNumerals.length; i++) {
             elems.push(
-                <Text key={i} text={getRomanNumeralFromScaleDegree(i)} x={0} y={i * verticalElemOffset} fill={colorPalette.Widget_Primary}
+                <Text key={i} text={romanNumerals[i]} x={0} y={i * verticalElemOffset} fill={colorPalette.Widget_Primary}
                     width={tileWidth} height={tileHeight} align='center' verticalAlign='middle' />
             );
         }
@@ -157,7 +157,7 @@ function DiatonicChordExplorer(props: Props) {
             });
         });
         return elems;
-    }, [diatonicFits, verticalElemOffset, colorPalette.Widget_Primary, colorPalette.UI_Background, tileWidth, tileHeight, fitChannelMap, horrizontalElemOffset, getScaleDegree, activeNotes, updateNotes]);
+    }, [diatonicFits, romanNumerals, verticalElemOffset, colorPalette.Widget_Primary, colorPalette.UI_Background, tileWidth, tileHeight, fitChannelMap, horrizontalElemOffset, getScaleDegree, activeNotes, updateNotes]);
 
 
     ///////////////////

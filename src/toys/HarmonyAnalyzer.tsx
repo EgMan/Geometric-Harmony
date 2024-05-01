@@ -1,6 +1,6 @@
 import React from "react";
 import { Group, Text } from 'react-konva';
-import { HarmonicShape, SCALE_CHROMATIC, ShapeType, knownShapes } from "../utils/KnownHarmonicShapes";
+import { CHORD_AUGMENTEDTRIAD, CHORD_DIMINISHEDTRIAD, CHORD_DOMINANT7, CHORD_MAJOR7_OMIT5, CHORD_MAJORTRIAD, CHORD_MINOR7_OMIT5, CHORD_MINORTRIAD, CHORD_SUS4_TRIAD, HarmonicShape, SCALE_CHROMATIC, ShapeType, knownShapes } from "../utils/KnownHarmonicShapes";
 import { blendColors, changeLightness, getNoteName } from "../utils/Utils";
 import { NoteSet, normalizeToSingleOctave, useChannelDisplays, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useNotesOfType, useSetHomeNote } from "../sound/NoteProvider";
 import { WidgetComponentProps } from "../view/Widget";
@@ -418,6 +418,65 @@ export function useGetDiatonicFits(): DiatonicFits {
             noteCount,
         };
     }, [activeNotes, shapeFits]);
+}
+
+const allBaseNumerals = [
+    { major: "I", minor: "i" },
+    { major: "II", minor: "ii" },
+    { major: "III", minor: "iii" },
+    { major: "IV", minor: "iv" },
+    { major: "V", minor: "v" },
+    { major: "VI", minor: "vi" },
+    { major: "VII", minor: "vii" },
+    { major: "IIX", minor: "iix" },
+    { major: "IX", minor: "ix" },
+    { major: "X", minor: "x" },
+    { major: "XI", minor: "xi" },
+    { major: "XII", minor: "xii" },
+]
+export function useDiatonicRomanNumerals() {
+    const diatonicFits: DiatonicFits = useGetDiatonicFits();
+    const homeNote = useHomeNote() ?? 0;
+    const activeNotes = useNoteSet(NoteSet.Active).notes;
+    const activeExactFits = useGetAllExactFits(activeNotes);
+
+    return React.useMemo(() => {
+        let numeralsByScaleDegree: string[] = [];
+        diatonicFits.exactFits.forEach((fits, idx) => {
+            const scaleDegree_indexedBy0 = getScaleDegree(homeNote + activeExactFits[0].noteToFirstNoteInShapeIdxOffset, idx + activeExactFits[0].noteToFirstNoteInShapeIdxOffset, activeExactFits[0].shape) - 1;
+            if (scaleDegree_indexedBy0 < 0) {
+                return;
+            }
+            else if (fits.some((fit) => fit.shape.name === CHORD_DOMINANT7.name)) {
+                numeralsByScaleDegree[scaleDegree_indexedBy0] = `${allBaseNumerals[scaleDegree_indexedBy0].major}7`;
+            }
+            else if (fits.some((fit) => fit.shape.name === CHORD_MAJORTRIAD.name)) {
+                numeralsByScaleDegree[scaleDegree_indexedBy0] = `${allBaseNumerals[scaleDegree_indexedBy0].major}`;
+            }
+            else if (fits.some((fit) => fit.shape.name === CHORD_MINORTRIAD.name)) {
+                numeralsByScaleDegree[scaleDegree_indexedBy0] = `${allBaseNumerals[scaleDegree_indexedBy0].minor}`;
+            }
+            else if (fits.some((fit) => fit.shape.name === CHORD_DIMINISHEDTRIAD.name)) {
+                numeralsByScaleDegree[scaleDegree_indexedBy0] = `${allBaseNumerals[scaleDegree_indexedBy0].minor}°`;
+            }
+            else if (fits.some((fit) => fit.shape.name === CHORD_AUGMENTEDTRIAD.name)) {
+                numeralsByScaleDegree[scaleDegree_indexedBy0] = `${allBaseNumerals[scaleDegree_indexedBy0].major}+`;
+            }
+            else if (fits.some((fit) => fit.shape.name === CHORD_MAJOR7_OMIT5.name)) {
+                numeralsByScaleDegree[scaleDegree_indexedBy0] = `${allBaseNumerals[scaleDegree_indexedBy0].major}`;
+            }
+            else if (fits.some((fit) => fit.shape.name === CHORD_MINOR7_OMIT5.name)) {
+                numeralsByScaleDegree[scaleDegree_indexedBy0] = allBaseNumerals[scaleDegree_indexedBy0].minor;
+            }
+            // else if (fits.some((fit) => fit.shape.name === CHORD_SUS4_TRIAD.name)) {
+            //     numeralsByScaleDegree[scaleDegree_indexedBy0] = `${scaleDegree_indexedBy0 + 1} Sus4`;
+            // }
+            else {
+                numeralsByScaleDegree[scaleDegree_indexedBy0] = `${scaleDegree_indexedBy0 + 1}`;
+            }
+        });
+        return numeralsByScaleDegree;
+    }, [activeExactFits, diatonicFits.exactFits, homeNote]);
 }
 
 export function useChannelDisplaysExactFits() {
