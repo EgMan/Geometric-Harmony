@@ -10,11 +10,22 @@ import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import useRenderingTrace from '../utils/ProfilingUtils';
 import { useSettings } from '../view/SettingsProvider';
 import { useAppTheme } from '../view/ThemeManager';
+import { WidgetConfig } from '../view/ViewManager';
+
+export const WidgetConfig_Wheel_Semitones: WidgetConfig = {
+    type: "semitones",
+    displayName: "Circle of Semitones"
+}
+
+export const WidgetConfig_Wheel_Figths: WidgetConfig = {
+    type: "fifths",
+    displayName: "Circle of Fifths",
+}
+
 type Props = {
     width: number,
     height: number,
     subdivisionCount: number
-    isCircleOfFifths: boolean
 } & WidgetComponentProps
 
 function Wheel(props: Props) {
@@ -46,7 +57,8 @@ function Wheel(props: Props) {
         setDisplayIntervals(newDisplayInterval);
     }
 
-    const [isCircleOfFifths, setIsCircleOfFiths] = React.useState(props.isCircleOfFifths);
+    // const [isCircleOfFifths, setIsCircleOfFiths] = React.useState(props.isCircleOfFifths);
+    const isCircleOfFifths = props.fromWidget.widgetConfig.type === "fifths";
 
     const [showNoteNames, setShowNoteNames] = React.useState(true);
 
@@ -121,20 +133,20 @@ function Wheel(props: Props) {
             <td style={{ textAlign: "center" }}>♯</td>
             <td><Switch checked={showNoteNames} onChange={e => setShowNoteNames(e.target.checked)} /></td>
         </tr>),
-        (<tr key={'tr8'}>
-            <td>Adjacent notes are</td>
-            {/* <td><FormControlLabel control={<Switch checked={isCircleOfFifths} onChange={e => setIsCircleOfFiths(e.target.checked)}/>} label={isCircleOfFifths ? "" : 1} /></td> */}
-            <td colSpan={2}>  <Select
-                id="menu-dropdown"
-                value={isCircleOfFifths ? 1 : 0}
-                label="Note layout"
-                labelId="demo-simple-select-filled-label"
-                onChange={e => { setIsCircleOfFiths(e.target.value === 1) }}
-            >
-                <MenuItem value={1}>Fifths</MenuItem>
-                <MenuItem value={0}>Semitones</MenuItem>
-            </Select></td>
-        </tr>),
+        // (<tr key={'tr8'}>
+        //     <td>Adjacent notes are</td>
+        //     {/* <td><FormControlLabel control={<Switch checked={isCircleOfFifths} onChange={e => setIsCircleOfFiths(e.target.checked)}/>} label={isCircleOfFifths ? "" : 1} /></td> */}
+        //     <td colSpan={2}>  <Select
+        //         id="menu-dropdown"
+        //         value={isCircleOfFifths ? 1 : 0}
+        //         label="Note layout"
+        //         labelId="demo-simple-select-filled-label"
+        //         onChange={e => { setIsCircleOfFiths(e.target.value === 1) }}
+        //     >
+        //         <MenuItem value={1}>Fifths</MenuItem>
+        //         <MenuItem value={0}>Semitones</MenuItem>
+        //     </Select></td>
+        // </tr>),
     ];
 
     const [isRotating, setIsRotating] = React.useState(false);

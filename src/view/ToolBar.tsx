@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, ClickAwayListener, ListItemIcon, ListItemText, DialogTitle, MenuItem, MenuList, Paper, Popover, Switch, Select, Tooltip, Toolbar as MUItoolbar } from "@mui/material";
 import ShapeNavigationTool from "./ShapeNavigationTool";
-import { WidgetTrackerActions, WidgetType } from "./ViewManager";
+import { WidgetConfig, WidgetTrackerActions, WidgetType } from "./ViewManager";
 import { Stage } from "konva/lib/Stage";
 import { getCurrentSpace } from "../utils/SpacesUtils";
 import AddBoxIcon from '@mui/icons-material/AddBox';
@@ -24,6 +24,7 @@ import MIDIConnectionManager from "../sound/MIDIConnectionManager";
 import { useAppTheme, useChangeAppTheme } from "./ThemeManager";
 import { blendColors, changeLightness, getRandomColor, getRandomColorWithAlpha } from "../utils/Utils";
 import VolumeSlider from "../sound/VolumeSlider";
+import { WidgetConfig_Wheel_Figths as WidgetConfig_Wheel_Fifths, WidgetConfig_Wheel_Semitones } from "../toys/Wheel";
 // import useSettings from "./SettingsProvider"
 
 type Props =
@@ -38,11 +39,11 @@ function ToolBar(props: Props) {
     const [addDropdownOpen, setAddDropdownOpen] = React.useState(false);
     const [settingsDropdownOpen, setSettingsDropdownOpen] = React.useState(false);
     const [midiSettingsDropdownOpen, setMidiSettingsDropdownOpen] = React.useState(false);
-    const addNewWidget = React.useCallback((widgetType: WidgetType) => {
+    const addNewWidget = React.useCallback((widgetType: WidgetType, config?: WidgetConfig) => {
         // const pos = props.stageRef.current?.getPointerPosition() ?? undefined;
         const space = getCurrentSpace();
         const pos = { x: (space.col + 0.5) * window.innerWidth, y: (space.row + 0.25) * window.innerHeight };
-        props.widgetTrackerActions.spawnWidget(widgetType, pos);
+        props.widgetTrackerActions.spawnWidget(widgetType, pos, config);
         setAddDropdownOpen(false);
     }, [props.widgetTrackerActions]);
     const settings = useSettings();
@@ -327,13 +328,13 @@ function ToolBar(props: Props) {
                                 {/* <MenuItem onClick={() => addNewWidget(WidgetType.Wheel)}>
                                         <ListItemText>Wheel of Fifths</ListItemText>
                                     </MenuItem> */}
-                                <MenuItem disabled={true} onClick={() => addNewWidget(WidgetType.Wheel)}>
+                                <MenuItem onClick={() => addNewWidget(WidgetType.Wheel, WidgetConfig_Wheel_Fifths)}>
                                     <ListItemIcon>
                                         <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                     </ListItemIcon>
                                     <ListItemText>Circle of Fifths</ListItemText>
                                 </MenuItem>
-                                <MenuItem onClick={() => addNewWidget(WidgetType.Wheel)}>
+                                <MenuItem onClick={() => addNewWidget(WidgetType.Wheel, WidgetConfig_Wheel_Semitones)}>
                                     <ListItemIcon>
                                         <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                     </ListItemIcon>

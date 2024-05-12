@@ -24,6 +24,7 @@ import DiatonicChordExplorer from "../toys/DiatonicChordExplorer";
 
 export type WidgetTracker = {
     type: WidgetType,
+    config: WidgetConfig,
     initialPosition: Vector2d,
     draggedPosition?: Vector2d,
     isMaxamized?: boolean,
@@ -32,9 +33,19 @@ export type WidgetTracker = {
     height: number,
 }
 
+export type WidgetConfig = {
+    type: string,
+    displayName: string,
+}
+export const WidgetConfig_Default: WidgetConfig =
+{
+    type: "default",
+    displayName: "",
+}
+
 export type WidgetTrackerActions = {
     killWidget: (uid: String) => boolean,
-    spawnWidget: (type: WidgetType, position?: Vector2d) => string,
+    spawnWidget: (type: WidgetType, position?: Vector2d, config?: WidgetConfig) => string,
     getWidgetTracker: (uid: String) => WidgetTracker | null,
     setWidgetTracker: (uid: String, tracker: WidgetTracker | null) => boolean,
     updateWidgetTracker: (uid: String, callback: (currentTracker: WidgetTracker) => WidgetTracker) => boolean,
@@ -116,12 +127,14 @@ function ViewManager(props: Props) {
                     initialPosition: { x: (props.width / 2), y: (props.height / 2) },
                     width: props.width / (8 / 3),
                     height: 0,
+                    config: WidgetConfig_Default,
                 }],
                 ['2', {
                     type: WidgetType.Piano,
                     initialPosition: { x: props.width / 2, y: props.height - pianoHeight - 19 },
                     width: pianoWidth,
                     height: pianoHeight,
+                    config: WidgetConfig_Default,
                 }],
                 // ['3', {
                 //     type: WidgetType.Guitar,
@@ -132,24 +145,28 @@ function ViewManager(props: Props) {
                     initialPosition: { x: 3 * props.width / 4, y: 75 },
                     width: wheelRadius,
                     height: wheelRadius,
+                    config: WidgetConfig_Default,
                 }],
                 // ['3', {
                 //     type: WidgetType.Tonnetz,
                 //     initialPosition: { x: 3 * props.width / 4, y: 75 },
                 //     width: wheelRadius,
                 //     height: wheelRadius,
+                // config: WidgetConfig_Default,
                 // }],
                 ['4', {
                     type: WidgetType.Wheel,
                     initialPosition: { x: props.width / 4, y: 75 },
                     width: wheelDiameter,
                     height: wheelRadius,
+                    config: WidgetConfig_Default,
                 }],
                 ['5', {
                     type: WidgetType.Oscilloscope,
                     initialPosition: { x: (props.width / 2), y: (props.height / 2) + wheelRadius - 120 },
                     width: props.width / (8 / 3),
                     height: wheelRadius / 2,
+                    config: WidgetConfig_Default,
                 }],
                 // ['6', {
                 //     type: WidgetType.Icosahedron,
@@ -165,24 +182,28 @@ function ViewManager(props: Props) {
                     initialPosition: { x: (props.width / 2), y: (props.height / 2) + (wheelRadius * 2 / 3) },
                     width: props.width / (8 / 3),
                     height: 0,
+                    config: WidgetConfig_Default,
                 }],
                 ['2', {
                     type: WidgetType.Piano,
                     initialPosition: { x: props.width / 2, y: props.height - pianoHeight - 19 },
                     width: props.width,
                     height: pianoHeight,
+                    config: WidgetConfig_Default,
                 }],
                 ['4', {
                     type: WidgetType.Wheel,
                     initialPosition: { x: props.width / 2, y: 125 },
                     width: wheelRadius * 2,
                     height: wheelRadius * 2,
+                    config: WidgetConfig_Default,
                 }],
                 ['5', {
                     type: WidgetType.Oscilloscope,
                     initialPosition: { x: (props.width / 2), y: (props.height / 2) + (3 * wheelRadius / 4) },
                     width: props.width / (8 / 3),
                     height: wheelRadius / 2,
+                    config: WidgetConfig_Default,
                 }],
             ]
         )
@@ -204,8 +225,9 @@ function ViewManager(props: Props) {
         return false;
     }, [trackedWidgets]);
 
-    const spawnWidget = React.useCallback((type: WidgetType, position?: Vector2d) => {
-        console.log("Spawning widget of type:", type);
+    const spawnWidget = React.useCallback((type: WidgetType, position?: Vector2d, config?: WidgetConfig) => {
+        console.log("Spawning widget of type:", type, config);
+        config = config ?? WidgetConfig_Default;
         const newUid = genUID();
         const newWidget: WidgetTracker = {
             type: type,
@@ -213,6 +235,7 @@ function ViewManager(props: Props) {
             isMaxamized: true,
             width: 50,//TODO CHANGE THIS
             height: 50,
+            config,
         }
         setTrackedWidgets(oldTrackedWidgets => new Map(oldTrackedWidgets).set(newUid, newWidget));
         return newUid;
@@ -361,7 +384,7 @@ function ViewManager(props: Props) {
                     width={wheelRadius * 2}
                     height={wheelRadius * 2}
                     lockAspectRatio
-                    isCircleOfFifths={false} />
+                />
             case WidgetType.Guitar:
                 const fretCount = 13;
                 return <Widget of={StringInstrument}

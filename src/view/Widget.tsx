@@ -6,7 +6,7 @@ import MiniButton from "./MiniButton";
 import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import { addVectors, setPointer, useShadowVector } from "../utils/Utils";
-import { WidgetTracker, WidgetTrackerActions } from "./ViewManager";
+import { WidgetConfig, WidgetTracker, WidgetTrackerActions } from "./ViewManager";
 import { SCROLL_PADDING, getCurrentSpace, useGotoSpaceRateLimited } from "../utils/SpacesUtils";
 import { useHTMLOverlay } from "./HTMLOverlayProvider";
 
@@ -17,6 +17,7 @@ export type WidgetComponentProps = {
         position: Vector2d;
         positionOffset: Vector2d;
         containerPosition: Vector2d;
+        widgetConfig: WidgetConfig;
     }
 }
 
@@ -166,6 +167,7 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
         setIsOverlayVisible: setIsSettingsOverlayVisible,
         position: { x: initialPosition.x + draggedPosition.x, y: initialPosition.y + draggedPosition.y },
         containerPosition: { x: - contextMenuOffset.x, y: - contextMenuOffset.y },
+        widgetConfig: tracker.config,
     }
 
     const CONSTRAIN_DRAG_FROM_TOP = 50;
