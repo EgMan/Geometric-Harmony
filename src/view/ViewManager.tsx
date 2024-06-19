@@ -22,9 +22,9 @@ import Icosahedron from "../toys/Icosahedron";
 import Spiral from "../toys/Spiral";
 import DiatonicChordExplorer from "../toys/DiatonicChordExplorer";
 
-export type WidgetTracker = {
+export type WidgetTracker<T extends WidgetConfig = WidgetConfig> = {
     type: WidgetType,
-    config: WidgetConfig,
+    config: T,
     initialPosition: Vector2d,
     draggedPosition?: Vector2d,
     isMaxamized?: boolean,
@@ -33,10 +33,11 @@ export type WidgetTracker = {
     height: number,
 }
 
-export type WidgetConfig = {
+export interface WidgetConfig {
     type: string,
     displayName: string,
 }
+
 export const WidgetConfig_Default: WidgetConfig =
 {
     type: "default",
@@ -402,7 +403,6 @@ function ViewManager(props: Props) {
                     height={guitarHeight}
                     width={wheelRadius}
                     fretCount={fretCount}
-                    tuning={[4, 9, 14, 19, 23, 28]}
                 />
             case WidgetType.Analyzer:
                 return <Widget of={HarmonyAnalyzer}

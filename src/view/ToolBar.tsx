@@ -25,6 +25,7 @@ import { useAppTheme, useChangeAppTheme } from "./ThemeManager";
 import { blendColors, changeLightness, getRandomColor, getRandomColorWithAlpha } from "../utils/Utils";
 import VolumeSlider from "../sound/VolumeSlider";
 import { WidgetConfig_Wheel_Figths as WidgetConfig_Wheel_Fifths, WidgetConfig_Wheel_Semitones } from "../toys/Wheel";
+import { WidgetConfig_String_Guitar, WidgetConfig_String_Harpejji } from "../toys/StringInstrument";
 // import useSettings from "./SettingsProvider"
 
 type Props =
@@ -295,13 +296,13 @@ function ToolBar(props: Props) {
                                             ⌘X
                                         </Typography> */}
                                 </MenuItem>
-                                <MenuItem onClick={() => addNewWidget(WidgetType.Guitar)}>
+                                <MenuItem onClick={() => addNewWidget(WidgetType.Guitar, WidgetConfig_String_Guitar)}>
                                     <ListItemIcon>
                                         <MusicNoteIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                     </ListItemIcon>
                                     <ListItemText>Guitar</ListItemText>
                                 </MenuItem>
-                                <MenuItem disabled={true} onClick={() => addNewWidget(WidgetType.Guitar)}>
+                                <MenuItem onClick={() => addNewWidget(WidgetType.Guitar, WidgetConfig_String_Harpejji)}>
                                     <ListItemIcon>
                                         <MusicNoteIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                     </ListItemIcon>

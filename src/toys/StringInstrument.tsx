@@ -8,17 +8,34 @@ import { KonvaEventObject } from 'konva/lib/Node';
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import { useSettings } from '../view/SettingsProvider';
 import { useAppTheme } from '../view/ThemeManager';
+import { WidgetConfig } from '../view/ViewManager';
+
+interface StringWidgetConfig extends WidgetConfig {
+    tuning: number[],
+}
+
+export const WidgetConfig_String_Guitar: StringWidgetConfig = {
+    type: "guitar",
+    displayName: "Guitar",
+    tuning: [4, 9, 14, 19, 23, 28],
+}
+
+export const WidgetConfig_String_Harpejji: StringWidgetConfig = {
+    type: "harpejji",
+    displayName: "Harpejji",
+    tuning: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
+}
 
 type Props = {
     height: number
     width: number
     fretCount: number
-    tuning: number[]
 } & WidgetComponentProps
 
 function StringInstrument(props: Props) {
+    const config = props.fromWidget.widgetConfig as StringWidgetConfig;
     const { colorPalette } = useAppTheme()!;
-    const stringSpacing = props.width / (props.tuning.length - 1);
+    const stringSpacing = props.width / (config.tuning.length - 1);
     const fretSpacing = props.height / props.fretCount;
     const fretElemYOffset = -fretSpacing / 2;
     const circleElemRadius = stringSpacing / 5;
@@ -99,7 +116,7 @@ function StringInstrument(props: Props) {
             fretElements.push(
                 <Line key={`l1-${fretNum}`} stroke={colorPalette.Widget_Primary} strokeWidth={3} points={[0, posY, props.width, posY]} />
             );
-            if ([3, 5, 7, 9,].includes(fretNum % 12)) {
+            if (props.fromWidget.widgetConfig.type === "guitar" && [3, 5, 7, 9,].includes(fretNum % 12)) {
                 fretElements.push(
                     <Circle key={`c1-${fretNum}`} x={props.width / 2} y={posY + fretElemYOffset} radius={stringSpacing / 6} fill={colorPalette.Widget_Primary} />
                 );
@@ -112,11 +129,89 @@ function StringInstrument(props: Props) {
                     <Circle key={`c3-${fretNum}`} x={7 * props.width / 10} y={posY + fretElemYOffset} radius={stringSpacing / 6} fill={colorPalette.Widget_Primary} />
                 );
             }
-            props.tuning.forEach((openNote, stringNum) => {
+            config.tuning.forEach((openNote, stringNum) => {
                 const posX = getXPos(stringNum);
-                const absoluteNote = (openNote + fretNum);
-                const note = absoluteNote % 12;
+                if (props.fromWidget.widgetConfig.type === "harpejji") {
+
+                }
+
+                const absoluteNote = props.fromWidget.widgetConfig.type === "guitar" ? (openNote + fretNum) : (openNote - fretNum);
+                const note = (absoluteNote + (12 * 12)) % 12;
                 // <Line x={props.x} y={props.y} stroke={discColor} strokeWidth={lineWidth} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />
+
+                if (props.fromWidget.widgetConfig.type === "harpejji" && fretNum !== 0) {
+                    const markingWidth = Math.min(stringSpacing / 3, fretSpacing / 3)
+                    switch (note) {
+                        case 0:
+                            const cNoteStrokeWidth = 3;
+                            fretElements.push(
+                                <Circle
+                                    key={`harpejjinotemarking-${absoluteNote}-${stringNum}`}
+                                    // x={7 * props.width / 10} 
+                                    // y={posY + fretElemYOffset} 
+                                    x={posX}
+                                    y={posY + fretElemYOffset}
+                                    radius={markingWidth - (cNoteStrokeWidth / 2)}
+                                    strokeWidth={cNoteStrokeWidth}
+                                    stroke={colorPalette.Widget_Primary} />
+                            );
+                            break;
+                        case 2:
+                        case 4:
+                        case 5:
+                        case 9:
+                        case 11:
+                            fretElements.push(
+                                <Circle
+                                    key={`harpejjinotemarking-${absoluteNote}-${stringNum}`}
+                                    // x={7 * props.width / 10} 
+                                    // y={posY + fretElemYOffset} 
+                                    x={posX}
+                                    y={posY + fretElemYOffset}
+                                    radius={markingWidth}
+                                    fill={colorPalette.Widget_Primary} />
+                            );
+                            break;
+                        case 7:
+                            fretElements.push(
+                                <Circle
+                                    key={`harpejjinotemarking-${absoluteNote}-${stringNum}`}
+                                    // x={7 * props.width / 10} 
+                                    // y={posY + fretElemYOffset} 
+                                    x={posX}
+                                    y={posY + fretElemYOffset}
+                                    radius={markingWidth}
+                                    fill={colorPalette.Widget_Primary} />
+                            );
+                            fretElements.push(
+                                <Line
+                                    stroke={colorPalette.Widget_Primary}
+                                    strokeWidth={3}
+                                    points={[posX - (stringSpacing / 2.5), posY + fretElemYOffset, posX + (stringSpacing / 2.5), posY + fretElemYOffset]
+                                    }
+                                />
+                            );
+                            break;
+                        case 1:
+                        case 3:
+                        case 6:
+                        case 8:
+                        case 10:
+                            // fretElements.push(
+                            //     <Circle
+                            //         key={`harpejjinotemarking-${absoluteNote}-${stringNum}`}
+                            //         // x={7 * props.width / 10} 
+                            //         // y={posY + fretElemYOffset} 
+                            //         x={posX}
+                            //         y={posY + fretElemYOffset}
+                            //         radius={stringSpacing / 3}
+                            //         fill={colorPalette.Widget_MutedPrimary} />
+                            // );
+                            break;
+                        default:
+                            break;
+                    }
+                }
 
                 const toggleActive = (evt: KonvaEventObject<MouseEvent>) => {
                     if (evt.evt.button === 2) {
@@ -192,7 +287,7 @@ function StringInstrument(props: Props) {
             emphasized,
             clickListeners,
         }
-    }, [NoteLabling.ActiveNoteNames, NoteLabling.NoteNames, activeNotes, circleElemRadius, colorPalette.Main_Background, colorPalette.Note_Active, colorPalette.Note_Home, colorPalette.Widget_Primary, fretElemYOffset, fretSpacing, getXPos, getYPos, homeNote, noteDisplays.octaveGnostic, noteLabeling, props.fretCount, props.tuning, props.width, setHomeNote, settings?.isPeaceModeEnabled, stringSpacing, updateNotes]);
+    }, [NoteLabling.ActiveNoteNames, NoteLabling.NoteNames, activeNotes, circleElemRadius, colorPalette.Main_Background, colorPalette.Note_Active, colorPalette.Note_Home, colorPalette.Widget_Primary, config.tuning, fretElemYOffset, fretSpacing, getXPos, getYPos, homeNote, noteDisplays.octaveGnostic, noteLabeling, props.fretCount, props.fromWidget.widgetConfig.type, props.width, setHomeNote, settings?.isPeaceModeEnabled, stringSpacing, updateNotes]);
 
     const getOrgnogonalUnitVect = (x: number, y: number) => {
         const mag = Math.sqrt(x * x + y * y);
@@ -208,8 +303,8 @@ function StringInstrument(props: Props) {
 
         // Todo also check if note displays size is greater than one
         if (channelDisplays.length > 0)
-            props.tuning.forEach((openNoteA, stringA) => {
-                props.tuning.forEach((openNoteB, stringB) => {
+            config.tuning.forEach((openNoteA, stringA) => {
+                config.tuning.forEach((openNoteB, stringB) => {
                     for (let fretA = 0; fretA < props.fretCount; fretA++) {
                         for (let fretB = 0; fretB < props.fretCount; fretB++) {
                             if (stringA === stringB) continue;
@@ -220,8 +315,8 @@ function StringInstrument(props: Props) {
 
                             // const noteA = activeNoteArr[a];
                             // const noteB = activeNoteArr[b];
-                            const absoluteNoteA = openNoteA + fretA;
-                            const absoluteNoteB = openNoteB + fretB;
+                            const absoluteNoteA = props.fromWidget.widgetConfig.type === "guitar" ? (openNoteA + fretA) : (openNoteA - fretA);
+                            const absoluteNoteB = props.fromWidget.widgetConfig.type === "guitar" ? (openNoteB + fretB) : (openNoteB - fretB);
 
                             if (absoluteNoteA > absoluteNoteB) continue;
 
@@ -340,7 +435,7 @@ function StringInstrument(props: Props) {
             emphasized: emphasized,
             listeners: touchListeners,
         }
-    }, [channelDisplays.length, colorPalette, fretElemYOffset, fretSpacing, getXPos, getYPos, noteDisplays.octaveGnostic, props.fretCount, props.height, props.tuning, stringSpacing, updateNotes]);
+    }, [channelDisplays.length, colorPalette, config.tuning, fretElemYOffset, fretSpacing, getXPos, getYPos, noteDisplays.octaveGnostic, props.fretCount, props.fromWidget.widgetConfig.type, props.height, stringSpacing, updateNotes]);
 
     const fullRender = React.useMemo((
     ) => {
