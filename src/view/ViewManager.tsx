@@ -402,7 +402,8 @@ function ViewManager(props: Props) {
                     height={guitarHeight}
                     width={wheelRadius}
                     fretCount={fretCount}
-                    tuning={[4, 9, 14, 19, 23, 28]}
+                    // tuning={[4, 9, 14, 19, 23, 28]}
+                    tuning={[0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24]}
                 />
             case WidgetType.Analyzer:
                 return <Widget of={HarmonyAnalyzer}

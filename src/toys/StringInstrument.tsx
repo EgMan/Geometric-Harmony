@@ -8,6 +8,17 @@ import { KonvaEventObject } from 'konva/lib/Node';
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import { useSettings } from '../view/SettingsProvider';
 import { useAppTheme } from '../view/ThemeManager';
+import { WidgetConfig } from '../view/ViewManager';
+
+export const WidgetConfig_String_Guitar: WidgetConfig = {
+    type: "guitar",
+    displayName: "Guitar"
+}
+
+export const WidgetConfig_String_Harpejji: WidgetConfig = {
+    type: "harpejji",
+    displayName: "Harpejji",
+}
 
 type Props = {
     height: number
@@ -99,7 +110,7 @@ function StringInstrument(props: Props) {
             fretElements.push(
                 <Line key={`l1-${fretNum}`} stroke={colorPalette.Widget_Primary} strokeWidth={3} points={[0, posY, props.width, posY]} />
             );
-            if ([3, 5, 7, 9,].includes(fretNum % 12)) {
+            if (props.fromWidget.widgetConfig.type === "guitar" && [3, 5, 7, 9,].includes(fretNum % 12)) {
                 fretElements.push(
                     <Circle key={`c1-${fretNum}`} x={props.width / 2} y={posY + fretElemYOffset} radius={stringSpacing / 6} fill={colorPalette.Widget_Primary} />
                 );
@@ -114,9 +125,86 @@ function StringInstrument(props: Props) {
             }
             props.tuning.forEach((openNote, stringNum) => {
                 const posX = getXPos(stringNum);
-                const absoluteNote = (openNote + fretNum);
-                const note = absoluteNote % 12;
+                if (props.fromWidget.widgetConfig.type === "harpejji") {
+
+                }
+
+                const absoluteNote = props.fromWidget.widgetConfig.type === "guitar" ? (openNote + fretNum) : (openNote - fretNum);
+                const note = (absoluteNote + (12 * 12)) % 12;
                 // <Line x={props.x} y={props.y} stroke={discColor} strokeWidth={lineWidth} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />
+
+                if (props.fromWidget.widgetConfig.type === "harpejji") {
+                    switch (note) {
+                        case 0:
+                            const cNoteStrokeWidth = 3;
+                            fretElements.push(
+                                <Circle
+                                    key={`harpejjinotemarking-${absoluteNote}-${stringNum}`}
+                                    // x={7 * props.width / 10} 
+                                    // y={posY + fretElemYOffset} 
+                                    x={posX}
+                                    y={posY + fretElemYOffset}
+                                    radius={stringSpacing / 3 - (cNoteStrokeWidth / 2)}
+                                    strokeWidth={cNoteStrokeWidth}
+                                    stroke={colorPalette.Widget_Primary} />
+                            );
+                            break;
+                        case 2:
+                        case 4:
+                        case 5:
+                        case 9:
+                        case 11:
+                            fretElements.push(
+                                <Circle
+                                    key={`harpejjinotemarking-${absoluteNote}-${stringNum}`}
+                                    // x={7 * props.width / 10} 
+                                    // y={posY + fretElemYOffset} 
+                                    x={posX}
+                                    y={posY + fretElemYOffset}
+                                    radius={stringSpacing / 3}
+                                    fill={colorPalette.Widget_Primary} />
+                            );
+                            break;
+                        case 7:
+                            fretElements.push(
+                                <Circle
+                                    key={`harpejjinotemarking-${absoluteNote}-${stringNum}`}
+                                    // x={7 * props.width / 10} 
+                                    // y={posY + fretElemYOffset} 
+                                    x={posX}
+                                    y={posY + fretElemYOffset}
+                                    radius={stringSpacing / 3}
+                                    fill={colorPalette.Widget_Primary} />
+                            );
+                            fretElements.push(
+                                <Line
+                                    stroke={colorPalette.Widget_Primary}
+                                    strokeWidth={3}
+                                    points={[posX - (stringSpacing / 2.5), posY + fretElemYOffset, posX + (stringSpacing / 2.5), posY + fretElemYOffset]
+                                    }
+                                />
+                            );
+                            break;
+                        case 1:
+                        case 3:
+                        case 6:
+                        case 8:
+                        case 10:
+                            fretElements.push(
+                                <Circle
+                                    key={`harpejjinotemarking-${absoluteNote}-${stringNum}`}
+                                    // x={7 * props.width / 10} 
+                                    // y={posY + fretElemYOffset} 
+                                    x={posX}
+                                    y={posY + fretElemYOffset}
+                                    radius={stringSpacing / 3}
+                                    fill={colorPalette.Widget_MutedPrimary} />
+                            );
+                            break;
+                        default:
+                            break;
+                    }
+                }
 
                 const toggleActive = (evt: KonvaEventObject<MouseEvent>) => {
                     if (evt.evt.button === 2) {
