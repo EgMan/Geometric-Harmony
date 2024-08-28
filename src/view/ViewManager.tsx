@@ -568,10 +568,14 @@ function ViewManager(props: Props) {
         realignSpaces();
     }, []);
 
+    const onContainerFocus: React.FocusEventHandler<HTMLDivElement> = React.useCallback((event) => {
+        event.currentTarget.blur();
+    }, []);
+
     return (
         <div>
             <ToolBar widgetTrackerActions={trackerActions} stageRef={stageRef} setIsHeartModalOpen={setIsHeartModalOpen} />
-            <div id="stage-scroll-container" onScroll={onContainerScroll}>
+            <div id="stage-scroll-container" onScroll={onContainerScroll} onFocus={onContainerFocus}>
                 <div id="spaces-container">
                     <div className="desktop-space space1" >
                         <div id="stage-container">
