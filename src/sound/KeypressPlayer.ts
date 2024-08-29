@@ -3,6 +3,7 @@ import { useModulateActiveNotes } from "./HarmonicModulation";
 import { NoteSet, normalizeToSingleOctave, useNoteSet, useUpdateNoteSet } from "./NoteProvider";
 import { useGetActiveShapeScaleDegreeFromNote, useGetNoteFromActiveShapeScaleDegree} from "../toys/HarmonyAnalyzer";
 import { useExecuteOnPlayingNoteStateChange } from "./SoundEngine";
+import { useActiveNoteBank } from "../utils/NotesetBank";
 
 const keyToNoteNumber = new Map<string, number>(
     [
@@ -114,6 +115,7 @@ function useKeypressPlayer() {
     const [singleNoteShift, setSingleNoteShift] = React.useState<SingleNoteShift | null>(null);
     const mostRecentlyPlayedNote = mostRecentlyPlayedScaleDegree && normalizeToSingleOctave(getNoteFromScaleDegree(mostRecentlyPlayedScaleDegree));
     const [isPlayingAnyNote, setIsPlayingAnyNote] = React.useState(false);
+    const swapBank = useActiveNoteBank();
 
     useExecuteOnPlayingNoteStateChange((notesTurnedOn, _notesTurnedOff, playingNotes) => {
         if (notesTurnedOn.length === 1)
@@ -199,10 +201,17 @@ function useKeypressPlayer() {
                 setOctaveShift(prev => prev+1);
                 break;
         }
-        if (!isNaN(parseInt(key))) {
+
+        // Is number key
+        const maybeNum: number = parseInt(key);
+        if (!isNaN(maybeNum)) {
             setMostRecentlyPressedNumberKey(key);
+            if (keysPressed.has("control")) {
+                console.log(`loading note bank ${maybeNum}`);
+                swapBank(maybeNum);
+            }
         }
-    }, [modulateActiveNotes]);
+    }, [keysPressed, modulateActiveNotes, swapBank]);
     React.useEffect(() => {
         const onKeyDown = (event: KeyboardEvent) => {
             if (preventDefault.includes(event.key.toLocaleLowerCase()) && document.activeElement?.nodeName.toLocaleLowerCase() !== 'input') {
@@ -230,7 +239,8 @@ function useKeypressPlayer() {
             case "Meta":
                 setKeysPressed(new Set());
                 return;
-            case "Control":
+            // case "Control": 
+            // ^ now mapped to ctrl+<num> actions
             case "Alt":
             case "Shift":
                 if (singleNoteShift != null) {
