@@ -2,6 +2,7 @@ import React from 'react';
 import { NoteSet, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
 import { useShapeToNoteArray } from '../sound/HarmonicModulation';
 import { CHORD_AUGMENTED7, CHORD_DIMINISHED7, CHORD_DOMINANT7, CHORD_MAJOR7, CHORD_MINOR7, SCALE_BLUES, SCALE_CHROMATIC, SCALE_WHOLETONE } from './KnownHarmonicShapes';
+import { emitSnackbar } from './Utils';
 
 type ActiveNoteBankEntry = {
     activeNotes: number[],
@@ -52,6 +53,7 @@ export function useActiveNoteBank() {
         updateNotes(NoteSet.Active, Array.from(noteBank[index].activeNotes), true, true);
         setHomeNote(noteBank[index].homeNote);
 
+        emitSnackbar(`Swapped to note bank ${index}`, 1000, "info");
         return true;
     }, [activeBankIndex, activeNotes, homeNote, noteBank, setHomeNote, updateNotes]);
 
