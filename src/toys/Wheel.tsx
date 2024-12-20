@@ -41,6 +41,8 @@ function Wheel(props: Props) {
     const channelDisplays = useChannelDisplays();
     const noteDisplays = useNoteDisplays();
 
+    const sideLength = 2 * radius * Math.sin(Math.PI / props.subdivisionCount);
+
 
     const modulateActiveNotes = useModulateActiveNotes();
 
@@ -232,7 +234,7 @@ function Wheel(props: Props) {
             if (showNoteNames && !settings?.isPeaceModeEnabled) {
                 noteNames.push(<Text key={`noteName${i}`} width={40} height={40} x={noteLoc.x - 20.5} y={noteLoc.y - 19} text={getNoteName(i, activeNotes)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(i) ? colorPalette.Main_Background : colorPalette.Widget_Primary} align="center" verticalAlign="middle" />);
             }
-            notesHaloArr.push(<Circle key={`halo${i}`} x={noteLoc.x} y={noteLoc.y} stroke={colorPalette.Widget_Primary} strokeWidth={1.5} radius={20} />);
+            notesHaloArr.push(<Circle key={`halo${i}`} x={noteLoc.x} y={noteLoc.y} stroke={colorPalette.Widget_Primary} strokeWidth={1.5} radius={sideLength / 2} />);
             clickListenersArr.push(<Circle key={`clickListen${i}`} draggable x={noteLoc.x} y={noteLoc.y} radius={20} onClick={toggleActive} onTap={toggleActive} onTouchStart={emphasize} onTouchEnd={unemphasize} onMouseOver={emphasize} onMouseOut={unemphasize} onDragMove={onRotateDrag} onDragStart={(e) => onRotateDragStart(e, i)} onDragEnd={onRotateDragEnd} />);
         }
         return {

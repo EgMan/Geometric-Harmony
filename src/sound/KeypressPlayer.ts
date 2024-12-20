@@ -206,12 +206,12 @@ function useKeypressPlayer() {
         const maybeNum: number = parseInt(key);
         if (!isNaN(maybeNum)) {
             setMostRecentlyPressedNumberKey(key);
-            if (keysPressed.has("control")) {
+            // if (keysPressed.has("control")) {
                 console.log(`loading note bank ${maybeNum}`);
                 swapBank(maybeNum);
-            }
+            // }
         }
-    }, [keysPressed, modulateActiveNotes, swapBank]);
+    }, [modulateActiveNotes, swapBank]);
     React.useEffect(() => {
         const onKeyDown = (event: KeyboardEvent) => {
             if (preventDefault.includes(event.key.toLocaleLowerCase()) && document.activeElement?.nodeName.toLocaleLowerCase() !== 'input') {
@@ -298,7 +298,8 @@ function useKeypressPlayer() {
         }, 0);
 
         const scaleDegreesPressed = Array.from(keysPressed).filter(key => keyToScaleDegree.get(key.toLocaleLowerCase()) !== undefined).map(key => {
-            var scaleDegree = (keyToScaleDegree.get(key.toLocaleLowerCase()) ?? 1) + numberKeyResult;
+            const scaleDegreeShift = keysPressed.has("control") ? numberKeyResult : 0;
+            var scaleDegree = (keyToScaleDegree.get(key.toLocaleLowerCase()) ?? 1) + scaleDegreeShift;
             if (singleNoteShift != null && singleNoteShift.isDiatonic && scaleDegree === singleNoteShift.scaleDegree) {
                 scaleDegree += singleNoteShift.shiftAmount;
             }
