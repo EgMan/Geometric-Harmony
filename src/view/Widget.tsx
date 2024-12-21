@@ -55,7 +55,7 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
     const overlayProvider = useHTMLOverlay();
 
     const mainGroupTransition = useTransition(isMaxamized, {
-        from: { opacity: 0 },
+        from: { opacity: 1 },//opacity 1 is just because I disabled this transition for now
         enter: { opacity: 1 },
         leave: { opacity: 0 },
         // config: { duration: 750 }
