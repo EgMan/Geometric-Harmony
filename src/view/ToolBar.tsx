@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, ClickAwayListener, ListItemIcon, ListItemText, DialogTitle, MenuItem, MenuList, Paper, Popover, Switch, Select, Tooltip, Toolbar as MUItoolbar } from "@mui/material";
+import { Button, ClickAwayListener, ListItemIcon, ListItemText, DialogTitle, MenuItem, MenuList, Paper, Popover, Switch, Select, Tooltip, Toolbar as MUItoolbar, Badge, Typography } from "@mui/material";
 import ShapeNavigationTool from "./ShapeNavigationTool";
 import { WidgetConfig, WidgetTrackerActions, WidgetType } from "./ViewManager";
 import { Stage } from "konva/lib/Stage";
@@ -13,6 +13,7 @@ import PianoIcon from '@mui/icons-material/Piano';
 // import SettingsIcon from '@mui/icons-material/Settings';
 import HeadphonesIcon from '@mui/icons-material/Headphones';
 import SquareFootIcon from '@mui/icons-material/SquareFoot';
+import SquareRoundedIcon from '@mui/icons-material/SquareRounded';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import VideogameAssetIcon from '@mui/icons-material/VideogameAsset';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
@@ -20,12 +21,15 @@ import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import { useSettings } from "./SettingsProvider";
 import { MidiFileDataProvider, MidiFileParser } from "../sound/MidiFileParser";
 import { LocalSynthVoice } from "../sound/SynthVoicings";
+import DensityMediumRoundedIcon from '@mui/icons-material/DensityMediumRounded';
 import MIDIConnectionManager from "../sound/MIDIConnectionManager";
 import { useAppTheme, useChangeAppTheme } from "./ThemeManager";
 import { blendColors, changeLightness, getRandomColor, getRandomColorWithAlpha } from "../utils/Utils";
 import VolumeSlider from "../sound/VolumeSlider";
 import { WidgetConfig_Wheel_Figths as WidgetConfig_Wheel_Fifths, WidgetConfig_Wheel_Semitones } from "../toys/Wheel";
 import { WidgetConfig_String_Guitar, WidgetConfig_String_Harpejji } from "../toys/StringInstrument";
+import CharIcon from "./CharIcon";
+import { useNoteBankIndex } from "../sound/NoteProvider";
 // import useSettings from "./SettingsProvider"
 
 type Props =
@@ -40,6 +44,7 @@ function ToolBar(props: Props) {
     const [addDropdownOpen, setAddDropdownOpen] = React.useState(false);
     const [settingsDropdownOpen, setSettingsDropdownOpen] = React.useState(false);
     const [midiSettingsDropdownOpen, setMidiSettingsDropdownOpen] = React.useState(false);
+    const [noteBankDropdownOpen, setNoteBankDropdownOpen] = React.useState(false);
     const addNewWidget = React.useCallback((widgetType: WidgetType, config?: WidgetConfig) => {
         // const pos = props.stageRef.current?.getPointerPosition() ?? undefined;
         const space = getCurrentSpace();
@@ -50,6 +55,7 @@ function ToolBar(props: Props) {
     const settings = useSettings();
     const changeTheme = useChangeAppTheme();
     const { colorPalette } = useAppTheme()!;
+    const activeBankIndex = useNoteBankIndex();
 
     React.useEffect(() => {
         if (!addDropdownOpen) {
@@ -201,6 +207,34 @@ function ToolBar(props: Props) {
                                         }}
                                     >
                                         <PianoIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                    </Button>
+                                </Tooltip>
+                                <Tooltip title="Quick Swap">
+                                    <Button type="submit" variant="contained"
+                                        sx={{
+                                            height: "34px",
+                                            fontSize: "0.7em",
+                                            color: `${colorPalette.UI_Primary}`,
+                                            backgroundColor: 'transparent',
+                                            boxShadow: 'none',
+                                            padding: "1.8px",
+                                            borderTopLeftRadius: '0px',
+                                            borderTopRightRadius: '9px',
+                                            borderBottomLeftRadius: '9px',
+                                            borderBottomRightRadius: '9px',
+                                            '&:hover': {
+                                                backgroundColor: 'rgb(255,255,255,0.1)',
+                                            },
+                                            "&.Mui-disabled": {
+                                                background: 'transparent',
+                                                color: "grey"
+                                            }
+                                        }}
+                                        onClick={() => {
+                                            setNoteBankDropdownOpen(true);
+                                        }}
+                                    >
+                                        <CharIcon charDisplay={`${activeBankIndex.get}`} />
                                     </Button>
                                 </Tooltip>
                             </>
@@ -477,6 +511,46 @@ function ToolBar(props: Props) {
                         </Paper>
                     </Popover>
                 </MidiFileDataProvider>
+                <Popover
+                    open={noteBankDropdownOpen}
+                    onClose={() => setNoteBankDropdownOpen(false)}
+                    anchorEl={addButtonRef.current}
+                    anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: -10,
+                    }}
+                    style={{ transform: "translate(-15px, 0px)" }}
+                    role={"menu"}
+                    disablePortal
+                >
+                    <Paper>
+                        <ClickAwayListener onClickAway={() => setNoteBankDropdownOpen(false)}>
+                            <MenuList>
+                                <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>Number Key Shapes</DialogTitle>
+                                <MenuItem onClick={() => { }}>
+                                    <CharIcon charDisplay="0" />
+                                    <ListItemText>asdfasdlfjhsdf</ListItemText>
+                                </MenuItem>
+                                <MenuItem onClick={() => { }}>
+                                    <CharIcon charDisplay="1" />
+                                    <ListItemText>asdf</ListItemText>
+                                </MenuItem>
+                                <MenuItem onClick={() => { }}>
+                                    <CharIcon charDisplay="2" />
+                                    <ListItemText>asdf</ListItemText>
+                                </MenuItem>
+                                <MenuItem onClick={() => { }}>
+                                    <CharIcon charDisplay="3" />
+                                    <ListItemText>asdf</ListItemText>
+                                </MenuItem>
+                                <MenuItem onClick={() => { }}>
+                                    <CharIcon charDisplay="4" />
+                                    <ListItemText>asdf</ListItemText>
+                                </MenuItem>
+                            </MenuList>
+                        </ClickAwayListener>
+                    </Paper>
+                </Popover>
             </div>
         </div >
     );

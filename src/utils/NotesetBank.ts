@@ -1,5 +1,5 @@
 import React from 'react';
-import { NoteSet, useHomeNote, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
+import { NoteSet, useHomeNote, useNoteBankIndex, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
 import { useShapeToNoteArray } from '../sound/HarmonicModulation';
 import { CHORD_AUGMENTED7, CHORD_DIMINISHED7, CHORD_DOMINANT7, CHORD_HALFDIMINISHED7, CHORD_MAJOR7, CHORD_MINOR7, SCALE_BLUES, SCALE_CHROMATIC, SCALE_NATURAL, SCALE_WHOLETONE } from './KnownHarmonicShapes';
 import { emitSnackbar } from './Utils';
@@ -10,13 +10,12 @@ type ActiveNoteBankEntry = {
 }
 
 export function useActiveNoteBank() {
-    const [activeBankIndex, setActiveBankIndex] = React.useState(0);
+    const activeBankIndex = useNoteBankIndex();
     const shapeToNoteArr = useShapeToNoteArray();
     const [noteBank, setNoteBank] = React.useState<ActiveNoteBankEntry[]>([
-        // Entry #0 is the empty bank entry.
-        /*0*/ { activeNotes: [], homeNote: 0 },
-        // Entry #1 is the default bank entry loaded on startup. 
+        // Entry #0 is the default bank entry loaded on startup. 
         // It's empty until the first swap is made.  
+        /*0*/ { activeNotes: [], homeNote: 0 },
         /*1*/ { activeNotes: shapeToNoteArr(CHORD_MAJOR7, 10), homeNote: 10 },
         /*2*/ { activeNotes: shapeToNoteArr(CHORD_MINOR7, 0), homeNote: 0 },
         /*3*/ { activeNotes: shapeToNoteArr(CHORD_MINOR7, 2), homeNote: 2 },
@@ -24,7 +23,7 @@ export function useActiveNoteBank() {
         /*5*/ { activeNotes: shapeToNoteArr(CHORD_DOMINANT7, 5), homeNote: 5 },
         /*6*/ { activeNotes: shapeToNoteArr(CHORD_MINOR7, 7), homeNote: 7 },
         /*7*/ { activeNotes: shapeToNoteArr(CHORD_HALFDIMINISHED7, 9), homeNote: 9 },
-        /*8*/ { activeNotes: shapeToNoteArr(SCALE_NATURAL, 10), homeNote: 10 },
+        /*8*/ { activeNotes: shapeToNoteArr(CHORD_DOMINANT7, 0), homeNote: 10 },
         /*9*/ { activeNotes: shapeToNoteArr(SCALE_CHROMATIC, 0), homeNote: 0 },
     ]);
 
@@ -35,7 +34,7 @@ export function useActiveNoteBank() {
     const homeNote = useHomeNote();
 
     const swapBank = React.useCallback((index: number) => {
-        if (index === activeBankIndex) {
+        if (index === activeBankIndex.get) {
             return true;
         }
         if (index < 0 || index >= noteBank.length) {
@@ -45,11 +44,11 @@ export function useActiveNoteBank() {
         setNoteBank((prev) => {
             const newBank = [...prev];
             const activeNotesArr = Array.from(activeNotes);
-            newBank[activeBankIndex] = { activeNotes: activeNotesArr, homeNote };
+            newBank[activeBankIndex.get] = { activeNotes: activeNotesArr, homeNote };
             return newBank;
         });
 
-        setActiveBankIndex(index);
+        activeBankIndex.set!(index);
         updateNotes(NoteSet.Active, Array.from(noteBank[index].activeNotes), true, true);
         setHomeNote(noteBank[index].homeNote);
 

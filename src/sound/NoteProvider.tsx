@@ -34,6 +34,8 @@ const setHomeNoteContext = React.createContext((note: number | null) => { });
 const updateNoteSetContext = React.createContext((noteSet: string[] | string, nums: Array<number>, areEnabled: boolean, overwriteExisting: boolean = false, types: Set<string> | null = null, color: string | null = null) => { });
 const rawChannelContext = React.createContext<{ get: NoteChannels, set: null | React.Dispatch<React.SetStateAction<NoteChannels>> }>({ get: {} as NoteChannels, set: null });
 
+const noteBankIndexContext = React.createContext<{ get: number, set: null | React.Dispatch<React.SetStateAction<number>> }>({ get: -1, set: null });
+
 const octaveAgnosticNoteSets = new Set<string>([NoteSet.Active, NoteSet.Emphasized, NoteSet.Highlighted]);
 
 function NoteProvider(props: Props) {
@@ -52,6 +54,8 @@ function NoteProvider(props: Props) {
         setHomeNoteRaw(note === null ? null : normalizeToSingleOctave(note));
         // }
     }, []);
+
+    const [noteBankIndex, setNoteBankIndex] = React.useState<number>(0);
 
     // Clear home note if no longer active
     React.useEffect(() => {
@@ -133,7 +137,9 @@ function NoteProvider(props: Props) {
             <homeNoteContext.Provider value={homeNote}>
                 <setHomeNoteContext.Provider value={setHomeNote}>
                     <rawChannelContext.Provider value={{ get: channels, set: setChannels }}>
-                        {props.children}
+                        <noteBankIndexContext.Provider value={{ get: noteBankIndex, set: setNoteBankIndex }}>
+                            {props.children}
+                        </noteBankIndexContext.Provider>
                     </rawChannelContext.Provider>
                 </setHomeNoteContext.Provider>
             </homeNoteContext.Provider>
@@ -172,6 +178,10 @@ export function useHomeNote() {
 
 export function useSetHomeNote() {
     return React.useContext(setHomeNoteContext);
+}
+
+export function useNoteBankIndex() {
+    return React.useContext(noteBankIndexContext);
 }
 
 export function normalizeToSingleOctave(i: number) {
