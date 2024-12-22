@@ -25,7 +25,7 @@ function SettingsProvider(props: Props) {
     const [isMuted, setIsMuted] = React.useState(false);
     const [isPercussionMuted, setIsPercussionMuted] = React.useState(true);
     const [prioritizeMIDIAudio, setPrioritizeMIDIAudio] = React.useState(true);
-    const [localSynthVoice, setLocalSynthVoice] = React.useState<LocalSynthVoice>(LocalSynthVoice.Square);
+    const [localSynthVoice, setLocalSynthVoice] = React.useState<LocalSynthVoice>(LocalSynthVoice.Sine);
     const [isPeaceModeEnabled, setIsPeaceModeEnabled] = React.useState<boolean>(false);
     const [synthVolume, setSynthVolume] = React.useState<number>(100);
 

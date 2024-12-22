@@ -109,7 +109,7 @@ function useKeypressPlayer() {
     const modulateActiveNotes = useModulateActiveNotes();
     const getNoteFromScaleDegree = useGetNoteFromActiveShapeScaleDegree();
     const getActiveShapeScaleDegree = useGetActiveShapeScaleDegreeFromNote();
-    const [octaveShift, setOctaveShift] = React.useState(-1);
+    const [octaveShift, setOctaveShift] = React.useState(0);
     const [mostRecentlyPressedNumberKey, setMostRecentlyPressedNumberKey] = React.useState("");
     const [mostRecentlyPlayedScaleDegree, setMostRecentlyPlayedScaleDegree] = React.useState<number | null>(null);
     const [singleNoteShift, setSingleNoteShift] = React.useState<SingleNoteShift | null>(null);
