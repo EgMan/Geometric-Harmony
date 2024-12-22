@@ -48,6 +48,8 @@ function Wheel(props: Props) {
 
     const [highlightedNotes, setHighlightedNotes] = React.useState(new Set<number>());
 
+    const [isShowAllIntervalColors, setIsShowAllIntervalColors] = React.useState(false);
+
     useRenderingTrace("Wheel", { activeNotes, inputNotes, emphasizedNotes, highlightedNotes, homeNote, setHomeNote, getNotesInCommon, modulateActiveNotes, updateNotes });
 
     // Settings Storage
@@ -134,6 +136,11 @@ function Wheel(props: Props) {
             <td>Show note names</td>
             <td style={{ textAlign: "center" }}>♯</td>
             <td><Switch checked={showNoteNames} onChange={e => setShowNoteNames(e.target.checked)} /></td>
+        </tr>),
+        (<tr key={'tr8'}>
+            <td>Always show interval colors</td>
+            <td style={{ textAlign: "center" }}>♯</td>
+            <td><Switch checked={isShowAllIntervalColors} onChange={e => setIsShowAllIntervalColors(e.target.checked)} /></td>
         </tr>),
         // (<tr key={'tr8'}>
         //     <td>Adjacent notes are</td>
@@ -225,7 +232,7 @@ function Wheel(props: Props) {
                 notesArr.push(<Circle key={`active${i}`} x={noteLoc.x} y={noteLoc.y} fill={noteColor} radius={10} />);
             }
             noteDisplays.normalized[i]?.forEach((channel, idx) => {
-                emphasized.push(<Circle key={`${channel.name}-${i}-${idx}`} opacity={1 / (idx + 1)} x={noteLoc.x} y={noteLoc.y} fill={channel.color ?? "white"} radius={20} />);
+                emphasized.push(<Circle key={`${channel.name}-${i}-${idx}`} opacity={1 / (idx + 1)} x={noteLoc.x} y={noteLoc.y} fill={channel.color ?? "white"} radius={sideLength / 2} />);
             });
 
             if (highlightedNotes.has(i)) {
@@ -235,7 +242,7 @@ function Wheel(props: Props) {
                 noteNames.push(<Text key={`noteName${i}`} width={40} height={40} x={noteLoc.x - 20.5} y={noteLoc.y - 19} text={getNoteName(i, activeNotes)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(i) ? colorPalette.Main_Background : colorPalette.Widget_Primary} align="center" verticalAlign="middle" />);
             }
             notesHaloArr.push(<Circle key={`halo${i}`} x={noteLoc.x} y={noteLoc.y} stroke={colorPalette.Widget_Primary} strokeWidth={1.5} radius={sideLength / 2} />);
-            clickListenersArr.push(<Circle key={`clickListen${i}`} draggable x={noteLoc.x} y={noteLoc.y} radius={20} onClick={toggleActive} onTap={toggleActive} onTouchStart={emphasize} onTouchEnd={unemphasize} onMouseOver={emphasize} onMouseOut={unemphasize} onDragMove={onRotateDrag} onDragStart={(e) => onRotateDragStart(e, i)} onDragEnd={onRotateDragEnd} />);
+            clickListenersArr.push(<Circle key={`clickListen${i}`} draggable x={noteLoc.x} y={noteLoc.y} radius={(sideLength / 2) - 2} onClick={toggleActive} onTap={toggleActive} onTouchStart={emphasize} onTouchEnd={unemphasize} onMouseOver={emphasize} onMouseOut={unemphasize} onDragMove={onRotateDrag} onDragStart={(e) => onRotateDragStart(e, i)} onDragEnd={onRotateDragEnd} />);
         }
         return {
             values: notesArr,
@@ -245,7 +252,7 @@ function Wheel(props: Props) {
             clickListeners: clickListenersArr,
             names: noteNames,
         }
-    }, [getNoteLocation, rotatingStartingNote, props.subdivisionCount, isCircleOfFifths, getNotesInCommon, updateNotes, modulateActiveNotes, activeNotes, noteDisplays.normalized, highlightedNotes, showNoteNames, settings?.isPeaceModeEnabled, colorPalette.Widget_Primary, colorPalette.Note_Home, colorPalette.Note_Active, colorPalette.Main_Background, setHomeNote, homeNote]);
+    }, [getNoteLocation, rotatingStartingNote, props.subdivisionCount, isCircleOfFifths, getNotesInCommon, updateNotes, modulateActiveNotes, activeNotes, noteDisplays.normalized, highlightedNotes, showNoteNames, settings?.isPeaceModeEnabled, colorPalette.Widget_Primary, colorPalette.Note_Home, colorPalette.Note_Active, colorPalette.Main_Background, sideLength, setHomeNote, homeNote]);
 
     const intervals = React.useMemo(() => {
         var intervalLines: JSX.Element[] = [];
@@ -265,6 +272,7 @@ function Wheel(props: Props) {
                 if (!displayInterval[dist - 1]) {
                     continue;
                 }
+
                 const emphasize = () => {
                     updateNotes(NoteSet.Emphasized, [noteA, noteB], true)
                 };
@@ -282,8 +290,8 @@ function Wheel(props: Props) {
 
                 const isActiveNoteInterval = activeNotes.has(noteA) && activeNotes.has(noteB);
                 if (isActiveNoteInterval) {
-                    intervalLines.push(<Line key={`3-${noteA}-${noteB}`} stroke={colorPalette.Widget_Primary} strokeWidth={1} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />);
-                    intervalLineListeners.push(<Line key={`4-${noteA}-${noteB}`} stroke={'rgba(0,0,0,0)'} strokeWidth={5} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize} />);
+                    intervalLines.push(<Line key={`3-${noteA}-${noteB}`} stroke={isShowAllIntervalColors ? discColor : colorPalette.Widget_Primary} strokeWidth={1} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />);
+                    intervalLineListeners.push(<Line key={`4-${noteA}-${noteB}`} stroke={'rgba(0,0,0,0)'} strokeWidth={10} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} onTouchStart={emphasize} onTouchEnd={deemphasize} onMouseOver={emphasize} onMouseOut={deemphasize} />);
                 }
             }
         }
@@ -303,8 +311,9 @@ function Wheel(props: Props) {
             emphasized: emphasized,
             highlighted: highlighted,
             listeners: intervalLineListeners,
+            // colorHoverListener: hoverToShowColor,
         }
-    }, [IntervalDisplayType.Playing, activeNotes, channelDisplays, colorPalette, displayInterval, emphasizedNotes, getNoteLocation, highlightedNotes, inputNotes, intervalDisplay, props.subdivisionCount, updateNotes]);
+    }, [IntervalDisplayType.Playing, activeNotes, channelDisplays, colorPalette, displayInterval, emphasizedNotes, getNoteLocation, highlightedNotes, inputNotes, intervalDisplay, isShowAllIntervalColors, props.subdivisionCount, updateNotes]);
 
     const fullRender = React.useMemo((
     ) => {
@@ -313,10 +322,10 @@ function Wheel(props: Props) {
             <Group x={radius} y={radius}>
                 <Group opacity={isRotating ? 0.125 : 1} key={"realGroup"}>
                     {intervals.line}
-                    {intervals.emphasized}
-                    {intervals.listeners}
                     {notes.halos}
                     {notes.emphasized}
+                    {intervals.emphasized}
+                    {intervals.listeners}
                     {notes.values}
                     {/* {centerpoint} */}
                 </Group>
