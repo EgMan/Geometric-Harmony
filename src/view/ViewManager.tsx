@@ -121,7 +121,7 @@ function ViewManager(props: Props) {
 
     const [trackedWidgets, setTrackedWidgets] = React.useState<Map<String, WidgetTracker>>(
         new Map<String, WidgetTracker>(limitingAxisIsHeight ?
-            // Portrait mode
+            // Landscape mode
             [
                 ['1', {
                     type: WidgetType.Analyzer,
@@ -176,7 +176,7 @@ function ViewManager(props: Props) {
                 //     height: wheelRadius,
                 // }],
             ]
-            // Landscape mode
+            // Portrait mode
             : [
                 ['1', {
                     type: WidgetType.Analyzer,

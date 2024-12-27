@@ -2,6 +2,7 @@ import React from "react";
 import useRenderingTrace from "../utils/ProfilingUtils";
 import { SpeakerSoundType } from "./SoundEngine";
 import { channel } from "diagnostics_channel";
+import { DefaultNoteBank, INITIAL_ACTIVE_NOTES, NoteBank } from "../utils/NotesetBank";
 
 type Props = {
     children: JSX.Element
@@ -25,6 +26,7 @@ export type NoteChannel = {
     playTo?: SpeakerSoundType,
 }
 
+
 type NoteChannels = {
     [key: string]: NoteChannel,
 }
@@ -34,13 +36,14 @@ const setHomeNoteContext = React.createContext((note: number | null) => { });
 const updateNoteSetContext = React.createContext((noteSet: string[] | string, nums: Array<number>, areEnabled: boolean, overwriteExisting: boolean = false, types: Set<string> | null = null, color: string | null = null) => { });
 const rawChannelContext = React.createContext<{ get: NoteChannels, set: null | React.Dispatch<React.SetStateAction<NoteChannels>> }>({ get: {} as NoteChannels, set: null });
 
-const noteBankIndexContext = React.createContext<{ get: number, set: null | React.Dispatch<React.SetStateAction<number>> }>({ get: -1, set: null });
+const noteBankContext = React.createContext<{ get: NoteBank, set: null | React.Dispatch<React.SetStateAction<NoteBank>> }>({ get: DefaultNoteBank, set: null });
 
 const octaveAgnosticNoteSets = new Set<string>([NoteSet.Active, NoteSet.Emphasized, NoteSet.Highlighted]);
 
+
 function NoteProvider(props: Props) {
     const [channels, setChannels] = React.useState<NoteChannels>({
-        [NoteSet.Active]: { name: NoteSet.Active, channelTypes: new Set([NoteSet.Active]), notes: new Set<number>([0, 2, 3, 5, 7, 9, 10]) },
+        [NoteSet.Active]: { name: NoteSet.Active, channelTypes: new Set([NoteSet.Active]), notes: new Set<number>(INITIAL_ACTIVE_NOTES) },
         [NoteSet.Emphasized]: { name: NoteSet.Emphasized, channelTypes: new Set([NoteSet.Emphasized]), notes: new Set<number>([]), color: "red" },
         [NoteSet.Highlighted]: { name: NoteSet.Highlighted, channelTypes: new Set([NoteSet.Highlighted]), notes: new Set<number>([]) },
         [NoteSet.Emphasized_OctaveGnostic]: { name: NoteSet.Emphasized_OctaveGnostic, channelTypes: new Set([NoteSet.Emphasized_OctaveGnostic]), notes: new Set<number>([]), color: "red" },
@@ -51,11 +54,18 @@ function NoteProvider(props: Props) {
     const homeNote = React.useMemo(() => homeNoteRaw !== null && channels[NoteSet.Active].notes.has(homeNoteRaw) ? homeNoteRaw : null, [homeNoteRaw, channels]);
     const setHomeNote = React.useCallback((note: number | null) => {
         // if (noteSets[NoteSet.Active].has(note)) {
-        setHomeNoteRaw(note === null ? null : normalizeToSingleOctave(note));
-        // }
+        const newHome = note === null ? null : normalizeToSingleOctave(note);
+        setHomeNoteRaw(newHome);
+
+        // Update the active note bank entry
+        setNoteBank(prevBank => {
+            const newBank = { ...prevBank };
+            newBank.entries[newBank.activeIndex] = { activeNotes: prevBank.entries[prevBank.activeIndex].activeNotes, homeNote: newHome };
+            return newBank;
+        });
     }, []);
 
-    const [noteBankIndex, setNoteBankIndex] = React.useState<number>(0);
+    const [noteBank, setNoteBank] = React.useState<NoteBank>(DefaultNoteBank);
 
     // Clear home note if no longer active
     React.useEffect(() => {
@@ -116,8 +126,17 @@ function NoteProvider(props: Props) {
                 }
                 return prevNoteSets;
             });
+
+            // If changing the Active channel, update the note bank entries
+            if (noteSetsToUpdate.includes(NoteSet.Active)) {
+                setNoteBank(prevBank => {
+                    const newBank = { ...prevBank };
+                    newBank.entries[newBank.activeIndex] = { activeNotes: nums, homeNote: homeNote };
+                    return newBank;
+                });
+            }
         },
-        []
+        [homeNote]
     );
 
 
@@ -137,9 +156,9 @@ function NoteProvider(props: Props) {
             <homeNoteContext.Provider value={homeNote}>
                 <setHomeNoteContext.Provider value={setHomeNote}>
                     <rawChannelContext.Provider value={{ get: channels, set: setChannels }}>
-                        <noteBankIndexContext.Provider value={{ get: noteBankIndex, set: setNoteBankIndex }}>
+                        <noteBankContext.Provider value={{ get: noteBank, set: setNoteBank }}>
                             {props.children}
-                        </noteBankIndexContext.Provider>
+                        </noteBankContext.Provider>
                     </rawChannelContext.Provider>
                 </setHomeNoteContext.Provider>
             </homeNoteContext.Provider>
@@ -180,8 +199,8 @@ export function useSetHomeNote() {
     return React.useContext(setHomeNoteContext);
 }
 
-export function useNoteBankIndex() {
-    return React.useContext(noteBankIndexContext);
+export function useNoteBank() {
+    return React.useContext(noteBankContext);
 }
 
 export function normalizeToSingleOctave(i: number) {

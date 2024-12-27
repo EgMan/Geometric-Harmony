@@ -35,22 +35,19 @@ export function useGetActiveNotesInCommonWithModulation() {
     }, [activeNotes]);
 }
 
-export function useShapeToNoteArray() {
-    return React.useCallback((shape: HarmonicShape, startingWhere: number) => {
+export function shapeToNoteArray(shape: HarmonicShape, startingWhere: number) {
         let noteArr: number[] = [];
         shape.notes.forEach((note, i) => {
             if (note[0]) noteArr.push(i + startingWhere);
         });
         return noteArr;
-    }, []);
 }
 
 export function useSetActiveShape() {
     const updateNotes = useUpdateNoteSet();
-    const shapeToNoteArray = useShapeToNoteArray();
     return React.useCallback((shape: HarmonicShape, startingWhere: number) => {
         const shapeArr = shapeToNoteArray(shape, startingWhere);
         updateNotes(NoteSet.Active, shapeArr, true, true);
         return shapeArr;
-    }, [shapeToNoteArray, updateNotes]);
+    }, [updateNotes]);
 }

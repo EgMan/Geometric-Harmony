@@ -10,6 +10,7 @@ import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import ColorLensIcon from '@mui/icons-material/ColorLens';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import PianoIcon from '@mui/icons-material/Piano';
+import FavoriteBorderRoundedIcon from '@mui/icons-material/FavoriteBorderRounded';
 // import SettingsIcon from '@mui/icons-material/Settings';
 import HeadphonesIcon from '@mui/icons-material/Headphones';
 import SquareFootIcon from '@mui/icons-material/SquareFoot';
@@ -24,12 +25,15 @@ import { LocalSynthVoice } from "../sound/SynthVoicings";
 import DensityMediumRoundedIcon from '@mui/icons-material/DensityMediumRounded';
 import MIDIConnectionManager from "../sound/MIDIConnectionManager";
 import { useAppTheme, useChangeAppTheme } from "./ThemeManager";
-import { blendColors, changeLightness, getRandomColor, getRandomColorWithAlpha } from "../utils/Utils";
+import { blendColors, changeLightness, getNoteName, getRandomColor, getRandomColorWithAlpha } from "../utils/Utils";
 import VolumeSlider from "../sound/VolumeSlider";
 import { WidgetConfig_Wheel_Figths as WidgetConfig_Wheel_Fifths, WidgetConfig_Wheel_Semitones } from "../toys/Wheel";
 import { WidgetConfig_String_Guitar, WidgetConfig_String_Harpejji } from "../toys/StringInstrument";
 import CharIcon from "./CharIcon";
-import { useNoteBankIndex } from "../sound/NoteProvider";
+import { normalizeToSingleOctave, useNoteBank } from "../sound/NoteProvider";
+import { getAllExactFits, getModeNameInShape, getNoteNameInExactFitShape, maybeModulateNoteFromShapeType, useGetAllExactFits } from "../toys/HarmonyAnalyzer";
+import { shapeToNoteArray } from "../sound/HarmonicModulation";
+import { useActiveNoteBank } from "../utils/NotesetBank";
 // import useSettings from "./SettingsProvider"
 
 type Props =
@@ -55,19 +59,27 @@ function ToolBar(props: Props) {
     const settings = useSettings();
     const changeTheme = useChangeAppTheme();
     const { colorPalette } = useAppTheme()!;
-    const activeBankIndex = useNoteBankIndex();
+    const noteBank = useNoteBank();
+
+    const swapBank = useActiveNoteBank();
+    const noteBankElems = React.useMemo(() => {
+        return noteBank.get.entries.map((noteBankEntry, i) => {
+            const noteBankFit = getAllExactFits(new Set(noteBankEntry.activeNotes))[0];
+            const label = getNoteNameInExactFitShape(new Set(noteBankEntry.activeNotes), noteBankEntry.homeNote ?? 0, noteBankFit);
+            return <MenuItem selected={i === noteBank.get.activeIndex} key={`${i}`} onClick={() => {
+                swapBank(i);
+            }}>
+                <CharIcon charDisplay={`${i}`} />
+                <ListItemText>{label}</ListItemText>
+            </MenuItem>
+        });
+    }, [noteBank.get.activeIndex, noteBank.get.entries, swapBank]);
 
     React.useEffect(() => {
-        if (!addDropdownOpen) {
+        if (!addDropdownOpen && !settingsDropdownOpen && !midiSettingsDropdownOpen && !noteBankDropdownOpen) {
             (document.activeElement as HTMLElement).blur();
         }
-    }, [props.stageRef, addDropdownOpen]);
-
-    React.useEffect(() => {
-        if (!settingsDropdownOpen) {
-            (document.activeElement as HTMLElement).blur();
-        }
-    }, [props.stageRef, settingsDropdownOpen]);
+    }, [props.stageRef, addDropdownOpen, settingsDropdownOpen, midiSettingsDropdownOpen, noteBankDropdownOpen]);
 
     return (
         <div>
@@ -80,6 +92,8 @@ function ToolBar(props: Props) {
                                     <Button type="submit" variant="contained"
                                         sx={{
                                             height: "auto",
+                                            maxWidth: '66px',
+                                            minWidth: '66px',
                                             fontSize: "0.7em",
                                             color: 'white',
                                             backgroundColor: 'transparent',
@@ -108,6 +122,8 @@ function ToolBar(props: Props) {
                                     <Button type="submit" variant="contained"
                                         sx={{
                                             height: "auto",
+                                            maxWidth: '66px',
+                                            minWidth: '66px',
                                             fontSize: "0.7em",
                                             color: 'white',
                                             backgroundColor: 'transparent',
@@ -157,6 +173,8 @@ function ToolBar(props: Props) {
                                     <Button type="submit" variant="contained"
                                         sx={{
                                             height: "auto",
+                                            maxWidth: '66px',
+                                            minWidth: '66px',
                                             fontSize: "0.7em",
                                             color: 'white',
                                             backgroundColor: 'transparent',
@@ -185,6 +203,8 @@ function ToolBar(props: Props) {
                                     <Button type="submit" variant="contained"
                                         sx={{
                                             height: "34px",
+                                            maxWidth: '66px',
+                                            minWidth: '66px',
                                             fontSize: "0.7em",
                                             color: 'white',
                                             backgroundColor: 'transparent',
@@ -213,6 +233,8 @@ function ToolBar(props: Props) {
                                     <Button type="submit" variant="contained"
                                         sx={{
                                             height: "34px",
+                                            maxWidth: '66px',
+                                            minWidth: '66px',
                                             fontSize: "0.7em",
                                             color: `${colorPalette.UI_Primary}`,
                                             backgroundColor: 'transparent',
@@ -234,7 +256,7 @@ function ToolBar(props: Props) {
                                             setNoteBankDropdownOpen(true);
                                         }}
                                     >
-                                        <CharIcon charDisplay={`${activeBankIndex.get}`} />
+                                        <CharIcon charDisplay={`${noteBank.get.activeIndex}`} />
                                     </Button>
                                 </Tooltip>
                             </>
@@ -253,6 +275,8 @@ function ToolBar(props: Props) {
                                 <Button type="submit" variant="contained"
                                     onClick={() => props.setIsHeartModalOpen(enabled => !enabled)}
                                     sx={{
+                                        maxWidth: '66px',
+                                        minWidth: '66px',
                                         fontSize: "18px",
                                         color: colorPalette.UI_Primary,
                                         backgroundColor: 'transparent',
@@ -270,14 +294,21 @@ function ToolBar(props: Props) {
                                             color: "grey"
                                         }
                                     }}
-                                >♥</Button>
+                                >
+
+                                    <FavoriteBorderRoundedIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                </Button>
                             </Tooltip>
                     }
                     <Tooltip title="Peace">
                         <Button type="submit" variant="contained"
                             onClick={() => settings?.setIsPeaceModeEnabled(enabled => !enabled)}
                             sx={{
-                                fontSize: "18px",
+                                maxWidth: '66px',
+                                minWidth: '66px',
+                                maxHeight: '34px',
+                                minHeight: '34px',
+                                fontSize: "28px",
                                 color: colorPalette.UI_Primary,
                                 backgroundColor: 'transparent',
                                 boxShadow: 'none',
@@ -320,7 +351,7 @@ function ToolBar(props: Props) {
                             // onClose={() => setAddDropdownOpen(false)}
                             // anchorEl={addButtonRef.current}
                             >
-                                <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>Toys</DialogTitle>
+                                <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>Spawn Toys</DialogTitle>
                                 <MenuItem onClick={() => addNewWidget(WidgetType.Piano)}>
                                     <ListItemIcon>
                                         <MusicNoteIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
@@ -430,7 +461,7 @@ function ToolBar(props: Props) {
                     <Paper>
                         <ClickAwayListener onClickAway={() => setAddDropdownOpen(false)}>
                             <MenuList>
-                                <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>General Settings</DialogTitle>
+                                <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>In-Browser Synth Settings</DialogTitle>
                                 <MenuItem >
                                     <ListItemIcon>
                                         {settings?.isMuted ? <VolumeOffIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <VolumeUpIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />}
@@ -526,27 +557,8 @@ function ToolBar(props: Props) {
                     <Paper>
                         <ClickAwayListener onClickAway={() => setNoteBankDropdownOpen(false)}>
                             <MenuList>
-                                <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>Number Key Shapes</DialogTitle>
-                                <MenuItem onClick={() => { }}>
-                                    <CharIcon charDisplay="0" />
-                                    <ListItemText>asdfasdlfjhsdf</ListItemText>
-                                </MenuItem>
-                                <MenuItem onClick={() => { }}>
-                                    <CharIcon charDisplay="1" />
-                                    <ListItemText>asdf</ListItemText>
-                                </MenuItem>
-                                <MenuItem onClick={() => { }}>
-                                    <CharIcon charDisplay="2" />
-                                    <ListItemText>asdf</ListItemText>
-                                </MenuItem>
-                                <MenuItem onClick={() => { }}>
-                                    <CharIcon charDisplay="3" />
-                                    <ListItemText>asdf</ListItemText>
-                                </MenuItem>
-                                <MenuItem onClick={() => { }}>
-                                    <CharIcon charDisplay="4" />
-                                    <ListItemText>asdf</ListItemText>
-                                </MenuItem>
+                                <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>Shapes Bound to Number Keys</DialogTitle>
+                                {noteBankElems}
                             </MenuList>
                         </ClickAwayListener>
                     </Paper>
