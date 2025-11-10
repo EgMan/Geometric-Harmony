@@ -2,7 +2,8 @@ import React from "react";
 import useRenderingTrace from "../utils/ProfilingUtils";
 import { SpeakerSoundType } from "./SoundEngine";
 import { channel } from "diagnostics_channel";
-import { DefaultNoteBank, INITIAL_ACTIVE_NOTES, NoteBank } from "../utils/NotesetBank";
+import { DefaultNoteBank, INITIAL_ACTIVE_NOTES, INITIAL_HOME_NOTE, NoteBank } from "../utils/NotesetBank";
+import { getIntervalDistance } from "../utils/Utils";
 
 type Props = {
     children: JSX.Element
@@ -50,8 +51,27 @@ function NoteProvider(props: Props) {
         [NoteSet.KeypressInput]: { name: NoteSet.KeypressInput, channelTypes: new Set([NoteSet.KeypressInput]), notes: new Set<number>([]), color: "hsl(25, 100%, 50%)" },
     });
     // console.log("channels", channels);
-    const [homeNoteRaw, setHomeNoteRaw] = React.useState<number | null>(10);
-    const homeNote = React.useMemo(() => homeNoteRaw !== null && channels[NoteSet.Active].notes.has(homeNoteRaw) ? homeNoteRaw : null, [homeNoteRaw, channels]);
+    // TODO remove nullability
+    const [homeNoteRaw, setHomeNoteRaw] = React.useState<number | null>(INITIAL_HOME_NOTE);
+    const homeNote = React.useMemo(() => {
+        if (homeNoteRaw !== null && channels[NoteSet.Active].notes.has(homeNoteRaw)) {
+            return homeNoteRaw;
+        }
+        // Find nearest
+        var nearest = null;
+        var nearestDist = -1;
+        for (let activeNote of Array.from(channels[NoteSet.Active].notes)) {
+            const dist = getIntervalDistance(activeNote, homeNoteRaw ?? 0, 12);
+            if (!nearest || dist < nearestDist!) {
+                nearest = activeNote;
+                nearestDist = dist;
+            }
+        }
+        if (nearest == null) {
+            return 0;
+        }
+        return nearest;
+    }, [homeNoteRaw, channels]);
     const setHomeNote = React.useCallback((note: number | null) => {
         // if (noteSets[NoteSet.Active].has(note)) {
         const newHome = note === null ? null : normalizeToSingleOctave(note);

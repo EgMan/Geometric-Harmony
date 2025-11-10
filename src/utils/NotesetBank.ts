@@ -16,13 +16,14 @@ export type NoteBank = {
 }
 
 export const INITIAL_ACTIVE_NOTES: number[] = [0, 2, 3, 5, 7, 9, 10]
+export const INITIAL_HOME_NOTE: number = 10;
 
 export const DefaultNoteBank: NoteBank = {
     name: "Default",
     activeIndex: 0,
     entries: [
         // Entry #0 is the default bank entry loaded on startup. 
-        /*0*/ { activeNotes: INITIAL_ACTIVE_NOTES, homeNote: 0 },
+        /*0*/ { activeNotes: INITIAL_ACTIVE_NOTES, homeNote: INITIAL_HOME_NOTE },
         /*1*/ { activeNotes: shapeToNoteArray(CHORD_MAJOR7, 10), homeNote: 10 },
         /*2*/ { activeNotes: shapeToNoteArray(CHORD_MINOR7, 0), homeNote: 0 },
         /*3*/ { activeNotes: shapeToNoteArray(CHORD_MINOR7, 2), homeNote: 2 },
@@ -47,8 +48,10 @@ export function useActiveNoteBank() {
         if (index === noteBank.get.activeIndex) {
             return true;
         }
-        if (index < 0 || index >= noteBank.get.entries.length) {
-            return false;
+        if (index < 0) {
+            index = noteBank.get.entries.length - 1;
+        } else if (index >= noteBank.get.entries.length) {
+            index = 0;
         }
 
         noteBank.set!((prev) => {

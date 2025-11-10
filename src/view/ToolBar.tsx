@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, ClickAwayListener, ListItemIcon, ListItemText, DialogTitle, MenuItem, MenuList, Paper, Popover, Switch, Select, Tooltip, Toolbar as MUItoolbar, Badge, Typography } from "@mui/material";
+import { Button, ClickAwayListener, ListItemIcon, ListItemText, DialogTitle, MenuItem, MenuList, Paper, Popover, Switch, Select, Tooltip, Toolbar as MUItoolbar, Badge, Typography, Chip, ListItem } from "@mui/material";
 import ShapeNavigationTool from "./ShapeNavigationTool";
 import { WidgetConfig, WidgetTrackerActions, WidgetType } from "./ViewManager";
 import { Stage } from "konva/lib/Stage";
@@ -34,6 +34,8 @@ import { normalizeToSingleOctave, useNoteBank } from "../sound/NoteProvider";
 import { getAllExactFits, getModeNameInShape, getNoteNameInExactFitShape, maybeModulateNoteFromShapeType, useGetAllExactFits } from "../toys/HarmonyAnalyzer";
 import { shapeToNoteArray } from "../sound/HarmonicModulation";
 import { useActiveNoteBank } from "../utils/NotesetBank";
+import { on } from "events";
+import { ShapeType } from "../utils/KnownHarmonicShapes";
 // import useSettings from "./SettingsProvider"
 
 type Props =
@@ -66,14 +68,35 @@ function ToolBar(props: Props) {
         return noteBank.get.entries.map((noteBankEntry, i) => {
             const noteBankFit = getAllExactFits(new Set(noteBankEntry.activeNotes))[0];
             const label = getNoteNameInExactFitShape(new Set(noteBankEntry.activeNotes), noteBankEntry.homeNote ?? 0, noteBankFit);
-            return <MenuItem selected={i === noteBank.get.activeIndex} key={`${i}`} onClick={() => {
-                swapBank(i);
-            }}>
+            const shapeType = ShapeType[noteBankFit.shape.type].toString().toLowerCase();
+            return <MenuItem
+                selected={i === noteBank.get.activeIndex}
+                key={`${i}`}
+                onClick={() => {
+                    swapBank(i);
+                }}
+                onKeyDown={(e) => {
+                    if (e.key === "ArrowDown") {
+                        swapBank(i + 1);
+                    }
+                    if (e.key === "ArrowUp") {
+                        swapBank(i - 1);
+                    }
+                    const keyAsNum = Number(e.key);
+                    if (!Number.isNaN(keyAsNum)) {
+                        swapBank(keyAsNum);
+                    }
+                }}
+            >
                 <CharIcon charDisplay={`${i}`} />
-                <ListItemText>{label}</ListItemText>
+                <ListItemText
+                    primaryTypographyProps={{ sx: { pl: "12px", pr: "12px" } }}
+                    sx={{ color: colorPalette.Note_Home }}
+                >{label}</ListItemText>
+                <Chip label={`${shapeType[0].toUpperCase()}${shapeType.slice(1)}`} size="small" sx={{ color: colorPalette.UI_Primary, fontFamily: "monospace" }} />
             </MenuItem>
         });
-    }, [noteBank.get.activeIndex, noteBank.get.entries, swapBank]);
+    }, [colorPalette.Note_Home, colorPalette.UI_Primary, noteBank.get.activeIndex, noteBank.get.entries, swapBank]);
 
     React.useEffect(() => {
         if (!addDropdownOpen && !settingsDropdownOpen && !midiSettingsDropdownOpen && !noteBankDropdownOpen) {

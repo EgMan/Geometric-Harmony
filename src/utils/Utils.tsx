@@ -30,6 +30,8 @@ export function getNoteMIDI(note: number) {
 
 export function getNoteName(i: number, activeNotes: Set<number>) {
     // TODO fix this properly
+
+
     return numberToNoteNameSharp[i % 12];
 
     if (!activeNotes.has(i)) {
@@ -41,6 +43,17 @@ export function getNoteName(i: number, activeNotes: Set<number>) {
         return numberToNoteNameFlat[i] ?? "?";
     }
     return numberToNoteNameSharp[i] ?? "?";
+}
+
+//TODO
+function getFlatsAndSharps(notes: number[]) {
+    const alphabet: number[] = [];
+    for (let note of notes) {
+        const noteName = [note];
+        // if (noteName.includes("#")) {
+        //     alphabet.push(note);
+        // }
+    }
 }
 
 export function getNoteNum(noteName: string) {
