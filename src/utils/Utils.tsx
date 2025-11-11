@@ -11,6 +11,7 @@ const numberToPlayableNote = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "
 const numberToNoteNameSharp = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const numberToNoteNameFlat = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
 
+
 export const bigGold = 1.6180339887;
 export const smallGold = 1 / bigGold;
 
@@ -30,9 +31,14 @@ export function getNoteMIDI(note: number) {
 
 export function getNoteName(i: number, activeNotes: Set<number>) {
     // TODO fix this properly
+    // return numberToNoteNameSharp[i % 12];
+    const noteSpelling = getNoteSpelling(Array.from(activeNotes));
+    if ((noteSpelling.get(i)?.accidentalNum ?? 0) >= 0) {
+        return numberToNoteNameSharp[i % 12];
+    } else {
+        return numberToNoteNameFlat[i % 12];
+    }
 
-
-    return numberToNoteNameSharp[i % 12];
 
     if (!activeNotes.has(i)) {
         return numberToNoteNameSharp[i] ?? "?";
@@ -45,15 +51,171 @@ export function getNoteName(i: number, activeNotes: Set<number>) {
     return numberToNoteNameSharp[i] ?? "?";
 }
 
-//TODO
-function getFlatsAndSharps(notes: number[]) {
-    const alphabet: number[] = [];
-    for (let note of notes) {
-        const noteName = [note];
-        // if (noteName.includes("#")) {
-        //     alphabet.push(note);
-        // }
+// Convention for note names:
+// C=0, D=1, E=2, F=3, G=4, A=5, B=6
+const noteNameToNaturalIndex = [0, 2, 4, 5, 7, 9, 11]
+const noteNameIdxToStr = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
+const numNoteNames = noteNameToNaturalIndex.length;
+const noteToPossibleNoteNames = [
+    [[0, 0], [6, -1]], // C or Bb
+    [[0, 1], [1, -1]], // C# or Db
+    [[1, 0]],          // D
+    [[1, 1], [2, -1]], // D# or Eb
+    [[2, 0], [3, -1]], // E or Fb
+    [[3, 0], [2, 1]],  // F or E#
+    [[3, 1], [4, -1]], // F# or Gb
+    [[4, 0]],          // G
+    [[4, 1], [5, -1]], // G# or Ab
+    [[5, 0]],          // A
+    [[5, 1], [6, -1]], // A# or Bb
+    [[6, 0], [0, -1]], // B or Cb
+]
+
+type NotenameAssignment = {
+    nameIdx: number;
+    accidentalNum: number;
+};
+
+function getNoteSpelling(notes: number[]) {
+
+    notes = notes.map(note => normalizeToSingleOctave(note))
+    // let noteToNotenameWithAccidental: NotenameAssignment[] = new Array(notes.length).fill({ nameIdx: -1, accidentalNum: 0 });
+    let noteToNotenameWithAccidental: Map<number, NotenameAssignment> = new Map()
+    let noteAssigned: boolean[] = new Array(notes.length).fill(false);
+    let noteNameAssigned: boolean[] = new Array(numNoteNames).fill(false);
+    let numNotesAssigned = 0;
+    let sharpnumMinusFlatnum = 0;
+
+    function resolveOneWayRestrictions() {
+        let atLeastOneNoteAssigned = false;
+        do {
+            atLeastOneNoteAssigned = false;
+            // eslint-disable-next-line no-loop-func
+            notes.forEach((note) => {
+                if (!noteAssigned[note]) {
+                    if (noteToPossibleNoteNames[note].length !== 2) {
+                        alert("1 This should never happen.  If you see this, uh oh." + noteToPossibleNoteNames[note])
+                        return;
+                    }
+
+                    const firstPossibleNoteName = noteToPossibleNoteNames[note][0][0];
+                    const secondPossibleNoteName = noteToPossibleNoteNames[note][1][0];
+
+                    const firstPossibleNoteNameAssigned = noteNameAssigned[firstPossibleNoteName];
+                    const secondPossibleNoteNameAssigned = noteNameAssigned[secondPossibleNoteName];
+
+                    if (firstPossibleNoteNameAssigned && !secondPossibleNoteNameAssigned) {
+                        console.log("one way note assigned to second")
+                        let accidental = noteToPossibleNoteNames[note][1][1];
+                        noteToNotenameWithAccidental.set(note, { nameIdx: secondPossibleNoteName, accidentalNum: accidental });
+                        noteNameAssigned[secondPossibleNoteName] = true
+                        noteAssigned[note] = true;
+                        atLeastOneNoteAssigned = true;
+                        numNotesAssigned++;
+                        sharpnumMinusFlatnum += accidental;
+                        console.log(`assigned note ${noteNameIdxToStr[secondPossibleNoteName]}${accidental > 0 ? '#' : accidental < 0 ? 'b' : ''} (ONE WAY RESTRICTION)`)
+                    }
+
+                    if (secondPossibleNoteNameAssigned && !firstPossibleNoteNameAssigned) {
+                        console.log("one way note assigned to first")
+                        let accidental = noteToPossibleNoteNames[note][0][1];
+                        noteToNotenameWithAccidental.set(note, { nameIdx: firstPossibleNoteName, accidentalNum: accidental });
+                        noteNameAssigned[firstPossibleNoteName] = true
+                        noteAssigned[note] = true;
+                        atLeastOneNoteAssigned = true;
+                        numNotesAssigned++;
+                        sharpnumMinusFlatnum += accidental;
+                        console.log(`assigned note ${noteNameIdxToStr[firstPossibleNoteName]}${accidental > 0 ? '#' : accidental < 0 ? 'b' : ''} (ONE WAY RESTRICTION)`)
+                    }
+                }
+            });
+        }
+        while (atLeastOneNoteAssigned);
     }
+
+    console.log("First pass starting")
+    // First pass, natural notes with only one spelling to their names (G, A, and D)
+    notes.forEach((note) => {
+        const naturalName = noteNameToNaturalIndex.indexOf(note);
+        if (naturalName > -1 && noteToPossibleNoteNames[note].length === 1) {
+            noteToNotenameWithAccidental.set(note, { nameIdx: naturalName, accidentalNum: 0 });
+            noteNameAssigned[naturalName] = true
+            noteAssigned[note] = true;
+            numNotesAssigned++;
+            console.log(`assigned note ${noteNameIdxToStr[naturalName]} (FIRST PASS)`)
+        }
+    });
+
+    if (numNotesAssigned >= notes.length) {
+        console.log("Early out after first pass")
+        return noteToNotenameWithAccidental;
+    }
+
+    console.log("one way restrictions")
+    resolveOneWayRestrictions();
+
+    if (numNotesAssigned >= notes.length) {
+        console.log("early out after one way restrictions")
+        return noteToNotenameWithAccidental;
+    }
+
+    console.log("Second pass")
+    // Pass for natural notes with two spellings (C, E, F, and B)
+    // When able, these notes will prefer being spelled without accidentals
+    notes.forEach((note) => {
+        if ([0, 4, 5, 11].includes(note) && !noteAssigned[note]) {
+            console.log("YO WTF " + note)
+            const firstPossibleNoteName = noteToPossibleNoteNames[note][0];
+            const secondPossibleNoteName = noteToPossibleNoteNames[note][1];
+
+            const firstPossibleNoteNameAssigned = noteNameAssigned[firstPossibleNoteName[0]];
+            const secondPossibleNoteNameAssigned = noteNameAssigned[secondPossibleNoteName[0]];
+
+            if (firstPossibleNoteNameAssigned !== secondPossibleNoteNameAssigned) {
+                alert("2 This should never happen.  If you see this, uh oh.");
+                return;
+            }
+
+            if (!firstPossibleNoteNameAssigned && !secondPossibleNoteNameAssigned) {
+                const naturalName = firstPossibleNoteName[0];
+                const accidental = firstPossibleNoteName[1];
+                noteToNotenameWithAccidental.set(note, { nameIdx: naturalName, accidentalNum: accidental });
+                noteNameAssigned[naturalName] = true
+                noteAssigned[note] = true;
+                numNotesAssigned++;
+                sharpnumMinusFlatnum += accidental;
+                console.log(`assigned note ${note} to ${noteNameIdxToStr[naturalName]}${accidental > 0 ? '#' : accidental < 0 ? 'b' : ''} (SECOND PASS)`)
+                resolveOneWayRestrictions();
+            }
+        }
+    })
+
+
+    if (numNotesAssigned >= notes.length) {
+        console.log("early out after second pass")
+        return noteToNotenameWithAccidental;
+    }
+
+    // Finally, assign the rest based on the amount of sharps and/or flats that we've already assigned
+    console.log("final pass")
+    notes.forEach((note) => {
+        if (!noteAssigned[note]) {
+            const firstPossibleNoteName = noteToPossibleNoteNames[note][0];
+            const secondPossibleNoteName = noteToPossibleNoteNames[note][1];
+
+            // TODO MAKE THIS DEPEND ON NUMSHARPSFLATS
+            const naturalName = firstPossibleNoteName[0];
+            const accidental = firstPossibleNoteName[1];
+            noteToNotenameWithAccidental.set(note, { nameIdx: naturalName, accidentalNum: accidental });
+            noteNameAssigned[naturalName] = true
+            noteAssigned[note] = true;
+            numNotesAssigned++;
+            sharpnumMinusFlatnum += accidental;
+            console.log(`assigned note ${noteNameIdxToStr[naturalName]}${accidental > 0 ? '#' : accidental < 0 ? 'b' : ''} (FINAL PASS)`)
+        }
+    })
+
+    return noteToNotenameWithAccidental;
 }
 
 export function getNoteNum(noteName: string) {
