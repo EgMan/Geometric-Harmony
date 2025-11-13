@@ -2,7 +2,7 @@ import React from 'react';
 import { Circle, Group, Line, Shape, Text } from 'react-konva';
 import { WidgetComponentProps } from '../view/Widget';
 import { Switch } from '@mui/material';
-import { getIntervalColor, getIntervalDistance, getNoteName } from '../utils/Utils';
+import { getIntervalColor, getIntervalDistance, useActiveNoteNames } from '../utils/Utils';
 import { NoteSet, normalizeToSingleOctave, useChannelDisplays, useGetCombinedModdedEmphasis, useHomeNote, useNoteDisplays, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import { Vector2d } from 'konva/lib/types';
@@ -22,6 +22,7 @@ function Tonnetz(props: Props) {
     const activeNotes = useNoteSet(NoteSet.Active).notes;
     const noteDisplays = useNoteDisplays();
     const channelDisplays = useChannelDisplays();
+    const getNoteName = useActiveNoteNames();
 
     const settings = useSettings();
     const { colorPalette } = useAppTheme()!;
@@ -337,7 +338,7 @@ function Tonnetz(props: Props) {
                 dragListeners.push(<Line key={`minorTriadListener${x}-${y}`} closed={true} x={xPos} y={yPos} points={[0, 0, spacing * 0.5, -spacing * sqrt3over2, spacing, 0]} />);
 
                 if (!settings?.isPeaceModeEnabled) {
-                    notes.push(<Text key={`noteName${x}-${y}`} width={40} height={40} x={xPos - 20} y={yPos - 19} text={getNoteName(normalizedNote, activeNotes)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(normalizeToSingleOctave(note)) ? colorPalette.Main_Background : colorPalette.Widget_Primary} align="center" verticalAlign="middle" listening={false} />);
+                    notes.push(<Text key={`noteName${x}-${y}`} width={40} height={40} x={xPos - 20} y={yPos - 19} text={getNoteName(normalizedNote)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(normalizeToSingleOctave(note)) ? colorPalette.Main_Background : colorPalette.Widget_Primary} align="center" verticalAlign="middle" listening={false} />);
                 }
                 // notes.push(<Text key={`noteName${x}-${y}`} width={40} height={40} x={xPos - 20} y={yPos - 20} text={"" + note} fontSize={14} fontFamily='monospace' fill={activeNotes.has(note) ? "rgb(37,37,37)" : colorPalette.Widget_Primary} align="center" verticalAlign="middle" />);
                 notes.push(<Circle key={`halo${x}-${y}`} x={xPos} y={yPos} stroke={colorPalette.Widget_Primary} strokeWidth={1.5} radius={20} listening={false} />);
@@ -346,7 +347,7 @@ function Tonnetz(props: Props) {
         return {
             notes, intervals, triads, dragListeners, noteListeners, noteEmphasis
         }
-    }, [activeNotes, channelDisplays, colorPalette.Main_Background, colorPalette.Note_Active, colorPalette.Note_Home, colorPalette.Widget_Primary, cordsToNote, cordsToPosition, displayInterval, distFromCenter, homeNote, intervalEmphasis, noteDisplays.normalized, settings?.isPeaceModeEnabled, updateNotes, xDraggedOffset, yDraggedOffset]);
+    }, [activeNotes, channelDisplays, colorPalette.Main_Background, colorPalette.Note_Active, colorPalette.Note_Home, colorPalette.Widget_Primary, cordsToNote, cordsToPosition, displayInterval, distFromCenter, getNoteName, homeNote, intervalEmphasis, noteDisplays.normalized, settings?.isPeaceModeEnabled, updateNotes, xDraggedOffset, yDraggedOffset]);
 
     const fullRender = React.useMemo((
     ) => {

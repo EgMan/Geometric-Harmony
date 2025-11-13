@@ -4,7 +4,7 @@ import { WidgetComponentProps } from '../view/Widget';
 import { MenuItem, Select, Switch } from '@mui/material';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { useGetActiveNotesInCommonWithModulation, useModulateActiveNotes } from '../sound/HarmonicModulation';
-import { getIntervalColor, getIntervalDistance, getNoteName } from '../utils/Utils';
+import { getIntervalColor, getIntervalDistance, useActiveNoteNames } from '../utils/Utils';
 import { NoteSet, normalizeToSingleOctave, useChannelDisplays, useGetCombinedModdedEmphasis, useHomeNote, useNoteDisplays, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import useRenderingTrace from '../utils/ProfilingUtils';
@@ -40,6 +40,7 @@ function Wheel(props: Props) {
     const setHomeNote = useSetHomeNote();
     const channelDisplays = useChannelDisplays();
     const noteDisplays = useNoteDisplays();
+    const getNoteName = useActiveNoteNames();
 
     const sideLength = 2 * radius * Math.sin(Math.PI / props.subdivisionCount);
 
@@ -239,7 +240,7 @@ function Wheel(props: Props) {
                 highlighted.push(<Circle key={`highlighted${i}`} x={noteLoc.x} y={noteLoc.y} fill="white" radius={20} />);
             }
             if (showNoteNames && !settings?.isPeaceModeEnabled) {
-                noteNames.push(<Text key={`noteName${i}`} width={40} height={40} x={noteLoc.x - 20.5} y={noteLoc.y - 19} text={getNoteName(i, activeNotes)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(i) ? colorPalette.Main_Background : colorPalette.Widget_Primary} align="center" verticalAlign="middle" />);
+                noteNames.push(<Text key={`noteName${i}`} width={40} height={40} x={noteLoc.x - 20.5} y={noteLoc.y - 19} text={getNoteName(i)} fontSize={14} fontFamily='monospace' fill={activeNotes.has(i) ? colorPalette.Main_Background : colorPalette.Widget_Primary} align="center" verticalAlign="middle" />);
             }
             notesHaloArr.push(<Circle key={`halo${i}`} x={noteLoc.x} y={noteLoc.y} stroke={colorPalette.Widget_Primary} strokeWidth={1.5} radius={sideLength / 2} />);
             clickListenersArr.push(<Circle key={`clickListen${i}`} draggable x={noteLoc.x} y={noteLoc.y} radius={(sideLength / 2) - 2} onClick={toggleActive} onTap={toggleActive} onTouchStart={emphasize} onTouchEnd={unemphasize} onMouseOver={emphasize} onMouseOut={unemphasize} onDragMove={onRotateDrag} onDragStart={(e) => onRotateDragStart(e, i)} onDragEnd={onRotateDragEnd} />);
@@ -252,7 +253,7 @@ function Wheel(props: Props) {
             clickListeners: clickListenersArr,
             names: noteNames,
         }
-    }, [getNoteLocation, rotatingStartingNote, props.subdivisionCount, isCircleOfFifths, getNotesInCommon, updateNotes, modulateActiveNotes, activeNotes, noteDisplays.normalized, highlightedNotes, showNoteNames, settings?.isPeaceModeEnabled, colorPalette.Widget_Primary, colorPalette.Note_Home, colorPalette.Note_Active, colorPalette.Main_Background, sideLength, setHomeNote, homeNote]);
+    }, [getNoteLocation, rotatingStartingNote, props.subdivisionCount, isCircleOfFifths, getNotesInCommon, updateNotes, modulateActiveNotes, activeNotes, noteDisplays.normalized, highlightedNotes, showNoteNames, settings?.isPeaceModeEnabled, colorPalette.Widget_Primary, colorPalette.Note_Home, colorPalette.Note_Active, colorPalette.Main_Background, sideLength, setHomeNote, homeNote, getNoteName]);
 
     const intervals = React.useMemo(() => {
         var intervalLines: JSX.Element[] = [];

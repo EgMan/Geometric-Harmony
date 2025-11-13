@@ -1,7 +1,6 @@
 import React from "react";
 import { HarmonicShape } from "../utils/KnownHarmonicShapes";
 import { NoteSet, normalizeToSingleOctave, useHomeNote, useNoteBank, useNoteSet, useSetHomeNote, useUpdateNoteSet } from "./NoteProvider";
-import { useActiveNoteBank } from "../utils/NotesetBank";
 
 function getModulatedNotes(notes: Set<number>, semitones: number) {
     return Array.from(notes).map(note => (note + semitones + 12) % 12);//Do I want to do the modulus here?

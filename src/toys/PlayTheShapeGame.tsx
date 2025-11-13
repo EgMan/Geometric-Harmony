@@ -7,7 +7,7 @@ import { Html } from 'react-konva-utils';
 import { HarmonicShape, knownShapes } from '../utils/KnownHarmonicShapes';
 import { NoteSet, normalizeToSingleOctave, useGetCombinedModdedEmphasis, useNoteSet } from '../sound/NoteProvider';
 import { useGetAllExactFits } from './HarmonyAnalyzer';
-import { getNoteName } from '../utils/Utils';
+import { useActiveNoteNames } from '../utils/Utils';
 
 const quizShapes = knownShapes[3].concat(knownShapes[4]);
 
@@ -45,6 +45,7 @@ function PlayTheShapeGame(props: Props) {
 
     const exactFits = useGetAllExactFits(consideredNotes);
     const exactFit = exactFits[0];
+    const getNoteName = useActiveNoteNames();
 
     React.useEffect(() => {
         if (exactFit.shape === question.shape && exactFit.rootNote % 12 === normalizeToSingleOctave(question.keyCenter)) {
@@ -64,15 +65,15 @@ function PlayTheShapeGame(props: Props) {
                                 <td colSpan={1} style={{ textAlign: "center", fontWeight: "bolder" }}>Up next</td>
                             </tr>
                             <tr>
-                                <td colSpan={1} style={{ color: "lightgreen", textAlign: "left" }}>{`${getNoteName(question.keyCenter, new Set())} ${question.shape.name}`}</td>
-                                <td colSpan={1} style={{ textAlign: "left" }}>{`${getNoteName(nextQuestion.keyCenter, new Set())} ${question.shape.name}`}</td>
+                                <td colSpan={1} style={{ color: "lightgreen", textAlign: "left" }}>{`${getNoteName(question.keyCenter)} ${question.shape.name}`}</td>
+                                <td colSpan={1} style={{ textAlign: "left" }}>{`${getNoteName(nextQuestion.keyCenter)} ${question.shape.name}`}</td>
                             </tr>
                         </table>
                     </div>
                 </Html>
             </Group>
         );
-    }, [nextQuestion.keyCenter, props.height, props.width, question.keyCenter, question.shape.name]);
+    }, [getNoteName, nextQuestion.keyCenter, props.height, props.width, question.keyCenter, question.shape.name]);
 
     return (
         <Group>

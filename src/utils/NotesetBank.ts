@@ -1,6 +1,6 @@
 import React from 'react';
 import { NoteSet, useHomeNote, useNoteBank, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
-import { CHORD_DOMINANT7, CHORD_HALFDIMINISHED7, CHORD_MAJOR7, CHORD_MINOR7, SCALE_BLUES, SCALE_CHROMATIC, SCALE_NATURAL, SCALE_WHOLETONE } from './KnownHarmonicShapes';
+import { CHORD_DOMINANT7, CHORD_HALFDIMINISHED7, CHORD_MAJOR7, CHORD_MINOR7, SCALE_CHROMATIC } from './KnownHarmonicShapes';
 import { emitSnackbar } from './Utils';
 import { shapeToNoteArray } from '../sound/HarmonicModulation';
 

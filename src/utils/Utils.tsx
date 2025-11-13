@@ -1,10 +1,12 @@
 import React from "react";
-import { normalizeToSingleOctave } from "../sound/NoteProvider";
+import { normalizeToSingleOctave, NoteSet, useNoteSet } from "../sound/NoteProvider";
 import { Vector2d } from "konva/lib/types";
 import { KonvaEventObject } from "konva/lib/Node";
 import ColorConverter from "string-color-converter";
 import { enqueueSnackbar } from "notistack";
 import { ColorPalette } from "../view/ThemeManager";
+import { useActiveNoteBank } from "./NotesetBank";
+import { deprecate } from "util";
 
 // const numberToNote = ["C-1", "C#3", "D3", "D#3", "E3", "F3", "F#3", "G3", "G#3", "A3", "A#3", "B3"];
 const numberToPlayableNote = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
@@ -29,26 +31,43 @@ export function getNoteMIDI(note: number) {
     return `${numberToPlayableNote[singleOctaveNote]}${octaveNum}`;
 }
 
-export function getNoteName(i: number, activeNotes: Set<number>) {
-    // TODO fix this properly
-    // return numberToNoteNameSharp[i % 12];
-    const noteSpelling = getNoteSpelling(Array.from(activeNotes));
-    if ((noteSpelling.get(i)?.accidentalNum ?? 0) >= 0) {
-        return numberToNoteNameSharp[i % 12];
+export function useActiveNoteNames() {
+    const activeNotes = useNoteSet(NoteSet.Active).notes;
+    return useNoteNames(activeNotes);
+}
+
+function useNoteNames(notes: Set<number>) {
+    const noteSpellingResult: NoteSpellingResult = useNoteSpelling(notes);
+    return React.useCallback((note: number) => {
+        const noteSpelling = noteSpellingResult.spelling.get(note);
+        if (!noteSpelling) {
+            return noteSpellingResult.preferSharps ? numberToNoteNameSharp[note] : numberToNoteNameFlat[note];
+        }
+
+        if (noteSpelling.accidentalNum >= 0) {
+            return numberToNoteNameSharp[note] ?? "?";
+        } else {
+            return numberToNoteNameFlat[note] ?? "?";
+        }
+        // return getNoteName(normalizeToSingleOctave(note), activeNotes);
+    }, [noteSpellingResult.preferSharps, noteSpellingResult.spelling]);
+}
+
+export function getNoteName_DEPRECATED(i: number, activeNotes: Set<number>) {
+    const noteSpellingResult = getNoteSpelling(Array.from(activeNotes));
+    // const noteSpellings: Map<number, NotenameAssignment> = noteSpellingResult[0];
+    // const sharpnumMinusFlatnum = noteSpellingResult[1];
+
+    const noteSpelling = noteSpellingResult.spelling.get(i);
+    if (!noteSpelling) {
+        return noteSpellingResult.preferSharps ? numberToNoteNameSharp[i % 12] : numberToNoteNameFlat[i % 12];
+    }
+
+    if (noteSpelling.accidentalNum >= 0) {
+        return numberToNoteNameSharp[i % 12] ?? "?";
     } else {
-        return numberToNoteNameFlat[i % 12];
+        return numberToNoteNameFlat[i % 12] ?? "?";
     }
-
-
-    if (!activeNotes.has(i)) {
-        return numberToNoteNameSharp[i] ?? "?";
-    }
-    // There's probably a better way to do this
-    // console.log(numberToNoteNameSharp[i], (i+10)%12>=0, activeNotes.has((i+10)%12), numberToNoteNameSharp[(i+11)%12].charAt(0) === numberToNoteNameSharp[i].charAt(0))
-    if (activeNotes.has(i - 1) || ((i + 10) % 12 >= 0 && getNoteName((i + 10) % 12, activeNotes).charAt(0) === numberToNoteNameSharp[i].charAt(0))) {
-        return numberToNoteNameFlat[i] ?? "?";
-    }
-    return numberToNoteNameSharp[i] ?? "?";
 }
 
 // Convention for note names:
@@ -75,8 +94,18 @@ type NotenameAssignment = {
     nameIdx: number;
     accidentalNum: number;
 };
+type NoteSpellingResult = {
+    spelling: Map<number, NotenameAssignment>;
+    preferSharps: boolean;
+};
 
-function getNoteSpelling(notes: number[]) {
+export function useNoteSpelling(notes: Set<number>) {
+    return React.useMemo(() => {
+        return getNoteSpelling(Array.from(notes));
+    }, [notes]);
+}
+
+function getNoteSpelling(notes: number[]): NoteSpellingResult {
 
     notes = notes.map(note => normalizeToSingleOctave(note))
     // let noteToNotenameWithAccidental: NotenameAssignment[] = new Array(notes.length).fill({ nameIdx: -1, accidentalNum: 0 });
@@ -148,7 +177,7 @@ function getNoteSpelling(notes: number[]) {
 
     if (numNotesAssigned >= notes.length) {
         console.log("Early out after first pass")
-        return noteToNotenameWithAccidental;
+        return { spelling: noteToNotenameWithAccidental, preferSharps: sharpnumMinusFlatnum > 0 };
     }
 
     console.log("one way restrictions")
@@ -156,7 +185,7 @@ function getNoteSpelling(notes: number[]) {
 
     if (numNotesAssigned >= notes.length) {
         console.log("early out after one way restrictions")
-        return noteToNotenameWithAccidental;
+        return { spelling: noteToNotenameWithAccidental, preferSharps: sharpnumMinusFlatnum > 0 };
     }
 
     console.log("Second pass")
@@ -193,7 +222,7 @@ function getNoteSpelling(notes: number[]) {
 
     if (numNotesAssigned >= notes.length) {
         console.log("early out after second pass")
-        return noteToNotenameWithAccidental;
+        return { spelling: noteToNotenameWithAccidental, preferSharps: sharpnumMinusFlatnum > 0 };
     }
 
     // Finally, assign the rest based on the amount of sharps and/or flats that we've already assigned
@@ -203,9 +232,18 @@ function getNoteSpelling(notes: number[]) {
             const firstPossibleNoteName = noteToPossibleNoteNames[note][0];
             const secondPossibleNoteName = noteToPossibleNoteNames[note][1];
 
-            // TODO MAKE THIS DEPEND ON NUMSHARPSFLATS
-            const naturalName = firstPossibleNoteName[0];
-            const accidental = firstPossibleNoteName[1];
+            if (sharpnumMinusFlatnum >= 0) {
+                // prefer sharp notes
+                var noteNameToUse = firstPossibleNoteName[1] > secondPossibleNoteName[1] ? firstPossibleNoteName : secondPossibleNoteName;
+            } else {
+                // prefer flat notes
+                noteNameToUse = firstPossibleNoteName[1] > secondPossibleNoteName[1] ? secondPossibleNoteName : firstPossibleNoteName;
+            }
+
+
+
+            const naturalName = noteNameToUse[0];
+            const accidental = noteNameToUse[1];
             noteToNotenameWithAccidental.set(note, { nameIdx: naturalName, accidentalNum: accidental });
             noteNameAssigned[naturalName] = true
             noteAssigned[note] = true;
@@ -215,7 +253,7 @@ function getNoteSpelling(notes: number[]) {
         }
     })
 
-    return noteToNotenameWithAccidental;
+    return { spelling: noteToNotenameWithAccidental, preferSharps: sharpnumMinusFlatnum > 0 };
 }
 
 export function getNoteNum(noteName: string) {

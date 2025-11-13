@@ -3,7 +3,7 @@ import { Group, Rect, Text } from 'react-konva';
 import { WidgetComponentProps } from '../view/Widget';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { useGetActiveNotesInCommonWithModulation, useModulateActiveNotes } from '../sound/HarmonicModulation';
-import { getNoteName } from '../utils/Utils';
+import { useActiveNoteNames } from '../utils/Utils';
 import { NoteChannel, NoteSet, normalizeToSingleOctave, useChannelDisplays, useGetCombinedModdedEmphasis, useHomeNote, useNoteDisplays, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import { useSettings } from '../view/SettingsProvider';
@@ -26,6 +26,7 @@ function DiatonicChordExplorer(props: Props) {
     const setHomeNote = useSetHomeNote();
     const channelDisplays = useChannelDisplays();
     const noteDisplays = useNoteDisplays();
+    const getNoteName = useActiveNoteNames();
 
 
     const modulateActiveNotes = useModulateActiveNotes();
@@ -139,7 +140,7 @@ function DiatonicChordExplorer(props: Props) {
                             }}
                         >
                         </Rect>
-                        <Text text={`${getNoteName(fit.rootNote, activeNotes)} ${fit.shape.name}`} fill={colorPalette.Widget_Primary} width={tileWidth} height={tileHeight} verticalAlign='middle' padding={5} listening={false} fontSize={10} />
+                        <Text text={`${getNoteName(fit.rootNote)} ${fit.shape.name}`} fill={colorPalette.Widget_Primary} width={tileWidth} height={tileHeight} verticalAlign='middle' padding={5} listening={false} fontSize={10} />
 
                         {/* {fitsByNote.map((fit, fitIdx) => {
                         const angle = (idx + fitIdx) * Math.PI * 2 / 12;
@@ -157,7 +158,7 @@ function DiatonicChordExplorer(props: Props) {
             });
         });
         return elems;
-    }, [diatonicFits, romanNumerals, verticalElemOffset, colorPalette.Widget_Primary, colorPalette.UI_Background, tileWidth, tileHeight, fitChannelMap, horrizontalElemOffset, getScaleDegree, activeNotes, updateNotes]);
+    }, [diatonicFits, romanNumerals, verticalElemOffset, colorPalette.Widget_Primary, colorPalette.UI_Background, tileWidth, tileHeight, fitChannelMap, horrizontalElemOffset, getScaleDegree, getNoteName, updateNotes]);
 
 
     ///////////////////

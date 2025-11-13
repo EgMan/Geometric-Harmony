@@ -6,7 +6,7 @@ import { midiNoteToProgramNote } from './MIDIInterface';
 import { WebMidi } from 'webmidi';
 import { useSetActiveShape } from './HarmonicModulation';
 import { SCALE_NATURAL } from '../utils/KnownHarmonicShapes';
-import { getNote, getNoteMIDI, getNoteName } from '../utils/Utils';
+import { getNote, getNoteMIDI, useActiveNoteNames } from '../utils/Utils';
 import { useSettings } from '../view/SettingsProvider';
 import { useSynth, useSynthDrum } from './SoundEngine';
 import * as Tone from 'tone';
@@ -84,6 +84,7 @@ export function MidiFileParser(props: Props) {
     const [loadedFileName, setLoadedFilename] = loadedFileNameState;
     const settings = useSettings();
     const { colorPalette } = useAppTheme()!;
+    const getNoteName = useActiveNoteNames();
 
     const setActiveShape = useSetActiveShape();
     const setHomeNote = useSetHomeNote();
@@ -233,7 +234,7 @@ export function MidiFileParser(props: Props) {
                     const keysig = [11, 6, 1, 8, 3, 10, 5, 0, 7, 2, 9, 4][(event as MidiKeySignatureEvent).key + 7];
                     if (keysig !== undefined) {
                         setActiveShape(SCALE_NATURAL, keysig);
-                        console.log("KEY SIG", track, (event as MidiKeySignatureEvent).key, getNoteName(keysig, new Set()), (event as MidiKeySignatureEvent).scale);
+                        console.log("KEY SIG", track, (event as MidiKeySignatureEvent).key, getNoteName(keysig), (event as MidiKeySignatureEvent).scale);
                     }
                     else {
                         console.warn("Unsupported key signerature", (event as MidiKeySignatureEvent).key);
@@ -294,7 +295,7 @@ export function MidiFileParser(props: Props) {
         }
 
         totalPendingScheduled.current++;
-    }, [audioCtx.currentTime, midiEventTrackers, setActiveShape, setHomeNote, settings?.prioritizeMIDIAudio, stateContext.midiChannelTrackers, stateContext.midiEventTrackers, synth, synthDrum, totalPendingScheduled, updateNotes]);
+    }, [audioCtx.currentTime, getNoteName, midiEventTrackers, setActiveShape, setHomeNote, settings?.prioritizeMIDIAudio, stateContext.midiChannelTrackers, stateContext.midiEventTrackers, synth, synthDrum, totalPendingScheduled, updateNotes]);
 
     // var lastTime = (audioCtx.currentTime * 1000);
     const tickWithDrift = React.useCallback(() => {

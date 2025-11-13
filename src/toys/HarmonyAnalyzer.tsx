@@ -1,7 +1,7 @@
 import React from "react";
 import { Group, Text } from 'react-konva';
 import { CHORD_AUGMENTEDTRIAD, CHORD_DIMINISHEDTRIAD, CHORD_DOMINANT7, CHORD_MAJOR7_OMIT5, CHORD_MAJORTRIAD, CHORD_MINOR7_OMIT5, CHORD_MINORTRIAD, CHORD_SUS4_TRIAD, HarmonicShape, SCALE_CHROMATIC, ShapeType, knownShapes } from "../utils/KnownHarmonicShapes";
-import { blendColors, changeLightness, getNoteName } from "../utils/Utils";
+import { blendColors, changeLightness, getNoteName_DEPRECATED, useActiveNoteNames } from "../utils/Utils";
 import { NoteSet, normalizeToSingleOctave, useChannelDisplays, useGetCombinedModdedEmphasis, useHomeNote, useNoteSet, useNotesOfType, useSetHomeNote } from "../sound/NoteProvider";
 import { WidgetComponentProps } from "../view/Widget";
 import SettingsMenuOverlay from "../view/SettingsMenuOverlay";
@@ -21,6 +21,7 @@ function HarmonyAnalyzer(props: Props) {
     const emphasizedNotes = useGetCombinedModdedEmphasis();
     const homeNote = useHomeNote();
     const channelDisplays = useChannelDisplays();
+    const getNoteName = useActiveNoteNames();
 
     const activeExactFits = useGetAllExactFits(activeNotes);
     const activeExactFit = activeExactFits[0];
@@ -82,19 +83,19 @@ function HarmonyAnalyzer(props: Props) {
 
     const getInfoText = React.useCallback((note: number) => {
         // No exact fit, so display the note name
-        if (activeExactFit === null || activeExactFit === undefined) return getNoteName(note, activeNotes);
+        if (activeExactFit === null || activeExactFit === undefined) return getNoteName(note);
 
         if (homeNote == null) {
             if (emphasizedNotes.size === 1) {
                 return getNoteNameInExactFitShape(activeNotes, note, activeExactFit) ?? '?';
             }
-            return getNoteName(note, activeNotes);
+            return getNoteName(note);
         }
         const scaleDegree = getScaleDegree(homeNote + activeExactFit.noteToFirstNoteInShapeIdxOffset, note + activeExactFit.noteToFirstNoteInShapeIdxOffset, activeExactFit.shape);
-        return `${getNoteName(note, activeNotes)}${scaleDegree > 0 ? `°${scaleDegree}` : ""}`;
+        return `${getNoteName(note)}${scaleDegree > 0 ? `°${scaleDegree}` : ""}`;
 
         // return `${exactFit.shape.name}`;
-    }, [activeExactFit, activeNotes, emphasizedNotes.size, homeNote]);
+    }, [activeExactFit, activeNotes, emphasizedNotes.size, getNoteName, homeNote]);
 
 
     const infoTextElems = React.useMemo(() => {
@@ -163,7 +164,7 @@ function HarmonyAnalyzer(props: Props) {
         return infos.filter(info => info.text !== "").map((info) => {
             return (<Text key={`info${info.text}${idx++}`} text={info.text} x={0} y={textelemoffset * (idx) + infosYOffset} fontSize={infosFontSize} fontFamily='monospace' fill={info.color} align="center" width={props.width} />);
         });
-    }, [activeExactFit, activeExactFitName, channelDisplays, channelDisplaysExactFits, colorPalette.Widget_Primary, emphasizedNotes, getInfoText, getNoteNameInExactFitShape, homeNote, inputNotes, midiFileExactFit, props.width, showMidiFileCombined, showWhite, showYellow]);
+    }, [activeExactFit, activeExactFitName, activeNotes, channelDisplays, channelDisplaysExactFits, colorPalette.Widget_Primary, emphasizedNotes, getInfoText, homeNote, inputNotes, midiFileExactFit, props.width, showMidiFileCombined, showWhite, showYellow]);
 
     const fullRender = React.useMemo((
     ) => {
@@ -501,11 +502,11 @@ export function useChannelDisplaysExactFits() {
 }
 
 export const getNoteNameInExactFitShape = (notes: Set<number>, note: number, exactFit: ExactFit) => {
-    if (exactFit === null || exactFit === undefined) return getNoteName(note, notes);
+    if (exactFit === null || exactFit === undefined) return getNoteName_DEPRECATED(note, notes);
     let shapeIdx = normalizeToSingleOctave(note + exactFit.noteToFirstNoteInShapeIdxOffset);
     // if (shapeIdx < 0) shapeIdx += props.subdivisionCount;
-    if (shapeIdx >= exactFit.shape.notes.length || shapeIdx < 0 || !exactFit.shape.notes[shapeIdx][0]) return getNoteName(note, notes);
-    return `${getNoteName(maybeModulateNoteFromShapeType(note, shapeIdx, exactFit.shape), notes)} ${getModeNameInShape(shapeIdx, exactFit.shape)}`;
+    if (shapeIdx >= exactFit.shape.notes.length || shapeIdx < 0 || !exactFit.shape.notes[shapeIdx][0]) return getNoteName_DEPRECATED(note, notes);
+    return `${getNoteName_DEPRECATED(maybeModulateNoteFromShapeType(note, shapeIdx, exactFit.shape), notes)} ${getModeNameInShape(shapeIdx, exactFit.shape)}`;
 };
 
 export default HarmonyAnalyzer;

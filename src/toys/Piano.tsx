@@ -2,7 +2,7 @@ import React from 'react';
 import { Circle, Group, Rect, Shape, Text } from 'react-konva';
 import { WidgetComponentProps } from '../view/Widget';
 import { MenuItem, Select, Switch } from '@mui/material';
-import { getIntervalColor, getIntervalDistance, getNoteName } from '../utils/Utils';
+import { getIntervalColor, getIntervalDistance, useActiveNoteNames } from '../utils/Utils';
 import { NoteSet, normalizeToSingleOctave, useChannelDisplays, useGetCombinedModdedEmphasis, useHomeNote, useNoteDisplays, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
 import { KonvaEventObject } from 'konva/lib/Node';
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
@@ -117,6 +117,7 @@ function Piano(props: Props) {
     ];
 
     const activeNotes = useNoteSet(NoteSet.Active).notes;
+    const getNoteName = useActiveNoteNames();
     const combinedEmphasis = useGetCombinedModdedEmphasis();
     const emphasizedNotesOctaveGnostic = useNoteSet(NoteSet.Emphasized_OctaveGnostic).notes;
     // const checkEmphasis = useCheckNoteEmphasis();
@@ -296,7 +297,7 @@ function Piano(props: Props) {
                             height={40}
                             x={noteprops.xpos + noteprops.individualActiveIndicaterOffset - 20}
                             y={noteprops.activeIndicatorY - 20}
-                            text={getNoteName(note, activeNotes)}
+                            text={getNoteName(note)}
                             fontSize={12}
                             fontFamily='monospace'
                             fill={nameColor}
@@ -314,7 +315,7 @@ function Piano(props: Props) {
             emphasized,
             clickListenersArr,
         };
-    }, [activeNotes, colorPalette.Note_Active, colorPalette.Note_Home, getAbsoluteNoteNum, getPropsForNote, homeNote, noteDisplays.normalized, noteDisplays.octaveGnostic, octaveCount, setHomeNote, settings?.isPeaceModeEnabled, showGhostOctaves, showNoteNames, updateNotes]);
+    }, [activeNotes, colorPalette.Note_Active, colorPalette.Note_Home, getAbsoluteNoteNum, getNoteName, getPropsForNote, homeNote, noteDisplays.normalized, noteDisplays.octaveGnostic, octaveCount, setHomeNote, settings?.isPeaceModeEnabled, showGhostOctaves, showNoteNames, updateNotes]);
 
     const intervals = React.useMemo(() => {
         var intervalLines: JSX.Element[] = [];

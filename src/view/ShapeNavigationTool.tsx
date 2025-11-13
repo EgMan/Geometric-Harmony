@@ -1,6 +1,6 @@
 import React from "react";
 import { HarmonicShape, SCALE_NATURAL, ShapeType, knownShapes } from "../utils/KnownHarmonicShapes";
-import { getNoteName, getNoteNum } from "../utils/Utils";
+import { getNoteNum, useActiveNoteNames } from "../utils/Utils";
 import { NoteSet, normalizeToSingleOctave, useHomeNote, useNoteSet, useSetHomeNote } from "../sound/NoteProvider";
 import { MenuItem, FormGroup, Select, Autocomplete, TextField, ThemeProvider, styled, InputAdornment, } from "@mui/material";
 import { useSetActiveShape } from "../sound/HarmonicModulation";
@@ -50,6 +50,7 @@ function ShapeNavigationTool(props: Props) {
 
     const activeNotes = useNoteSet(NoteSet.Active).notes;
     const homeNote = useHomeNote();
+    const getNoteName = useActiveNoteNames();
 
     const activeExactFits = useGetAllExactFits(activeNotes);
     const activeExactFit = activeExactFits[0];
@@ -108,9 +109,9 @@ function ShapeNavigationTool(props: Props) {
 
     const keySelectors = React.useMemo(() => {
         return [<MenuItem key={'nullSelectorOption'} value={-1}>{""}</MenuItem>].concat(Array.from(Array(12).keys()).map((num, idx) => {
-            return <MenuItem key={`selectorOption${idx}`} value={num}>{getNoteName(num, new Set())}</MenuItem>;
+            return <MenuItem key={`selectorOption${idx}`} value={num}>{getNoteName(num)}</MenuItem>;
         }));
-    }, []);
+    }, [getNoteName]);
 
     const dropdownValue: AutocompleteOptionType | null = React.useMemo(() => {
         if (activeExactFit === null) return null;
