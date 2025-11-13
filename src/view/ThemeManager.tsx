@@ -64,6 +64,7 @@ function ThemeManager(props: Props) {
                                 backdropFilter: 'blur(13px)',
                                 color: colorPalette.UI_Primary,
                                 boxShadow: 'none',
+                                transition: 'color 1.618s ease',
                             },
                         },
                     },
@@ -74,9 +75,11 @@ function ThemeManager(props: Props) {
                                 color: colorPalette.UI_Primary,
                                 backgroundColor: colorPalette.UI_Background,
                                 backdropFilter: 'blur(13px)',
+                                transition: 'color 1.618s ease',
                             },
                             arrow: {
                                 color: colorPalette.UI_Background,
+                                transition: 'color 1.618s ease',
                                 // backgroundColor: colorPalette.UI_Background,
                             }
                         }

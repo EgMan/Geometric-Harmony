@@ -39,6 +39,7 @@
 body {
   /* margin: 0; prevents a double scroll bar */
   background-color: #373737;
+  transition: background-color 1.618s ease;
 }
 
 #stage-scroll-container {
