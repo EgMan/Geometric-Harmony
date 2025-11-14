@@ -256,3 +256,14 @@ a {
   top: 24px !important;
   right: -15.5px !important;
 }
+
+@media (max-width: 70px) {
+  .menu-section {
+    width: 100%;
+    justify-content: left; /* optional */
+  }
+}
+.menu-section {
+  display: flex;
+  height: auto;
+}

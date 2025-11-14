@@ -105,8 +105,12 @@ function ToolBar(props: Props) {
     }, [props.stageRef, addDropdownOpen, settingsDropdownOpen, midiSettingsDropdownOpen, noteBankDropdownOpen]);
 
     return (
-        <div>
-            <div ref={addButtonRef} style={{ position: "fixed", transform: "translate(0, 0px)", zIndex: 1, width: "100vw", backgroundColor: "transparent", borderBottomLeftRadius: "9px", borderBottomRightRadius: "9px", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{
+            display: "flex",
+            flexDirection: "row",
+            flexWrap: "wrap"
+        }}>
+            <div ref={addButtonRef} style={{ position: "fixed", transform: "translate(0, 0px)", zIndex: 1, width: "100vw", backgroundColor: "transparent", borderBottomLeftRadius: "9px", borderBottomRightRadius: "9px", display: "flex", flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ display: "flex" }}>
                     {
                         settings?.isPeaceModeEnabled ? null :
@@ -285,13 +289,13 @@ function ToolBar(props: Props) {
                             </>
                     }
                 </div>
-                <div style={{ display: "flex", height: "auto" }}>
+                <div className='menu-section' style={{ display: "flex", height: "auto" }}>
                     {
                         settings?.isPeaceModeEnabled ? null :
                             <ShapeNavigationTool width={600} subdivisionCount={12} />
                     }
                 </div>
-                <div style={{ display: "flex", height: "auto" }}>
+                <div className='menu-section' style={{ display: "flex", height: "auto" }}>
                     {
                         settings?.isPeaceModeEnabled ? null :
                             <Tooltip title="Love">
@@ -352,7 +356,7 @@ function ToolBar(props: Props) {
                     </Tooltip>
                 </div>
             </div>
-            <div style={{ width: 320, maxWidth: '100%', zIndex: 1 }}>
+            <div className='menu-section' style={{ width: 320, maxWidth: '100%', zIndex: 1, display: 'flex', height: 'auto' }}>
                 <Popover
                     open={addDropdownOpen}
                     onClose={() => setAddDropdownOpen(false)}
