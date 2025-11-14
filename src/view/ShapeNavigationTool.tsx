@@ -134,7 +134,12 @@ function ShapeNavigationTool(props: Props) {
         <div id="shape-tool-div">
             <form onSubmit={evt => { evt.preventDefault() }}>
                 <ThemeProvider theme={muiTheme}>
-                    <FormGroup row sx={{ backgroundColor: 'rgb(255,255,255,0)', borderRadius: '0px' }}>
+                    <FormGroup row sx={{
+                        backgroundColor: 'rgb(255,255,255,0)',
+                        borderRadius: '0px',
+                        display: 'flex',
+                        flexWrap: 'nowrap',
+                    }}>
                         <Select
                             id="explorer-dropdown"
                             value={homeNote ?? -1}

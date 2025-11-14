@@ -116,7 +116,7 @@ function ToolBar(props: Props) {
                         settings?.isPeaceModeEnabled ? null :
                             <>
                                 <Tooltip title="Toys">
-                                    <Button type="submit" variant="contained"
+                                    <Button className="top-nav-button" type="submit" variant="contained"
                                         sx={{
                                             height: "auto",
                                             maxWidth: '66px',
@@ -146,7 +146,7 @@ function ToolBar(props: Props) {
                                     </Button>
                                 </Tooltip>
                                 <Tooltip title="Color">
-                                    <Button type="submit" variant="contained"
+                                    <Button className="top-nav-button" type="submit" variant="contained"
                                         sx={{
                                             height: "auto",
                                             maxWidth: '66px',
@@ -197,7 +197,7 @@ function ToolBar(props: Props) {
                                     </Button>
                                 </Tooltip>
                                 <Tooltip title="Sound">
-                                    <Button type="submit" variant="contained"
+                                    <Button className="top-nav-button" type="submit" variant="contained"
                                         sx={{
                                             height: "auto",
                                             maxWidth: '66px',
@@ -227,7 +227,7 @@ function ToolBar(props: Props) {
                                     </Button>
                                 </Tooltip>
                                 <Tooltip title="MIDI">
-                                    <Button type="submit" variant="contained"
+                                    <Button className="top-nav-button" type="submit" variant="contained"
                                         sx={{
                                             height: "34px",
                                             maxWidth: '66px',
@@ -257,7 +257,7 @@ function ToolBar(props: Props) {
                                     </Button>
                                 </Tooltip>
                                 <Tooltip title="Quick Swap">
-                                    <Button type="submit" variant="contained"
+                                    <Button className="top-nav-button" type="submit" variant="contained"
                                         sx={{
                                             height: "34px",
                                             maxWidth: '66px',
@@ -299,7 +299,7 @@ function ToolBar(props: Props) {
                     {
                         settings?.isPeaceModeEnabled ? null :
                             <Tooltip title="Love">
-                                <Button type="submit" variant="contained"
+                                <Button className="top-nav-button" type="submit" variant="contained"
                                     onClick={() => props.setIsHeartModalOpen(enabled => !enabled)}
                                     sx={{
                                         maxWidth: '66px',
@@ -328,7 +328,7 @@ function ToolBar(props: Props) {
                             </Tooltip>
                     }
                     <Tooltip title="Peace">
-                        <Button type="submit" variant="contained"
+                        <Button className="top-nav-button" type="submit" variant="contained"
                             onClick={() => settings?.setIsPeaceModeEnabled(enabled => !enabled)}
                             sx={{
                                 maxWidth: '66px',
