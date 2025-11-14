@@ -111,7 +111,7 @@ function ToolBar(props: Props) {
             flexWrap: "wrap"
         }}>
             <div ref={addButtonRef} style={{ position: "fixed", transform: "translate(0, 0px)", zIndex: 1, width: "100vw", backgroundColor: "transparent", borderBottomLeftRadius: "9px", borderBottomRightRadius: "9px", display: "flex", flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ display: "flex" }}>
+                <div className="nav-left" style={{ display: "flex" }}>
                     {
                         settings?.isPeaceModeEnabled ? null :
                             <>
@@ -289,13 +289,13 @@ function ToolBar(props: Props) {
                             </>
                     }
                 </div>
-                <div className='menu-section' style={{ display: "flex", height: "auto" }}>
+                <div className='nav-middle menu-section' style={{ display: "flex", height: "auto" }}>
                     {
                         settings?.isPeaceModeEnabled ? null :
                             <ShapeNavigationTool width={600} subdivisionCount={12} />
                     }
                 </div>
-                <div className='menu-section' style={{ display: "flex", height: "auto" }}>
+                <div className='nav-right menu-section' style={{ display: "flex", height: "auto" }}>
                     {
                         settings?.isPeaceModeEnabled ? null :
                             <Tooltip title="Love">

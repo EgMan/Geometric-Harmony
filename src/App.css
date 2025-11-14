@@ -267,3 +267,13 @@ a {
   display: flex;
   height: auto;
 }
+
+.nav-left   { order: 1; }
+.nav-middle { order: 2; }
+.nav-right  { order: 3; }
+
+@media (max-width: 700px) {
+  .nav-left   { order: 1; }
+  .nav-right  { order: 2; }  /* goes up */
+  .nav-middle { order: 3; }  /* goes down */
+}
