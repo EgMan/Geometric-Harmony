@@ -15,6 +15,9 @@ function App() {
     setWindowHeight(window.innerHeight)
   }
   React.useEffect(() => {
+    window.addEventListener('scroll', () => {
+      console.log('scrolled!');
+    });
     window.addEventListener('resize', setWindowDimensions);
     return () => {
       window.removeEventListener('resize', setWindowDimensions)

@@ -7,7 +7,6 @@ import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import { addVectors, setPointer, useShadowVector } from "../utils/Utils";
 import { WidgetConfig, WidgetTracker, WidgetTrackerActions } from "./ViewManager";
-import { SCROLL_PADDING, getCurrentSpace, useGotoSpaceRateLimited } from "../utils/SpacesUtils";
 import { useHTMLOverlay } from "./HTMLOverlayProvider";
 
 export type WidgetComponentProps = {
@@ -74,8 +73,6 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
 
     const contextMenuRef = React.useRef<Konva.Group>(null);
     const widgetRef = React.useRef<Konva.Group>(null);
-
-    const gotoSpaceRateLimited = useGotoSpaceRateLimited();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const [initialWidth, initialHeight] = React.useMemo(() => [otherProps.width ?? 1, otherProps.height ?? 1], []);
@@ -188,33 +185,16 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
             var pointerPos = stage.getPointerPosition();
 
             if (pointerPos !== null) {
-                // Spaces logic
-                const { row, col } = getCurrentSpace();
-
                 const stagePos = stage.getAbsolutePosition();
-                const minY = CONSTRAIN_DRAG_FROM_TOP + stagePos.y + (row * window.innerHeight);
-                const maxY = window.innerHeight - CONSTRAIN_DRAG_FROM_BOTTOM + stagePos.y + (row * window.innerHeight);
-                const minX = CONSTRAIN_DRAG_FROM_SIDES + stagePos.x + (col * window.innerWidth);
-                const maxX = window.innerWidth - CONSTRAIN_DRAG_FROM_SIDES + stagePos.x + (col * window.innerWidth);
+                const minY = CONSTRAIN_DRAG_FROM_TOP + stagePos.y;
+                const maxY = window.innerHeight - CONSTRAIN_DRAG_FROM_BOTTOM + stagePos.y;
+                const minX = CONSTRAIN_DRAG_FROM_SIDES + stagePos.x;
+                const maxX = window.innerWidth - CONSTRAIN_DRAG_FROM_SIDES + stagePos.x;
                 event.target.setAbsolutePosition({ x: Math.min(Math.max(pointerPos.x - horrizontalOffsetFromResizing, minX), maxX), y: Math.min(Math.max(pointerPos.y, minY) - verticalOffsetFromResizing, maxY) });
-
-                if (pointerPos.y > maxY) {
-                    gotoSpaceRateLimited(row + 1, col);
-                }
-                if (pointerPos.y < minY) {
-                    console.log("gotoSpaceRateLimited", row - 1, col);
-                    gotoSpaceRateLimited(row - 1, col);
-                }
-                if (pointerPos.x > maxX) {
-                    gotoSpaceRateLimited(row, col + 1);
-                }
-                if (pointerPos.x < minX) {
-                    gotoSpaceRateLimited(row, col - 1);
-                }
             }
         }
         setDraggedPosition(event.currentTarget.position());
-    }, [gotoSpaceRateLimited, horrizontalOffsetFromResizing, setDraggedPosition, verticalOffsetFromResizing]);
+    }, [horrizontalOffsetFromResizing, setDraggedPosition, verticalOffsetFromResizing]);
 
     const onDragEnd = React.useCallback((event: KonvaEventObject<DragEvent>) => {
         setDragComplete?.({ x: event.currentTarget.x() + initialPosition.x, y: event.currentTarget.y() + initialPosition.y });

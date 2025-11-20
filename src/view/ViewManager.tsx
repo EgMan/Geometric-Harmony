@@ -11,7 +11,6 @@ import Konva from "konva";
 import { Shape } from "konva/lib/Shape";
 import Tonnetz from "../toys/Tonnetz";
 import ToolBar from "./ToolBar";
-import { SCROLL_PADDING, realignSpaces } from "../utils/SpacesUtils";
 import PlayTheShapeGame from "../toys/PlayTheShapeGame";
 import Oscilloscope from "../toys/Oscilloscope";
 import FrequencyVisualizer from "../toys/FrequencyVisualizer";
@@ -543,65 +542,29 @@ function ViewManager(props: Props) {
 
     const stageRef = React.useRef<Konva.Stage>(null);
 
-    const timeout = React.useRef<number | null>(null);
-
-    const onContainerScroll = React.useCallback(() => {
-        var scrollContainer = document.getElementById('stage-scroll-container');
-        var stageContainer = document.getElementById('stage-container');
-        if (scrollContainer && stageContainer) {
-            var dx = scrollContainer.scrollLeft - SCROLL_PADDING;
-            var dy = scrollContainer.scrollTop - SCROLL_PADDING;
-            stageContainer.style.transform = 'translate(' + dx + 'px, ' + dy + 'px)';
-            stageRef.current?.position({ x: -dx, y: -dy });
-        }
-
-        // If it has been 750ms since the last scroll event, realign the spaces
-        if (timeout.current !== null) {
-            window.clearTimeout(timeout.current);
-        }
-        timeout.current = window.setTimeout(function () {
-            realignSpaces();
-        }, 750)
-    }, []);
-
-    React.useEffect(() => {
-        realignSpaces();
-    }, []);
-
     const onContainerFocus: React.FocusEventHandler<HTMLDivElement> = React.useCallback((event) => {
         event.currentTarget.blur();
     }, []);
 
     return (
-        <div>
+        <div className="container-div" onFocus={onContainerFocus}>
             <ToolBar widgetTrackerActions={trackerActions} stageRef={stageRef} setIsHeartModalOpen={setIsHeartModalOpen} />
-            <div id="stage-scroll-container" onScroll={onContainerScroll} onFocus={onContainerFocus}>
-                <div id="spaces-container">
-                    <div className="desktop-space space1" >
-                        <div id="stage-container">
-                            <Stage
-                                ref={stageRef}
-                                width={props.width + SCROLL_PADDING * 2}
-                                height={props.height + SCROLL_PADDING * 2}
-                                onContextMenu={(e) => { e.evt.preventDefault() }}
-                                onMouseMove={handleMouseMove}
-                                onTouchStart={handleTouchStart}
-                                onTouchMove={handleTouchMove}
-                                onTouchEnd={handleTouchEnd}
-                            >
-                                <Layer>
-                                    <BackPlate width={props.width} height={props.height} />
-                                    <HeartModal isOpen={isHeartModalOpen} setIsOpen={setIsHeartModalOpen} />
-                                    {widgetElements}
-                                </Layer>
-                            </Stage>
-                        </div>
-                    </div>
-                    <div className="desktop-space space2" />
-                    <div className="desktop-space space3" />
-                    <div className="desktop-space space4" />
-                </div>
-            </div>
+            <Stage
+                ref={stageRef}
+                width={props.width}
+                height={props.height}
+                onContextMenu={(e) => { e.evt.preventDefault() }}
+                onMouseMove={handleMouseMove}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+            >
+                <Layer>
+                    <BackPlate width={props.width} height={props.height} />
+                    <HeartModal isOpen={isHeartModalOpen} setIsOpen={setIsHeartModalOpen} />
+                    {widgetElements}
+                </Layer>
+            </Stage>
         </div>
     );
 }

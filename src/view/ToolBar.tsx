@@ -3,7 +3,6 @@ import { Button, ClickAwayListener, ListItemIcon, ListItemText, DialogTitle, Men
 import ShapeNavigationTool from "./ShapeNavigationTool";
 import { WidgetConfig, WidgetTrackerActions, WidgetType } from "./ViewManager";
 import { Stage } from "konva/lib/Stage";
-import { getCurrentSpace } from "../utils/SpacesUtils";
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
@@ -53,8 +52,7 @@ function ToolBar(props: Props) {
     const [noteBankDropdownOpen, setNoteBankDropdownOpen] = React.useState(false);
     const addNewWidget = React.useCallback((widgetType: WidgetType, config?: WidgetConfig) => {
         // const pos = props.stageRef.current?.getPointerPosition() ?? undefined;
-        const space = getCurrentSpace();
-        const pos = { x: (space.col + 0.5) * window.innerWidth, y: (space.row + 0.25) * window.innerHeight };
+        const pos = { x: 0.5 * window.innerWidth, y: 0.25 * window.innerHeight };
         props.widgetTrackerActions.spawnWidget(widgetType, pos, config);
         setAddDropdownOpen(false);
     }, [props.widgetTrackerActions]);

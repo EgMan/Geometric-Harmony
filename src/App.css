@@ -1,4 +1,5 @@
 .App {
+  /* height: 100%; */
   text-align: center;
 }
 
@@ -14,7 +15,7 @@
 }
 
 .App-header {
-  min-height: 100vh;
+  /* height: 100%; */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -42,61 +43,25 @@ body {
   transition: background-color 1.618s ease;
 }
 
-#stage-scroll-container {
-  width: calc(100vw);
-  height: calc(100vh);
-  overflow: auto;
-  /* scrollbar-color: light; */
-  overflow: scroll;
-
-  scroll-snap-type: both mandatory;
-
-/* Hide scrollbar for IE, Edge and Firefox */
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
-}
-
-/* Hide scrollbar for Chrome, Safari and Opera */
-#stage-scroll-container::-webkit-scrollbar {
-  display: none;
-}
-
-#stage-large-container {
-  width: 200vw;
-  height: 200vh;
-  overflow: hidden;
-  /* scroll-snap-align: start; */
-  /* background: linear-gradient(45deg, #4d0000, #0a0048); */
-  background-color: #373737;
-}
-
-#spaces-container {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-}
-
-.desktop-space {
-  width: 100vw;
-  height: 100vh;
-  scroll-snap-align: center;
-}
-
-.space1 {
-  border-right: 1px dashed #ffffff48;
-}
-.space2 {
-  border-bottom: 1px dashed #ffffff48;
-}
-.space3 {
-  border-top: 1px dashed #ffffff48;
-}
-.space4 {
-  border-left: 1px dashed #ffffff48;
-}
-
+/* Uncomment for dom debugging
 /* * {
-  outline: 1px solid red;
-} */
+  outline: 1px solid red !important;
+  border: 2px solid green;
+}  */
+
+ html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+#root {
+  height: 100%;
+} 
+
+/* Make your App and header fill the viewport too */
+
 
 #overlay {
   position: fixed;
