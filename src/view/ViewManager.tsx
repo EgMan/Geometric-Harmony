@@ -366,7 +366,8 @@ function ViewManager(props: Props) {
                     contextMenuOffset={{ x: pianoWidth / 2, y: -20 }}
                     width={pianoWidth}
                     height={pianoHeight}
-                    octaveCount={pianoOctaveCount} />
+                    octaveCount={pianoOctaveCount}
+                    octaveOffset={limitingAxisIsHeight ? -2 : 0} />
             case WidgetType.Wheel:
                 return <Widget of={Wheel}
                     layout={{ displayName: "Wheel" }}
