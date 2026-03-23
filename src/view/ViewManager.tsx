@@ -20,6 +20,7 @@ import Wireframe from "../toys/Wireframe";
 import Icosahedron from "../toys/Icosahedron";
 import Spiral from "../toys/Spiral";
 import DiatonicChordExplorer from "../toys/DiatonicChordExplorer";
+import MicPitch, { WidgetConfig_MicPitch } from "../toys/MicPitch";
 
 export type WidgetTracker<T extends WidgetConfig = WidgetConfig> = {
     type: WidgetType,
@@ -64,6 +65,7 @@ export enum WidgetType {
     Icosahedron,
     Spiral,
     DiatonicExplorer,
+    MicPitch,
 }
 
 export const widgetNameByType = (type: WidgetType) => {
@@ -88,6 +90,8 @@ export const widgetNameByType = (type: WidgetType) => {
             return "Icosahedron";
         case WidgetType.DiatonicExplorer:
             return "DiatonicExplorer";
+        case WidgetType.MicPitch:
+            return "Tuner";
     }
 }
 
@@ -227,7 +231,9 @@ function ViewManager(props: Props) {
 
     const spawnWidget = React.useCallback((type: WidgetType, position?: Vector2d, config?: WidgetConfig) => {
         console.log("Spawning widget of type:", type, config);
-        config = config ?? WidgetConfig_Default;
+        if (config === undefined) {
+            config = type === WidgetType.MicPitch ? WidgetConfig_MicPitch : WidgetConfig_Default;
+        }
         const newUid = genUID();
         const newWidget: WidgetTracker = {
             type: type,
@@ -534,6 +540,21 @@ function ViewManager(props: Props) {
                     contextMenuOffset={{ x: wheelRadius, y: -20 }}
                     width={wheelRadius * 2}
                     height={wheelRadius * 2} />
+            case WidgetType.MicPitch:
+                return <Widget of={MicPitch}
+                    layout={{ displayName: "Tuner" }}
+                    uid={uid}
+                    actions={trackerActions}
+                    tracker={widget}
+                    key={`${uid}`}
+                    isPeaceModeEnabled={isPeaceModeEnabled}
+                    isMaxamized={widget.isMaxamized ?? true}
+                    initialPosition={widget.initialPosition}
+                    draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
+                    setDraggedPosition={setDraggedPosition(uid)}
+                    contextMenuOffset={{ x: 100, y: -20 }}
+                    width={200}
+                    height={150} />
         }
     }, [guitarHeight, isPeaceModeEnabled, pianoHeight, pianoOctaveCount, pianoWidth, props.width, setDraggedPosition, trackerActions, wheelRadius])
 

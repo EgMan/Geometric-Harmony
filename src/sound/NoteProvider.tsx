@@ -17,6 +17,7 @@ export enum NoteSet {
     KeypressInput = "KeypressInput",
     PlayingInput = "PlayingInput",
     MIDIFileInput = "MidiFileInput",
+    MicPitchInput = "MicPitchInput",
 }
 
 export type NoteChannel = {

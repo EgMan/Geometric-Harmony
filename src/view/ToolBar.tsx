@@ -23,6 +23,7 @@ import { MidiFileDataProvider, MidiFileParser } from "../sound/MidiFileParser";
 import { LocalSynthVoice } from "../sound/SynthVoicings";
 import DensityMediumRoundedIcon from '@mui/icons-material/DensityMediumRounded';
 import MIDIConnectionManager from "../sound/MIDIConnectionManager";
+import MicIcon from '@mui/icons-material/Mic';
 import { useAppTheme, useChangeAppTheme } from "./ThemeManager";
 import { blendColors, changeLightness, getRandomColor, getRandomColorWithAlpha } from "../utils/Utils";
 import VolumeSlider from "../sound/VolumeSlider";
@@ -466,6 +467,12 @@ function ToolBar(props: Props) {
                                         <VideogameAssetIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                     </ListItemIcon>
                                     <ListItemText>Chord Game</ListItemText>
+                                </MenuItem>
+                                <MenuItem onClick={() => addNewWidget(WidgetType.MicPitch)}>
+                                    <ListItemIcon>
+                                        <MicIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                    </ListItemIcon>
+                                    <ListItemText>Tuner</ListItemText>
                                 </MenuItem>
                             </MenuList>
                         </ClickAwayListener>

@@ -7,7 +7,6 @@ import { Input, NoteMessageEvent, WebMidi } from "webmidi";
 import * as Tone from 'tone';
 import { useSettings } from '../view/SettingsProvider';
 import { useSynthDrumFromSettings, useSynthVoiceFromSettings } from './SynthVoicings';
-
 export type SpeakerSoundType = "AMSynth";
 
 const synthContext = React.createContext<Tone.PolySynth | null>(null);
