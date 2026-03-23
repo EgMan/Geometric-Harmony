@@ -17,7 +17,7 @@ export const WidgetConfig_MicPitch: MicPitchConfig = {
     type: "micpitch",
     displayName: "Tuner",
     snapToScale: false,
-    playAudio: true,
+    playAudio: false,
 };
 
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
