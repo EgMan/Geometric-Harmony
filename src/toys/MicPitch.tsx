@@ -118,7 +118,7 @@ function MicPitch(props: Props) {
             ? new Set([NoteSet.PlayingInput])
             : new Set([NoteSet.MicPitchInput]);
 
-        updateNotes(NoteSet.MicPitchInput, effectiveMidi !== null ? [effectiveMidi] : [], true, true, types, MIC_GREEN);
+        updateNotes(NoteSet.MicPitchInput, effectiveMidi !== null ? [effectiveMidi - 48] : [], true, true, types, MIC_GREEN);
     }, [effectiveMidi, playAudio, updateNotes]);
 
     // Cleanup channel on unmount
