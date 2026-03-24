@@ -66,6 +66,17 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
         overlayProvider?.setMouseTooltip("");
         setFullContextMenuOpenRaw(val);
     }, [overlayProvider]);
+
+    // Allows context window to close on mobile
+    React.useEffect(() => {
+        if (!fullContextMenuOpen) return;
+        const close = () => setFullContextMenuOpen(false);
+        const timer = setTimeout(() => document.addEventListener('touchstart', close), 0);
+        return () => {
+            clearTimeout(timer);
+            document.removeEventListener('touchstart', close);
+        };
+    }, [fullContextMenuOpen, setFullContextMenuOpen]);
     const fullContextMenuProps = useSpring({ opacity: fullContextMenuOpen ? 1 : 0, scaleX: fullContextMenuOpen ? 1 : 0.8, scaleY: fullContextMenuOpen ? 1 : 0.8 });
 
     const [resizeMenuOpen, setResizeMenuOpen] = React.useState(false);
