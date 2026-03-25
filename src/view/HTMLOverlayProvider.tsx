@@ -14,6 +14,21 @@ const overlayContext = React.createContext<HTMLOverlayElems | null>(null);
 
 function HTMLOverlayProvider(props: Props) {
     const [mouseTooltip, setMouseTooltip] = React.useState("");
+    const divRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        const handleTouchMove = (e: TouchEvent) => {
+            const touch = e.touches[0];
+            if (!touch || !divRef.current) return;
+            divRef.current.dispatchEvent(new MouseEvent('mousemove', {
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                bubbles: true,
+            }));
+        };
+        document.addEventListener('touchmove', handleTouchMove, { passive: true });
+        return () => document.removeEventListener('touchmove', handleTouchMove);
+    }, []);
 
     const overlayElems = React.useMemo(() => ({
         mouseTooltip,
@@ -35,7 +50,7 @@ function HTMLOverlayProvider(props: Props) {
                 }}
             >
                 {/* {props.children} */}
-                <div>
+                <div ref={divRef}>
                     {props.children}
                 </div>
             </Tooltip>
