@@ -457,7 +457,19 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                                     opacity={0}
                                     onMouseEnter={() => { setMainButtonHover(true) }}
                                     onMouseLeave={() => { setMainButtonHover(false) }}
-                                    onTouchStart={mainButtonAttr.onSelect}
+                                    onTouchStart={(e) => {
+                                        const touch = e.evt.touches[0];
+                                        if (!touch) return;
+                                        e.currentTarget.getStage()?.container().dispatchEvent(new MouseEvent('mousemove', {
+                                            clientX: touch.clientX,
+                                            clientY: touch.clientY,
+                                            bubbles: true,
+                                        }));
+                                        mainButtonAttr.onSelect();
+                                    }}
+                                    onTouchEnd={() => {
+                                        setMainButtonHover(false);
+                                    }}
                                     onClick={mainButtonAttr.onSelect}
                                     onContextMenu={(e) => { setIsSettingsOverlayVisible(true); e.currentTarget.preventDefault() }} />
                                 <animated.Text
