@@ -151,10 +151,11 @@ function Wireframe(props: Props) {
     const lastTime = React.useRef<number>(Date.now());
 
     const rotateWireframe = React.useCallback(() => {
+        const now = Date.now();
+        const deltaT = (now - lastTime.current) / 1000;
+        lastTime.current = now;
         // Only auto-rotate if not being dragged
         if (dragStart.current === null) {
-            const deltaT = (Date.now() - lastTime.current) / 1000;
-            lastTime.current = Date.now();
             setOrientation(oldOrientation =>
                 oldOrientation.mul(
                     Quaternion.fromEuler(
