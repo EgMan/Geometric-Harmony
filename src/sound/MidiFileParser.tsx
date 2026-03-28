@@ -35,6 +35,12 @@ type MidiPreprocessedData = {
     tempos: TemposByTrack,
 };
 
+export type TransportState = {
+    isPlaying: boolean,
+    positionMs: number,
+    durationMs: number,
+};
+
 const scheduleAheadMS = 300;
 
 type MidiDataContextType = {
@@ -49,6 +55,16 @@ type MidiDataContextType = {
     loadedFileNameState: [string | null, React.Dispatch<React.SetStateAction<string | null>>],
     totalPendingScheduled: React.MutableRefObject<number>,
     audioCtx: AudioContext,
+    totalDurationMs: React.MutableRefObject<number>,
+    playbackGeneration: React.MutableRefObject<number>,
+    isPaused: React.MutableRefObject<boolean>,
+    pausedAtMs: React.MutableRefObject<number>,
+    transportState: [TransportState, React.Dispatch<React.SetStateAction<TransportState>>],
+    controls: {
+        pause: React.MutableRefObject<() => void>,
+        resume: React.MutableRefObject<() => void>,
+        seekTo: React.MutableRefObject<(ms: number) => void>,
+    },
 };
 const midiDataContext = React.createContext<MidiDataContextType | null>(null);
 type ProviderProps = {
@@ -69,6 +85,16 @@ export function MidiFileDataProvider({ children }: ProviderProps) {
             loadedFileNameState: React.useState<string | null>(null),
             totalPendingScheduled: React.useRef<number>(0),
             audioCtx,
+            totalDurationMs: React.useRef<number>(0),
+            playbackGeneration: React.useRef<number>(0),
+            isPaused: React.useRef<boolean>(false),
+            pausedAtMs: React.useRef<number>(0),
+            transportState: React.useState<TransportState>({ isPlaying: false, positionMs: 0, durationMs: 0 }),
+            controls: {
+                pause: React.useRef<() => void>(() => { }),
+                resume: React.useRef<() => void>(() => { }),
+                seekTo: React.useRef<(ms: number) => void>((_ms: number) => { }),
+            },
         }}>
             {children}
         </midiDataContext.Provider >
@@ -80,8 +106,13 @@ export function MidiFileParser(props: Props) {
     const clearChannels = useClearChannelsOfType();
     const stateContext = React.useContext(midiDataContext);
     if (!stateContext) { throw new Error("MidiFileParser must be a child of MidiFileDataProvider"); }
-    const { midiData, midiEventTrackers, midiChannelTrackers, preprocessedData, startTime, microsecPerBeat, inputRef, loadedFileNameState, totalPendingScheduled, audioCtx } = stateContext;
+    const {
+        midiData, midiEventTrackers, midiChannelTrackers, preprocessedData, startTime,
+        inputRef, loadedFileNameState, totalPendingScheduled,
+        totalDurationMs, playbackGeneration, isPaused, pausedAtMs, transportState, controls,
+    } = stateContext;
     const [loadedFileName, setLoadedFilename] = loadedFileNameState;
+    const [, setTransport] = transportState;
     const settings = useSettings();
     const { colorPalette } = useAppTheme()!;
     const getNoteName = useActiveNoteNames();
@@ -90,9 +121,6 @@ export function MidiFileParser(props: Props) {
     const setHomeNote = useSetHomeNote();
     const synth = useSynth();
     const synthDrum = useSynthDrum();
-
-    // const [midiData, setMidiData] = React.useState<midiManager.MidiData | null>(null);
-    // const [midiEventTrackers, setMidiEventTrackers] = React.useState<MidiEventTracker[] | null>(null);
 
     const preprocessData = React.useCallback((midiData: midiManager.MidiData): MidiPreprocessedData => {
         let outTempos: TemposByTrack = {};
@@ -114,7 +142,6 @@ export function MidiFileParser(props: Props) {
         return { tempos: outTempos };
     }, []);
 
-    // TODO dynamically memoize this
     const tickToTime = React.useCallback((tick: number, midiData: midiManager.MidiData, preProcessedData: MidiPreprocessedData, trackIdx: number) => {
         let ticksProcessed = 0;
         let tempoIdx = 0;
@@ -128,7 +155,6 @@ export function MidiFileParser(props: Props) {
                 tempoIdx++;
             }
             else {
-                // ticksProcessed += tick - preprocessedData.current.tempos[0][tempoIdx].ticks;
                 timeMS += (tick - ticksProcessed) * tempos[tempoIdx].msPerTick;
                 ticksProcessed = tick;
             }
@@ -137,157 +163,152 @@ export function MidiFileParser(props: Props) {
     }, []);
 
     const scheduleEvent = React.useCallback((event: midiManager.MidiEvent, time: number, track: number, ticks: number, tempo: TempoTracker | null) => {
-        // setTimeout(() => {
         totalPendingScheduled.current--;
         const tracker = stateContext.midiEventTrackers.current?.[track];
         if (!tracker) { return; }
 
+        const delay = Math.max(0, time - performance.now());
+        const gen = playbackGeneration.current;
+
         switch (event.type) {
             case 'noteOn':
-            case 'noteOff':
-                setTimeout(() => {
-                    const midiChannel = stateContext.midiChannelTrackers.current?.[event.channel];
-                    if (
-                        // midiChannel && midiChannel.programNumber > 112
-                        event.channel === 9
-                        || event.channel === 10
-                        // || (midiChannel && midiChannel.programNumber > 96)
-                    ) {
-                        console.log("Is this drums?", track, midiEventTrackers.current);
-                        return;
-                    };
-                    const offset = 3;
-                    const chanColor = `hsl(${(Math.floor(45 * (event.channel + offset) + (Math.floor((event.channel + offset) / 8) * (45 / 2)))) % 360}, 100%, 70%)`;
-                    updateNotes(`${NoteSet.MIDIFileInput}-${event.channel}`, [midiNoteToProgramNote((event as MidiNoteMixins).noteNumber, Math.floor((event as MidiNoteMixins).noteNumber / 12) - 1)], event.type === 'noteOn', false, new Set([NoteSet.MIDIFileInput]), chanColor);
-                }, time - performance.now());
+            case 'noteOff': {
+                const isNoteOn = event.type === 'noteOn';
+                const isDrums = event.channel === 9 || event.channel === 10;
+                const offset = 3;
+                const chanColor = `hsl(${(Math.floor(45 * (event.channel + offset) + (Math.floor((event.channel + offset) / 8) * (45 / 2)))) % 360}, 100%, 70%)`;
+                const noteNum = midiNoteToProgramNote((event as MidiNoteMixins).noteNumber, Math.floor((event as MidiNoteMixins).noteNumber / 12) - 1);
+                const noteVelocity = isNoteOn ? (event as MidiNoteOnEvent).velocity / 127 : (event as MidiNoteOffEvent).velocity / 127;
+                const prioritizeMidi = settings?.prioritizeMIDIAudio ?? false;
 
-                // Sending events directly to midi outputs
-                if (settings?.prioritizeMIDIAudio) {
-                    WebMidi.outputs.forEach(output => {
-                        if (event.type === 'noteOn') {
-                            output.sendNoteOn((event as MidiNoteOnEvent).noteNumber, {
-                                channels: ((event as MidiNoteOnEvent).channel + 1),
-                                time: WebMidi.time + Math.floor(time - performance.now()),
-                                attack: (event as MidiNoteOnEvent).velocity / 127,
-                            });
-                        }
-                        else {
-                            output.sendNoteOff((event as MidiNoteOffEvent).noteNumber, {
-                                channels: ((event as MidiNoteOffEvent).channel + 1),
-                                time: WebMidi.time + Math.floor(time - performance.now()),
-                                release: (event as MidiNoteOffEvent).velocity / 127,
-                            });
-                        }
-                    });
-                }
-                // Sending events directly to synth output
-                const chan = stateContext.midiChannelTrackers.current?.[event.channel];
-                if (
-                    !(event.channel === 9
-                        || event.channel === 10
-                        // || (chan && chan.programNumber > 96)
-                    )) {
-                    if (event.type === 'noteOn') {
-                        const playTime = Tone.now() + Math.max(0, (time - performance.now()) / 1000);
-                        synth?.triggerAttack(
-                            getNote(midiNoteToProgramNote((event as MidiNoteMixins).noteNumber, Math.floor((event as MidiNoteMixins).noteNumber / 12) - 1))
-                            , playTime, (event as MidiNoteOnEvent).velocity / 127);
-                    }
-                    else {
-                        const playTime = Tone.now() + Math.max(0, (time - performance.now()) / 1000);
-                        synth?.triggerRelease(
-                            getNote(midiNoteToProgramNote((event as MidiNoteMixins).noteNumber, Math.floor((event as MidiNoteMixins).noteNumber / 12) - 1))
-                            , playTime);
-                    }
-                } else {
-                    // Drums
-                    const playTime = Tone.now() + Math.max(0.1, (time - performance.now()) / 1000);
-                    console.log("time", playTime);
-                    const freq = Tone.Frequency(getNoteMIDI(midiNoteToProgramNote((event as MidiNoteMixins).noteNumber, Math.floor((event as MidiNoteMixins).noteNumber / 12) - 1))).toFrequency();
-                    if (event.type === 'noteOn') {
-                        synthDrum?.triggerAttack(freq, playTime, (event as MidiNoteOnEvent).velocity / 127)
-                    }
-                    else {
-                        synthDrum?.triggerRelease(freq, playTime);
-                    }
-                }
-                break;
-            case 'programChange':
-                console.log("program change", track, (event as MidiProgramChangeEvent));
-                const midiChannel = stateContext.midiChannelTrackers.current?.[event.channel];
-                midiChannel!.programNumber = (event as MidiProgramChangeEvent).programNumber;
-                if (midiChannel!.programNumber < 0 || midiChannel!.programNumber >= 127) {
-                    console.warn("Invalid program number", midiChannel!.programNumber);
-                    return;
-                }
-                WebMidi.outputs.forEach(output => {
-                    // output.sendPg
-                    output.sendProgramChange((event as MidiProgramChangeEvent).programNumber, {
-                        channels: ((event as MidiProgramChangeEvent).channel + 1),
-                        time: WebMidi.time + Math.floor(time - performance.now()),
-                    });
-                });
-                break;
-            case 'keySignature':
-                // setActiveShape((event as MidiKeySignatureEvent).key, (event as MidiKeySignatureEvent).scale);
                 setTimeout(() => {
+                    if (playbackGeneration.current !== gen) return;
+
+                    // Visual
+                    if (!isDrums) {
+                        updateNotes(`${NoteSet.MIDIFileInput}-${event.channel}`, [noteNum], isNoteOn, false, new Set([NoteSet.MIDIFileInput]), chanColor);
+                    }
+
+                    // WebMidi
+                    if (prioritizeMidi) {
+                        WebMidi.outputs.forEach(output => {
+                            if (isNoteOn) {
+                                output.sendNoteOn((event as MidiNoteOnEvent).noteNumber, {
+                                    channels: (event.channel + 1),
+                                    time: WebMidi.time + 5,
+                                    attack: noteVelocity,
+                                });
+                            } else {
+                                output.sendNoteOff((event as MidiNoteOffEvent).noteNumber, {
+                                    channels: (event.channel + 1),
+                                    time: WebMidi.time + 5,
+                                    release: noteVelocity,
+                                });
+                            }
+                        });
+                    }
+
+                    // Tone.js
+                    if (!isDrums) {
+                        if (isNoteOn) {
+                            synth?.triggerAttack(getNote(noteNum), Tone.now() + 0.01, (event as MidiNoteOnEvent).velocity / 127);
+                        } else {
+                            synth?.triggerRelease(getNote(noteNum), Tone.now() + 0.01);
+                        }
+                    } else {
+                        const freq = Tone.Frequency(getNoteMIDI(noteNum)).toFrequency();
+                        if (isNoteOn) {
+                            synthDrum?.triggerAttack(freq, Tone.now() + 0.01, (event as MidiNoteOnEvent).velocity / 127);
+                        } else {
+                            synthDrum?.triggerRelease(freq, Tone.now() + 0.01);
+                        }
+                    }
+                }, delay);
+                break;
+            }
+            case 'programChange': {
+                const midiChannel = stateContext.midiChannelTrackers.current?.[event.channel];
+                if (midiChannel) {
+                    midiChannel.programNumber = (event as MidiProgramChangeEvent).programNumber;
+                }
+                console.log("program change", track, (event as MidiProgramChangeEvent));
+                setTimeout(() => {
+                    if (playbackGeneration.current !== gen) return;
+                    WebMidi.outputs.forEach(output => {
+                        output.sendProgramChange((event as MidiProgramChangeEvent).programNumber, {
+                            channels: ((event as MidiProgramChangeEvent).channel + 1),
+                            time: WebMidi.time + 5,
+                        });
+                    });
+                }, delay);
+                break;
+            }
+            case 'keySignature':
+                setTimeout(() => {
+                    if (playbackGeneration.current !== gen) return;
                     const keysig = [11, 6, 1, 8, 3, 10, 5, 0, 7, 2, 9, 4][(event as MidiKeySignatureEvent).key + 7];
                     if (keysig !== undefined) {
                         setActiveShape(SCALE_NATURAL, keysig);
                         console.log("KEY SIG", track, (event as MidiKeySignatureEvent).key, getNoteName(keysig), (event as MidiKeySignatureEvent).scale);
-                    }
-                    else {
+                    } else {
                         console.warn("Unsupported key signerature", (event as MidiKeySignatureEvent).key);
                     }
-                    // Major
                     if ((event as MidiKeySignatureEvent).scale === 0) {
                         setHomeNote(keysig);
-                    }
-                    // Minor
-                    else if ((event as MidiKeySignatureEvent).scale === 1) {
+                    } else if ((event as MidiKeySignatureEvent).scale === 1) {
                         setHomeNote(keysig + 9);
-                    }
-                    else {
+                    } else {
                         console.warn("Unsupported scale", (event as MidiKeySignatureEvent).scale);
                     }
-                }, time - performance.now());
+                }, delay);
                 break;
             case 'setTempo':
                 setTimeout(() => {
-                    // microsecPerBeat.current = (event as MidiSetTempoEvent).microsecondsPerBeat;
+                    if (playbackGeneration.current !== gen) return;
                     console.log("Tempo change: ", 60000000 / (event as MidiSetTempoEvent).microsecondsPerBeat, " bpm, track: ", track, ", @ ", ticks);
-                }, time - performance.now());
+                }, delay);
                 break;
             case 'controller':
-                WebMidi.outputs.forEach(output => {
-                    output.sendControlChange((event as MidiControllerEvent).controllerType, (event as MidiControllerEvent).value, {
-                        channels: ((event as MidiControllerEvent).channel + 1),
-                        time: WebMidi.time + Math.floor(time - performance.now()),
+                setTimeout(() => {
+                    if (playbackGeneration.current !== gen) return;
+                    WebMidi.outputs.forEach(output => {
+                        output.sendControlChange((event as MidiControllerEvent).controllerType, (event as MidiControllerEvent).value, {
+                            channels: ((event as MidiControllerEvent).channel + 1),
+                            time: WebMidi.time + 5,
+                        });
                     });
-                });
+                }, delay);
                 break;
             case 'noteAftertouch':
-                WebMidi.outputs.forEach(output => {
-                    output.sendKeyAftertouch((event as MidiNoteAftertouchEvent).noteNumber, (event as MidiNoteAftertouchEvent).amount, {
-                        channels: ((event as MidiNoteAftertouchEvent).channel + 1),
-                        time: WebMidi.time + Math.floor(time - performance.now()),
+                setTimeout(() => {
+                    if (playbackGeneration.current !== gen) return;
+                    WebMidi.outputs.forEach(output => {
+                        output.sendKeyAftertouch((event as MidiNoteAftertouchEvent).noteNumber, (event as MidiNoteAftertouchEvent).amount, {
+                            channels: ((event as MidiNoteAftertouchEvent).channel + 1),
+                            time: WebMidi.time + 5,
+                        });
                     });
-                });
+                }, delay);
                 break;
-            case 'pitchBend':
+            case 'pitchBend': {
                 const normalizedPitchBend = ((event as MidiPitchBendEvent).value / 8192);
                 console.log("pitch bend", normalizedPitchBend, (event as MidiPitchBendEvent).value);
-                WebMidi.outputs.forEach(output => {
-                    output.sendPitchBend(normalizedPitchBend, {
-                        channels: ((event as MidiPitchBendEvent).channel + 1),
-                        time: WebMidi.time + Math.floor(time - performance.now()),
+                setTimeout(() => {
+                    if (playbackGeneration.current !== gen) return;
+                    WebMidi.outputs.forEach(output => {
+                        output.sendPitchBend(normalizedPitchBend, {
+                            channels: ((event as MidiPitchBendEvent).channel + 1),
+                            time: WebMidi.time + 5,
+                        });
                     });
-                });
+                }, delay);
                 break;
+            }
             case 'text':
                 setTimeout(() => {
+                    if (playbackGeneration.current !== gen) return;
                     console.log("MIDI TEXT: ", (event as MidiTextEvent).text);
-                }, time - performance.now());
+                }, delay);
                 break;
             default:
                 console.log("Unsupported event type", event.type);
@@ -295,20 +316,13 @@ export function MidiFileParser(props: Props) {
         }
 
         totalPendingScheduled.current++;
-    }, [getNoteName, midiEventTrackers, setActiveShape, setHomeNote, settings?.prioritizeMIDIAudio, stateContext.midiChannelTrackers, stateContext.midiEventTrackers, synth, synthDrum, totalPendingScheduled, updateNotes]);
+    }, [getNoteName, midiEventTrackers, playbackGeneration, setActiveShape, setHomeNote, settings?.prioritizeMIDIAudio, stateContext.midiChannelTrackers, stateContext.midiEventTrackers, synth, synthDrum, totalPendingScheduled, updateNotes]);
 
-    // var lastTime = performance.now();
     const tickWithDrift = React.useCallback(() => {
         if (!midiData?.current || !midiEventTrackers?.current) { return; }
-        // console.log("time since last", now - lastTime.current);
-        // lastTime.current = now;
-        // const microsecPerTick = microsecPerBeat.current / ((midiData.current?.header?.ticksPerBeat ?? 400));
+        if (isPaused.current) { return; }
 
         midiData.current?.tracks.forEach((track, trackIdx) => {
-            // if (trackIdx !== 0 && trackIdx !== 2) { return; }
-            // if (trackIdx !== 0 && trackIdx !== 1) { return; }
-
-            // check index bounds here
             if (!midiEventTrackers.current) { return; }
             const eventTracker = midiEventTrackers.current[trackIdx];
 
@@ -319,53 +333,124 @@ export function MidiFileParser(props: Props) {
                 if (!midiData?.current || !midiEventTrackers?.current) { return; }
 
                 let nextEvent = track[midiEventTrackers.current[trackIdx].eventIndex];
-                // eventTimeMS += (nextEvent.deltaTime * microsecPerTick / 1000);
-                // TODO address the -1 on the index thing
                 const { timeMS, tempo } = tickToTime(ticksTraversed + nextEvent.deltaTime, midiData.current, preprocessedData.current, trackIdx);
 
                 eventTimeMS = timeMS;
                 ticksTraversed += nextEvent.deltaTime;
 
                 const now = performance.now();
-                // console.log("NOW", now);
                 if (startTime.current + eventTimeMS > now + scheduleAheadMS) {
                     break;
                 }
-
-                // if (nextEvent.type === 'setTempo') {
-                // microsecPerBeat.current = (nextEvent as MidiSetTempoEvent).microsecondsPerBeat;
-                // }
 
                 scheduleEvent(nextEvent, startTime.current + eventTimeMS, trackIdx, ticksTraversed, tempo);
 
                 midiEventTrackers.current[trackIdx].msTraversed = eventTimeMS;
                 midiEventTrackers.current[trackIdx].eventIndex++;
                 midiEventTrackers.current[trackIdx].ticksTraversed = ticksTraversed;
-
-                // console.log(`track ${trackIdx} : ${midiEventTrackers.current[trackIdx].eventIndex} / ${midiData.current?.tracks[trackIdx].length} ${100 * midiEventTrackers.current[trackIdx].eventIndex / (midiData.current?.tracks[trackIdx].length ?? 1)}%`)
             }
         });
-        // const isComplete = midiEventTrackers.current?.reduce((complete, track) => complete && track.eventIndex >= (midiData.current?.tracks[trackIdx]?.length ?? 0), false);
-        // const percentageComplete = React.useMemo(() => {
+
         let runningPercentageTotal = 0;
         for (let i = 0; i < (midiEventTrackers.current?.length ?? 0); i++) {
             runningPercentageTotal += 100 * midiEventTrackers.current?.[i].eventIndex / (midiData.current?.tracks[i].length ?? 1);
         }
         const percentageComplete = runningPercentageTotal / (midiEventTrackers.current?.length ?? 1);
-        // console.log("TRACKERS", midiEventTrackers.current);
-        // }, [midiData, midiEventTrackers]);
-        // console.log(`${loadedFileName} : ${percentageComplete}% complete`, percentageComplete);
+
         if (percentageComplete >= 100) {
             clearChannels(NoteSet.MIDIFileInput);
-            console.log("MIDI file complete");
+            // Reset to start so hitting play again restarts from the beginning
+            isPaused.current = true;
+            pausedAtMs.current = 0;
+            startTime.current = performance.now();
+            if (midiData.current) {
+                midiEventTrackers.current = Array.from(
+                    { length: midiData.current.tracks.length },
+                    () => ({ eventIndex: 0, ticksTraversed: 0, msTraversed: 0 }),
+                );
+            }
+            setTransport(t => ({ ...t, isPlaying: false, positionMs: 0 }));
         }
         else {
             setTimeout(() => {
                 tickWithDrift();
             }, 10);
         }
-    }, [clearChannels, midiData, midiEventTrackers, preprocessedData, scheduleEvent, startTime, tickToTime]);
+    }, [clearChannels, isPaused, midiData, midiEventTrackers, preprocessedData, scheduleEvent, setTransport, startTime, tickToTime]);
 
+    const pause = React.useCallback(() => {
+        if (isPaused.current) return;
+        isPaused.current = true;
+        pausedAtMs.current = Math.max(0, performance.now() - startTime.current);
+        playbackGeneration.current++;
+        synth?.releaseAll();
+        synthDrum?.releaseAll();
+        // Belt-and-suspenders: a triggerAttack scheduled just before pause
+        // may not be "active" yet when releaseAll fires above. Release again
+        // after the 10ms lookahead window, but only if still paused.
+        setTimeout(() => {
+            if (isPaused.current) {
+                synth?.releaseAll();
+                synthDrum?.releaseAll();
+            }
+        }, 50);
+        clearChannels(NoteSet.MIDIFileInput);
+        setTransport(t => ({ ...t, isPlaying: false, positionMs: pausedAtMs.current }));
+    }, [clearChannels, isPaused, pausedAtMs, playbackGeneration, startTime, synth, synthDrum, setTransport]);
+
+    const resume = React.useCallback(() => {
+        if (!isPaused.current || !midiData.current) return;
+        isPaused.current = false;
+        startTime.current = performance.now() - pausedAtMs.current;
+        setTransport(t => ({ ...t, isPlaying: true }));
+        tickWithDrift();
+    }, [isPaused, midiData, pausedAtMs, startTime, tickWithDrift, setTransport]);
+
+    const seekTo = React.useCallback((targetMs: number) => {
+        if (!midiData.current || !midiEventTrackers.current) return;
+        const wasPlaying = !isPaused.current;
+
+        isPaused.current = true;
+        playbackGeneration.current++;
+        synth?.releaseAll();
+        synthDrum?.releaseAll();
+        clearChannels(NoteSet.MIDIFileInput);
+
+        midiData.current.tracks.forEach((track, trackIdx) => {
+            let ticks = 0;
+            let eventIdx = 0;
+            for (let i = 0; i < track.length; i++) {
+                const nextTicks = ticks + track[i].deltaTime;
+                const { timeMS } = tickToTime(nextTicks, midiData.current!, preprocessedData.current, trackIdx);
+                if (timeMS > targetMs) {
+                    eventIdx = i;
+                    break;
+                }
+                ticks = nextTicks;
+                eventIdx = i + 1;
+            }
+            const { timeMS: msAtPosition } = tickToTime(ticks, midiData.current!, preprocessedData.current, trackIdx);
+            midiEventTrackers.current![trackIdx] = {
+                eventIndex: eventIdx,
+                ticksTraversed: ticks,
+                msTraversed: msAtPosition,
+            };
+        });
+
+        startTime.current = performance.now() - targetMs;
+        pausedAtMs.current = targetMs;
+        setTransport(t => ({ ...t, positionMs: targetMs, isPlaying: wasPlaying }));
+
+        if (wasPlaying) {
+            isPaused.current = false;
+            tickWithDrift();
+        }
+    }, [clearChannels, isPaused, midiData, midiEventTrackers, pausedAtMs, playbackGeneration, preprocessedData, startTime, synth, synthDrum, tickWithDrift, tickToTime, setTransport]);
+
+    // Store controls so MidiTransport can call them regardless of popover state
+    controls.pause.current = pause;
+    controls.resume.current = resume;
+    controls.seekTo.current = seekTo;
 
     const loadMidiData = React.useCallback<React.ChangeEventHandler<HTMLInputElement>>(async (inputEvent) => {
         if (!inputRef.current) { return; }
@@ -385,16 +470,30 @@ export function MidiFileParser(props: Props) {
         midiChannelTrackers.current = Array.from({ length: 16 }, e => ({ programNumber: -1 }));
         preprocessedData.current = preprocessData(parsed);
 
-        // microsecPerBeat.current = 60000000 / 120;
         console.log("Midi data parsed: ", parsed);
-        clearChannels(NoteSet.MIDIFileInput);
-
         console.log(`${source.files[0].name} FORMAT ${midiData.current.header.format}`);
+        clearChannels(NoteSet.MIDIFileInput);
         updateNotes(NoteSet.Active, [], false, true);
 
+        // Compute total duration
+        let maxMs = 0;
+        parsed.tracks.forEach((track, trackIdx) => {
+            let ticks = 0;
+            track.forEach(e => { ticks += e.deltaTime; });
+            const { timeMS } = tickToTime(ticks, parsed, preprocessedData.current, trackIdx);
+            if (timeMS > maxMs) maxMs = timeMS;
+        });
+        totalDurationMs.current = maxMs;
+
+        // Reset playback state
+        playbackGeneration.current++;
+        isPaused.current = false;
+        pausedAtMs.current = 0;
         startTime.current = performance.now();
+        setTransport({ isPlaying: true, positionMs: 0, durationMs: maxMs });
+
         tickWithDrift();
-    }, [clearChannels, inputRef, midiChannelTrackers, midiData, midiEventTrackers, preprocessData, preprocessedData, props, setLoadedFilename, startTime, tickWithDrift, updateNotes]);
+    }, [clearChannels, inputRef, isPaused, midiChannelTrackers, midiData, midiEventTrackers, pausedAtMs, playbackGeneration, preprocessData, preprocessedData, props, setLoadedFilename, setTransport, startTime, tickWithDrift, tickToTime, totalDurationMs, updateNotes]);
 
     return (
         <MenuItem sx={{ padding: "0" }}>
@@ -403,8 +502,43 @@ export function MidiFileParser(props: Props) {
                     <AudioFileIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                 </ListItemIcon>
                 <input style={{ width: "100%", height: "100%" }} className="midi-file-input" accept=".mid,.midi" onChange={loadMidiData} ref={inputRef} type="file" id="filereader" />
-                {loadedFileName ?? "Open MIDI file"}
+                Open MIDI file
             </label>
         </MenuItem>
     );
+}
+
+export function useMidiTransport() {
+    const ctx = React.useContext(midiDataContext);
+    const [transport] = ctx?.transportState ?? [{ isPlaying: false, positionMs: 0, durationMs: 0 }];
+    const [positionMs, setPositionMs] = React.useState(0);
+
+    React.useEffect(() => {
+        if (!ctx) return;
+        if (!transport.isPlaying) {
+            setPositionMs(transport.positionMs);
+            return;
+        }
+        const interval = setInterval(() => {
+            setPositionMs(Math.min(
+                Math.max(0, performance.now() - ctx.startTime.current),
+                transport.durationMs,
+            ));
+        }, 100);
+        return () => clearInterval(interval);
+    }, [ctx, transport.isPlaying, transport.positionMs, transport.durationMs]);
+
+    if (!ctx) return null;
+
+    return {
+        isPlaying: transport.isPlaying,
+        positionMs,
+        durationMs: transport.durationMs,
+        fileName: ctx.loadedFileNameState[0],
+        pause: () => ctx.controls.pause.current(),
+        resume: () => ctx.controls.resume.current(),
+        seekTo: (ms: number) => ctx.controls.seekTo.current(ms),
+        skipForward: (ms = 10000) => ctx.controls.seekTo.current(Math.min(positionMs + ms, transport.durationMs)),
+        skipBack: (ms = 10000) => ctx.controls.seekTo.current(Math.max(positionMs - ms, 0)),
+    };
 }

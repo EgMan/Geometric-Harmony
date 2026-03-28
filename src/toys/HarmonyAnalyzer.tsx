@@ -505,7 +505,7 @@ export const getNoteNameInExactFitShape = (notes: Set<number>, note: number, exa
     if (exactFit === null || exactFit === undefined) return getNoteName_DEPRECATED(note, notes);
     let shapeIdx = normalizeToSingleOctave(note + exactFit.noteToFirstNoteInShapeIdxOffset);
     // if (shapeIdx < 0) shapeIdx += props.subdivisionCount;
-    if (shapeIdx >= exactFit.shape.notes.length || shapeIdx < 0 || !exactFit.shape.notes[shapeIdx][0]) return getNoteName_DEPRECATED(note, notes);
+    if (shapeIdx >= exactFit.shape.notes.length || shapeIdx < 0 || !exactFit.shape.notes[shapeIdx]?.[0]) return getNoteName_DEPRECATED(note, notes);
     return `${getNoteName_DEPRECATED(maybeModulateNoteFromShapeType(note, shapeIdx, exactFit.shape), notes)} ${getModeNameInShape(shapeIdx, exactFit.shape)}`;
 };
 

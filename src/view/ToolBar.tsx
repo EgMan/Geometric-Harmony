@@ -20,6 +20,7 @@ import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import { useSettings } from "./SettingsProvider";
 import { MidiFileDataProvider, MidiFileParser } from "../sound/MidiFileParser";
+import { MidiTransport } from "./MidiTransport";
 import { LocalSynthVoice } from "../sound/SynthVoicings";
 import DensityMediumRoundedIcon from '@mui/icons-material/DensityMediumRounded';
 import MIDIConnectionManager from "../sound/MIDIConnectionManager";
@@ -554,21 +555,13 @@ function ToolBar(props: Props) {
                         <Paper>
                             <ClickAwayListener onClickAway={() => setMidiSettingsDropdownOpen(false)}>
                                 <MenuList>
-                                    {/* <DialogTitle sx={{ fontFamily: "monospace" }}>MIDI Stuff</DialogTitle> */}
                                     <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>MIDI File</DialogTitle>
                                     <MidiFileParser key={"midifileparser"} closeContainer={() => setMidiSettingsDropdownOpen(false)} />
+                                    <MidiTransport />
                                     <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>MIDI Devices</DialogTitle>
                                     <MenuItem onClick={() => { }}>
                                         <MIDIConnectionManager key={"midiconnectionmanager"} />
                                     </MenuItem>
-                                    {/* TODO: Clean up this code */}
-                                    {/* <MenuItem onClick={() => settings?.setPrioritizeMIDIAudio(val => !val)}>
-                                            <ListItemIcon>
-                                                <SettingsIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
-                                            </ListItemIcon>
-                                            <ListItemText>Send midi events directly to devices</ListItemText>
-                                            <Switch checked={settings?.prioritizeMIDIAudio} onChange={e => settings?.setPrioritizeMIDIAudio(e.target.checked)}></Switch>
-                                        </MenuItem> */}
                                 </MenuList>
                             </ClickAwayListener>
                         </Paper>
