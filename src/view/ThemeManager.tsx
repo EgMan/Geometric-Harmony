@@ -127,8 +127,8 @@ export const Theme_Classic: ColorPalette =
 {
     Main_Background: "#373737",
     UI_Primary: "white",
-    UI_Background: "rgba(255, 255, 255, 0.02)",
-    UI_Background_Alternate: "rgba(255, 255, 255, 0.05)",
+    UI_Background: "rgba(255, 255, 255, 0.03)",
+    UI_Background_Alternate: "rgba(255, 255, 255, 0.09)",
     UI_Accent: "rgb(255, 238, 88)",
     Widget_Primary: "rgb(128,128,128)",
     Widget_MutedPrimary: blendColors(["rgb(128,128,128)", "#373737", "#373737"])!,

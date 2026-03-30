@@ -156,6 +156,16 @@ function ToolBar(props: Props) {
         });
     }, [changeTheme]);
 
+    const anyDropdownOpen = addDropdownOpen || colorDropdownOpen || settingsDropdownOpen || midiSettingsDropdownOpen || noteBankDropdownOpen;
+
+    const closeAllDropdowns = React.useCallback(() => {
+        setAddDropdownOpen(false);
+        setColorDropdownOpen(false);
+        setSettingsDropdownOpen(false);
+        setMidiSettingsDropdownOpen(false);
+        setNoteBankDropdownOpen(false);
+    }, []);
+
     const swapBank = useActiveNoteBank();
     const noteBankElems = React.useMemo(() => {
         return noteBank.get.entries.map((noteBankEntry, i) => {
@@ -203,12 +213,12 @@ function ToolBar(props: Props) {
             flexDirection: "row",
             flexWrap: "wrap"
         }}>
-            <div ref={addButtonRef} style={{ position: "fixed", transform: "translate(0, 0px)", zIndex: 1, width: "100vw", backgroundColor: "transparent", borderBottomLeftRadius: "9px", borderBottomRightRadius: "9px", display: "flex", flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }}>
+            <div ref={addButtonRef} style={{ position: "fixed", transform: "translate(0, 0px)", zIndex: 1301 /*one higher than mui popup backdrop*/, width: "100vw", backgroundColor: "transparent", borderBottomLeftRadius: "9px", borderBottomRightRadius: "9px", display: "flex", flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }}>
                 <div className="nav-left" style={{ display: "flex" }}>
                     {
                         settings?.isPeaceModeEnabled ? null :
                             <>
-                                <Tooltip title="Toys">
+                                <Tooltip title="Toys" slotProps={{ popper: { modifiers: [{ name: 'offset', options: { offset: [0, -10] } }] } }}>
                                     <Button className="top-nav-button" type="submit" variant="contained"
                                         sx={{
                                             height: "auto",
@@ -232,13 +242,20 @@ function ToolBar(props: Props) {
                                             }
                                         }}
                                         onClick={() => {
+                                            closeAllDropdowns();
                                             setAddDropdownOpen(true);
+                                        }}
+                                        onMouseEnter={() => {
+                                            if (anyDropdownOpen && !addDropdownOpen) {
+                                                closeAllDropdowns();
+                                                setAddDropdownOpen(true);
+                                            }
                                         }}
                                     >
                                         <AddBoxIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                     </Button>
                                 </Tooltip>
-                                <Tooltip title="Color">
+                                <Tooltip title="Color" slotProps={{ popper: { modifiers: [{ name: 'offset', options: { offset: [0, -10] } }] } }}>
                                     <Button className="top-nav-button" type="submit" variant="contained"
                                         sx={{
                                             height: "auto",
@@ -262,13 +279,20 @@ function ToolBar(props: Props) {
                                             }
                                         }}
                                         onClick={() => {
+                                            closeAllDropdowns();
                                             setColorDropdownOpen(true);
+                                        }}
+                                        onMouseEnter={() => {
+                                            if (anyDropdownOpen && !colorDropdownOpen) {
+                                                closeAllDropdowns();
+                                                setColorDropdownOpen(true);
+                                            }
                                         }}
                                     >
                                         <ColorLensIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                     </Button>
                                 </Tooltip>
-                                <Tooltip title="Sound">
+                                <Tooltip title="Sound" slotProps={{ popper: { modifiers: [{ name: 'offset', options: { offset: [0, -10] } }] } }}>
                                     <Button className="top-nav-button" type="submit" variant="contained"
                                         sx={{
                                             height: "auto",
@@ -292,13 +316,20 @@ function ToolBar(props: Props) {
                                             }
                                         }}
                                         onClick={() => {
+                                            closeAllDropdowns();
                                             setSettingsDropdownOpen(true);
+                                        }}
+                                        onMouseEnter={() => {
+                                            if (anyDropdownOpen && !settingsDropdownOpen) {
+                                                closeAllDropdowns();
+                                                setSettingsDropdownOpen(true);
+                                            }
                                         }}
                                     >
                                         <HeadphonesIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" style={{ height: '100%' }} />
                                     </Button>
                                 </Tooltip>
-                                <Tooltip title="MIDI">
+                                <Tooltip title="MIDI" slotProps={{ popper: { modifiers: [{ name: 'offset', options: { offset: [0, -10] } }] } }}>
                                     <Button className="top-nav-button" type="submit" variant="contained"
                                         sx={{
                                             height: "34px",
@@ -322,13 +353,20 @@ function ToolBar(props: Props) {
                                             }
                                         }}
                                         onClick={() => {
+                                            closeAllDropdowns();
                                             setMidiSettingsDropdownOpen(true);
+                                        }}
+                                        onMouseEnter={() => {
+                                            if (anyDropdownOpen && !midiSettingsDropdownOpen) {
+                                                closeAllDropdowns();
+                                                setMidiSettingsDropdownOpen(true);
+                                            }
                                         }}
                                     >
                                         <PianoIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                     </Button>
                                 </Tooltip>
-                                <Tooltip title="Quick Swap">
+                                <Tooltip title="Quick Swap" slotProps={{ popper: { modifiers: [{ name: 'offset', options: { offset: [0, -10] } }] } }}>
                                     <Button className="top-nav-button" type="submit" variant="contained"
                                         sx={{
                                             height: "34px",
@@ -352,7 +390,14 @@ function ToolBar(props: Props) {
                                             }
                                         }}
                                         onClick={() => {
+                                            closeAllDropdowns();
                                             setNoteBankDropdownOpen(true);
+                                        }}
+                                        onMouseEnter={() => {
+                                            if (anyDropdownOpen && !noteBankDropdownOpen) {
+                                                closeAllDropdowns();
+                                                setNoteBankDropdownOpen(true);
+                                            }
                                         }}
                                     >
                                         <CharIcon charDisplay={`${noteBank.get.activeIndex}`} />
@@ -370,7 +415,7 @@ function ToolBar(props: Props) {
                 <div className='nav-right menu-section' style={{ display: "flex", height: "auto" }}>
                     {
                         settings?.isPeaceModeEnabled ? null :
-                            <Tooltip title="Love">
+                            <Tooltip title="Love" slotProps={{ popper: { modifiers: [{ name: 'offset', options: { offset: [0, -10] } }] } }}>
                                 <Button className="top-nav-button" type="submit" variant="contained"
                                     onClick={() => props.setIsHeartModalOpen(enabled => !enabled)}
                                     sx={{
@@ -399,7 +444,7 @@ function ToolBar(props: Props) {
                                 </Button>
                             </Tooltip>
                     }
-                    <Tooltip title="Peace">
+                    <Tooltip title="Peace" slotProps={{ popper: { modifiers: [{ name: 'offset', options: { offset: [0, -10] } }] } }}>
                         <Button className="top-nav-button" type="submit" variant="contained"
                             onClick={() => settings?.setIsPeaceModeEnabled(enabled => !enabled)}
                             sx={{
@@ -439,8 +484,6 @@ function ToolBar(props: Props) {
                     }}
                     style={{ transform: "translate(-15px, 0px)" }}
                     role={"menu"}
-                    // placement="right-end"
-                    // transition
                     slotProps={{ paper: { sx: { minWidth: 315, maxHeight: 'calc(100vh - 50px)', overflowY: 'auto', borderRadius: 2 } } }}
                 >
                     <ClickAwayListener onClickAway={() => setAddDropdownOpen(false)}>
@@ -450,7 +493,7 @@ function ToolBar(props: Props) {
                         // anchorEl={addButtonRef.current}
                         >
                             <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold", textAlign: "center" }}>Spawn Toys</DialogTitle>
-                            <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
+                            <Box sx={{ borderRadius: 1, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
                                 <MenuItem onClick={() => setInstrumentsOpen(open => !open)}>
                                     <ListItemIcon>
                                         {instrumentsOpen ? <ExpandLess sx={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <ExpandMore sx={{ color: colorPalette.UI_Primary }} fontSize="small" />}
@@ -480,7 +523,7 @@ function ToolBar(props: Props) {
                                     </MenuList>
                                 </Collapse>
                             </Box>
-                            <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
+                            <Box sx={{ borderRadius: 1, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
                                 <MenuItem onClick={() => setAbstractOpen(open => !open)}>
                                     <ListItemIcon>
                                         {abstractOpen ? <ExpandLess sx={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <ExpandMore sx={{ color: colorPalette.UI_Primary }} fontSize="small" />}
@@ -489,6 +532,9 @@ function ToolBar(props: Props) {
                                 </MenuItem>
                                 <Collapse in={abstractOpen} timeout="auto" unmountOnExit>
                                     <MenuList disablePadding>
+                                        <Typography variant="caption" sx={{ color: colorPalette.UI_Primary, fontFamily: 'monospace', fontWeight: 'bold', px: 1, opacity: 0.6, display: 'block', textAlign: 'center' }}>
+                                            2D
+                                        </Typography>
                                         <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Tonnetz)}>
                                             <ListItemIcon>
                                                 <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
@@ -507,17 +553,21 @@ function ToolBar(props: Props) {
                                             </ListItemIcon>
                                             <ListItemText sx={{ color: colorPalette.UI_Primary }}>Circle of Semitones</ListItemText>
                                         </MenuItem>
-                                        <MenuItem sx={{}} disabled={true} onClick={() => addNewWidget(WidgetType.Wheel)}>
+
+                                        <Typography variant="caption" sx={{ color: colorPalette.UI_Primary, fontFamily: 'monospace', fontWeight: 'bold', px: 1, opacity: 0.6, display: 'block', textAlign: 'center' }}>
+                                            3D
+                                        </Typography>
+                                        {/* <MenuItem sx={{}} disabled={true} onClick={() => addNewWidget(WidgetType.Wheel)}>
                                             <ListItemIcon>
                                                 <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                             </ListItemIcon>
                                             <ListItemText sx={{ color: colorPalette.UI_Primary }}>Spiral of Fifths</ListItemText>
-                                        </MenuItem>
+                                        </MenuItem> */}
                                         <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Spiral)}>
                                             <ListItemIcon>
                                                 <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                             </ListItemIcon>
-                                            <ListItemText sx={{ color: colorPalette.UI_Primary }}>Spiral of Semitones</ListItemText>
+                                            <ListItemText sx={{ color: colorPalette.UI_Primary }}>Coil of Semitones</ListItemText>
                                         </MenuItem>
                                         <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Icosahedron)}>
                                             <ListItemIcon>
@@ -528,7 +578,7 @@ function ToolBar(props: Props) {
                                     </MenuList>
                                 </Collapse>
                             </Box>
-                            <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
+                            <Box sx={{ borderRadius: 1, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
                                 <MenuItem onClick={() => setToolsOpen(open => !open)}>
                                     <ListItemIcon>
                                         {toolsOpen ? <ExpandLess sx={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <ExpandMore sx={{ color: colorPalette.UI_Primary }} fontSize="small" />}
@@ -570,7 +620,7 @@ function ToolBar(props: Props) {
                                     </MenuList>
                                 </Collapse>
                             </Box>
-                            <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
+                            <Box sx={{ borderRadius: 1, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
                                 <MenuItem onClick={() => setExercisesOpen(open => !open)}>
                                     <ListItemIcon>
                                         {exercisesOpen ? <ExpandLess sx={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <ExpandMore sx={{ color: colorPalette.UI_Primary }} fontSize="small" />}
@@ -602,12 +652,11 @@ function ToolBar(props: Props) {
                     style={{ transform: "translate(-15px, 0px)" }}
                     role={"menu"}
                     disablePortal
-
                 >
                     <Paper sx={{ borderRadius: 2 }}>
                         <ClickAwayListener onClickAway={() => setAddDropdownOpen(false)}>
                             <MenuList sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 1 }}>
-                                <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
+                                <Box sx={{ borderRadius: 1, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
                                     <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold", textAlign: "center" }}>In-Browser Synth Settings</DialogTitle>
                                     <MenuItem >
                                         <ListItemIcon>
@@ -666,17 +715,16 @@ function ToolBar(props: Props) {
                         style={{ transform: "translate(-15px, 0px)" }}
                         role={"menu"}
                         disablePortal
-
                     >
                         <Paper sx={{ borderRadius: 2 }}>
                             <ClickAwayListener onClickAway={() => setMidiSettingsDropdownOpen(false)}>
                                 <MenuList sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 1 }}>
-                                    <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
+                                    <Box sx={{ borderRadius: 1, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
                                         <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold", textAlign: "center" }}>MIDI File</DialogTitle>
                                         <MidiFileParser key={"midifileparser"} closeContainer={() => setMidiSettingsDropdownOpen(false)} />
                                         <MidiTransport />
                                     </Box>
-                                    <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
+                                    <Box sx={{ borderRadius: 1, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
                                         <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold", textAlign: "center" }}>MIDI Devices</DialogTitle>
                                         <MenuItem onClick={() => { }}>
                                             <MIDIConnectionManager key={"midiconnectionmanager"} />
@@ -698,12 +746,11 @@ function ToolBar(props: Props) {
                     style={{ transform: "translate(-15px, 0px)" }}
                     role={"menu"}
                     disablePortal
-
                 >
                     <Paper sx={{ borderRadius: 2 }}>
                         <ClickAwayListener onClickAway={() => setNoteBankDropdownOpen(false)}>
                             <MenuList sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 1 }}>
-                                <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
+                                <Box sx={{ borderRadius: 1, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
                                     <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold", textAlign: "center" }}>Shapes Bound to Number Keys</DialogTitle>
                                     {noteBankElems}
                                 </Box>
@@ -726,7 +773,7 @@ function ToolBar(props: Props) {
                 >
                     <ClickAwayListener onClickAway={() => setColorDropdownOpen(false)}>
                         <MenuList sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 1 }}>
-                            <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
+                            <Box sx={{ borderRadius: 1, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
                                 <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold", textAlign: "center" }}>Theme</DialogTitle>
                                 <MenuItem onClick={() => { changeTheme?.(Theme_Classic); setColorDropdownOpen(false); }}>
                                     <ListItemIcon>
@@ -770,7 +817,7 @@ function ToolBar(props: Props) {
                                     <ListItemText sx={{ color: colorPalette.UI_Primary }}>I'm feelin lucky</ListItemText>
                                 </MenuItem>
                             </Box>
-                            <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
+                            <Box sx={{ borderRadius: 1, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
                                 <MenuItem onClick={() => setCustomizeOpen(open => !open)}>
                                     <ListItemIcon>
                                         {customizeOpen ? <ExpandLess sx={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <ExpandMore sx={{ color: colorPalette.UI_Primary }} fontSize="small" />}
