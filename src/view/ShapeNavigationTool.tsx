@@ -27,15 +27,13 @@ type Props =
         subdivisionCount: number
     }
 
-const AutocompleteGroupHeader = styled('div')(({ theme }) => ({
+const AutocompleteGroupHeader = styled('div')({
     position: 'sticky',
     top: '-8px',
     padding: '4px 10px',
-    color: 'white',
-    backgroundColor: 'rgb(48,48,48,0.85)',
     fontStyle: 'bold',
     fontFamily: 'sans-serif',
-}));
+});
 
 const AutocompleteGroupItems = styled('ul')({
     fontFamily: 'monospace',
@@ -238,7 +236,7 @@ function ShapeNavigationTool(props: Props) {
                             }}
                             renderGroup={(params) => (
                                 <li key={params.key}>
-                                    <AutocompleteGroupHeader>{params.group}</AutocompleteGroupHeader>
+                                    <AutocompleteGroupHeader style={{ color: colorPalette.UI_Primary, backgroundColor: colorPalette.UI_Background_Alternate }}>{params.group}</AutocompleteGroupHeader>
                                     <AutocompleteGroupItems>{params.children}</AutocompleteGroupItems>
                                 </li>
                             )}

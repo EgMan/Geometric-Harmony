@@ -13,6 +13,8 @@ export type ColorPalette = {
     UI_Primary: string,
     // Background color for window elements.
     UI_Background: string,
+    // Slightly lighter variant of UI_Background
+    UI_Background_Alternate: string,
     UI_Accent: string,
 
     Interval_Semitone: string,
@@ -60,8 +62,8 @@ function ThemeManager(props: Props) {
                     MuiPaper: {
                         styleOverrides: {
                             root: {
-                                backgroundColor: 'rgb(255,255,255,0.04)',
-                                backdropFilter: 'blur(13px)',
+                                backgroundColor: colorPalette.UI_Background,
+                                backdropFilter: 'blur(12px)',
                                 color: colorPalette.UI_Primary,
                                 boxShadow: 'none',
                                 transition: 'color 1.618s ease',
@@ -74,7 +76,7 @@ function ThemeManager(props: Props) {
                                 fontFamily: "monospace",
                                 color: colorPalette.UI_Primary,
                                 backgroundColor: colorPalette.UI_Background,
-                                backdropFilter: 'blur(13px)',
+                                backdropFilter: 'blur(12px)',
                                 transition: 'color 1.618s ease',
                             },
                             arrow: {
@@ -125,7 +127,8 @@ const Theme_Classic: ColorPalette =
 {
     Main_Background: "#373737",
     UI_Primary: "white",
-    UI_Background: "rgba(255, 255, 255, 0.04)",
+    UI_Background: "rgba(255, 255, 255, 0.02)",
+    UI_Background_Alternate: "rgba(255, 255, 255, 0.05)",
     UI_Accent: "rgb(255, 238, 88)",
     Widget_Primary: "rgb(128,128,128)",
     Widget_MutedPrimary: blendColors(["rgb(128,128,128)", "#373737", "#373737"])!,
@@ -149,6 +152,7 @@ const Theme_BlackOnWhite: ColorPalette =
     UI_Primary: "black",
     // UI_MutedPrimary: "rgb(128, 128, 128)",
     UI_Background: "rgba(0, 0, 0, 0.04)",
+    UI_Background_Alternate: "rgba(0, 0, 0, 0.09)",
     UI_Accent: "rgb(255, 238, 88)",
     Widget_Primary: "rgb(24, 20, 0)",
     Widget_MutedPrimary: blendColors(["white", "black"])!,
@@ -168,6 +172,7 @@ const Theme_WhiteOnBlack: ColorPalette =
     Main_Background: "black",
     UI_Primary: "white",
     UI_Background: "rgba(255, 255, 255, 0.1)",
+    UI_Background_Alternate: "rgba(255, 255, 255, 0.15)",
     UI_Accent: "rgb(255, 238, 88)",
     Widget_Primary: "rgb(128, 128, 128)",
     Widget_MutedPrimary: blendColors(["rgb(128, 128, 128)", "black"])!,

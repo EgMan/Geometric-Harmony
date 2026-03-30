@@ -375,156 +375,155 @@ function ToolBar(props: Props) {
                     role={"menu"}
                     // placement="right-end"
                     // transition
+                    slotProps={{ paper: { sx: { minWidth: 315, maxHeight: 'calc(100vh - 50px)', overflowY: 'auto', borderRadius: 2 } } }}
                 >
-                    <Paper sx={{ minWidth: 306, maxHeight: 'calc(100vh - 50px)', overflowY: 'auto' }}>
-                        <ClickAwayListener onClickAway={() => setAddDropdownOpen(false)}>
-                            <MenuList
-                            // open={addDropdownOpen}
-                            // onClose={() => setAddDropdownOpen(false)}
-                            // anchorEl={addButtonRef.current}
-                            >
-                                <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold", textAlign: "center" }}>Spawn Toys</DialogTitle>
-                                <Box sx={{ borderRadius: 1, m: 1, backgroundColor: 'rgba(255,255,255,0.05)' }}>
-                                    <MenuItem onClick={() => setInstrumentsOpen(open => !open)}>
-                                        <ListItemIcon>
-                                            {instrumentsOpen ? <ExpandLess sx={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <ExpandMore sx={{ color: colorPalette.UI_Primary }} fontSize="small" />}
-                                        </ListItemIcon>
-                                        <ListItemText>Instruments</ListItemText>
-                                    </MenuItem>
-                                    <Collapse in={instrumentsOpen} timeout="auto" unmountOnExit>
-                                        <MenuList disablePadding>
-                                            <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Piano)}>
-                                                <ListItemIcon>
-                                                    <MusicNoteIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
-                                                </ListItemIcon>
-                                                <ListItemText sx={{ color: colorPalette.UI_Primary }}>Piano</ListItemText>
-                                            </MenuItem>
-                                            <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Guitar, WidgetConfig_String_Guitar)}>
-                                                <ListItemIcon>
-                                                    <MusicNoteIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
-                                                </ListItemIcon>
-                                                <ListItemText sx={{ color: colorPalette.UI_Primary }}>Guitar</ListItemText>
-                                            </MenuItem>
-                                            <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Guitar, WidgetConfig_String_Harpejji)}>
-                                                <ListItemIcon>
-                                                    <MusicNoteIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
-                                                </ListItemIcon>
-                                                <ListItemText sx={{ color: colorPalette.UI_Primary }}>Harpejji</ListItemText>
-                                            </MenuItem>
-                                        </MenuList>
-                                    </Collapse>
-                                </Box>
-                                <Box sx={{ borderRadius: 1, m: 1, backgroundColor: 'rgba(255,255,255,0.05)' }}>
-                                    <MenuItem onClick={() => setAbstractOpen(open => !open)}>
-                                        <ListItemIcon>
-                                            {abstractOpen ? <ExpandLess sx={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <ExpandMore sx={{ color: colorPalette.UI_Primary }} fontSize="small" />}
-                                        </ListItemIcon>
-                                        <ListItemText>Geometry</ListItemText>
-                                    </MenuItem>
-                                    <Collapse in={abstractOpen} timeout="auto" unmountOnExit>
-                                        <MenuList disablePadding>
-                                            <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Tonnetz)}>
-                                                <ListItemIcon>
-                                                    <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
-                                                </ListItemIcon>
-                                                <ListItemText sx={{ color: colorPalette.UI_Primary }}>Tonnetz Diagram</ListItemText>
-                                            </MenuItem>
-                                            <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Wheel, WidgetConfig_Wheel_Fifths)}>
-                                                <ListItemIcon>
-                                                    <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
-                                                </ListItemIcon>
-                                                <ListItemText sx={{ color: colorPalette.UI_Primary }}>Circle of Fifths</ListItemText>
-                                            </MenuItem>
-                                            <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Wheel, WidgetConfig_Wheel_Semitones)}>
-                                                <ListItemIcon>
-                                                    <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
-                                                </ListItemIcon>
-                                                <ListItemText sx={{ color: colorPalette.UI_Primary }}>Circle of Semitones</ListItemText>
-                                            </MenuItem>
-                                            <MenuItem sx={{}} disabled={true} onClick={() => addNewWidget(WidgetType.Wheel)}>
-                                                <ListItemIcon>
-                                                    <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
-                                                </ListItemIcon>
-                                                <ListItemText sx={{ color: colorPalette.UI_Primary }}>Spiral of Fifths</ListItemText>
-                                            </MenuItem>
-                                            <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Spiral)}>
-                                                <ListItemIcon>
-                                                    <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
-                                                </ListItemIcon>
-                                                <ListItemText sx={{ color: colorPalette.UI_Primary }}>Spiral of Semitones</ListItemText>
-                                            </MenuItem>
-                                            <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Icosahedron)}>
-                                                <ListItemIcon>
-                                                    <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
-                                                </ListItemIcon>
-                                                <ListItemText sx={{ color: colorPalette.UI_Primary }}>Icosahedron of Semitones</ListItemText>
-                                            </MenuItem>
-                                        </MenuList>
-                                    </Collapse>
-                                </Box>
-                                <Box sx={{ borderRadius: 1, m: 1, backgroundColor: 'rgba(255,255,255,0.05)' }}>
-                                    <MenuItem onClick={() => setToolsOpen(open => !open)}>
-                                        <ListItemIcon>
-                                            {toolsOpen ? <ExpandLess sx={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <ExpandMore sx={{ color: colorPalette.UI_Primary }} fontSize="small" />}
-                                        </ListItemIcon>
-                                        <ListItemText>Tools</ListItemText>
-                                    </MenuItem>
-                                    <Collapse in={toolsOpen} timeout="auto" unmountOnExit>
-                                        <MenuList disablePadding>
-                                            <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Oscilloscope)}>
-                                                <ListItemIcon>
-                                                    <TimelineIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
-                                                </ListItemIcon>
-                                                <ListItemText sx={{ color: colorPalette.UI_Primary }}>Oscilloscope</ListItemText>
-                                            </MenuItem>
-                                            <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.FrequencyVis)}>
-                                                <ListItemIcon>
-                                                    <TimelineIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
-                                                </ListItemIcon>
-                                                <ListItemText sx={{ color: colorPalette.UI_Primary }}>Frequency Visualizer</ListItemText>
-                                            </MenuItem>
-                                            <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.DiatonicExplorer)}>
-                                                <ListItemIcon>
-                                                    <SquareFootIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
-                                                </ListItemIcon>
-                                                <ListItemText sx={{ color: colorPalette.UI_Primary }}>Diatonic Chord Explorer</ListItemText>
-                                            </MenuItem>
-                                            <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.MicPitch)}>
-                                                <ListItemIcon>
-                                                    <MicIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
-                                                </ListItemIcon>
-                                                <ListItemText sx={{ color: colorPalette.UI_Primary }}>Tuner</ListItemText>
-                                            </MenuItem>
-                                            <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Analyzer)}>
-                                                <ListItemIcon>
-                                                    <SquareFootIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
-                                                </ListItemIcon>
-                                                <ListItemText sx={{ color: colorPalette.UI_Primary }}>Chord Identifier</ListItemText>
-                                            </MenuItem>
-                                        </MenuList>
-                                    </Collapse>
-                                </Box>
-                                <Box sx={{ borderRadius: 1, m: 1, backgroundColor: 'rgba(255,255,255,0.05)' }}>
-                                    <MenuItem onClick={() => setExercisesOpen(open => !open)}>
-                                        <ListItemIcon>
-                                            {exercisesOpen ? <ExpandLess sx={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <ExpandMore sx={{ color: colorPalette.UI_Primary }} fontSize="small" />}
-                                        </ListItemIcon>
-                                        <ListItemText>Exercises</ListItemText>
-                                    </MenuItem>
-                                    <Collapse in={exercisesOpen} timeout="auto" unmountOnExit>
-                                        <MenuList disablePadding>
-                                            <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.PlayShapeGame)}>
-                                                <ListItemIcon>
-                                                    <VideogameAssetIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
-                                                </ListItemIcon>
-                                                <ListItemText sx={{ color: colorPalette.UI_Primary }}>Chord Game</ListItemText>
-                                            </MenuItem>
-                                        </MenuList>
-                                    </Collapse>
-                                </Box>
-                            </MenuList>
-                        </ClickAwayListener>
-                    </Paper>
+                    <ClickAwayListener onClickAway={() => setAddDropdownOpen(false)}>
+                        <MenuList sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 1 }}
+                        // open={addDropdownOpen}
+                        // onClose={() => setAddDropdownOpen(false)}
+                        // anchorEl={addButtonRef.current}
+                        >
+                            <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold", textAlign: "center" }}>Spawn Toys</DialogTitle>
+                            <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate }}>
+                                <MenuItem onClick={() => setInstrumentsOpen(open => !open)}>
+                                    <ListItemIcon>
+                                        {instrumentsOpen ? <ExpandLess sx={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <ExpandMore sx={{ color: colorPalette.UI_Primary }} fontSize="small" />}
+                                    </ListItemIcon>
+                                    <ListItemText>Instruments</ListItemText>
+                                </MenuItem>
+                                <Collapse in={instrumentsOpen} timeout="auto" unmountOnExit>
+                                    <MenuList disablePadding>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Piano)}>
+                                            <ListItemIcon>
+                                                <MusicNoteIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                            </ListItemIcon>
+                                            <ListItemText sx={{ color: colorPalette.UI_Primary }}>Piano</ListItemText>
+                                        </MenuItem>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Guitar, WidgetConfig_String_Guitar)}>
+                                            <ListItemIcon>
+                                                <MusicNoteIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                            </ListItemIcon>
+                                            <ListItemText sx={{ color: colorPalette.UI_Primary }}>Guitar</ListItemText>
+                                        </MenuItem>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Guitar, WidgetConfig_String_Harpejji)}>
+                                            <ListItemIcon>
+                                                <MusicNoteIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                            </ListItemIcon>
+                                            <ListItemText sx={{ color: colorPalette.UI_Primary }}>Harpejji</ListItemText>
+                                        </MenuItem>
+                                    </MenuList>
+                                </Collapse>
+                            </Box>
+                            <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate }}>
+                                <MenuItem onClick={() => setAbstractOpen(open => !open)}>
+                                    <ListItemIcon>
+                                        {abstractOpen ? <ExpandLess sx={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <ExpandMore sx={{ color: colorPalette.UI_Primary }} fontSize="small" />}
+                                    </ListItemIcon>
+                                    <ListItemText>Geometry</ListItemText>
+                                </MenuItem>
+                                <Collapse in={abstractOpen} timeout="auto" unmountOnExit>
+                                    <MenuList disablePadding>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Tonnetz)}>
+                                            <ListItemIcon>
+                                                <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                            </ListItemIcon>
+                                            <ListItemText sx={{ color: colorPalette.UI_Primary }}>Tonnetz Diagram</ListItemText>
+                                        </MenuItem>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Wheel, WidgetConfig_Wheel_Fifths)}>
+                                            <ListItemIcon>
+                                                <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                            </ListItemIcon>
+                                            <ListItemText sx={{ color: colorPalette.UI_Primary }}>Circle of Fifths</ListItemText>
+                                        </MenuItem>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Wheel, WidgetConfig_Wheel_Semitones)}>
+                                            <ListItemIcon>
+                                                <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                            </ListItemIcon>
+                                            <ListItemText sx={{ color: colorPalette.UI_Primary }}>Circle of Semitones</ListItemText>
+                                        </MenuItem>
+                                        <MenuItem sx={{}} disabled={true} onClick={() => addNewWidget(WidgetType.Wheel)}>
+                                            <ListItemIcon>
+                                                <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                            </ListItemIcon>
+                                            <ListItemText sx={{ color: colorPalette.UI_Primary }}>Spiral of Fifths</ListItemText>
+                                        </MenuItem>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Spiral)}>
+                                            <ListItemIcon>
+                                                <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                            </ListItemIcon>
+                                            <ListItemText sx={{ color: colorPalette.UI_Primary }}>Spiral of Semitones</ListItemText>
+                                        </MenuItem>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Icosahedron)}>
+                                            <ListItemIcon>
+                                                <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                            </ListItemIcon>
+                                            <ListItemText sx={{ color: colorPalette.UI_Primary }}>Icosahedron of Semitones</ListItemText>
+                                        </MenuItem>
+                                    </MenuList>
+                                </Collapse>
+                            </Box>
+                            <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate }}>
+                                <MenuItem onClick={() => setToolsOpen(open => !open)}>
+                                    <ListItemIcon>
+                                        {toolsOpen ? <ExpandLess sx={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <ExpandMore sx={{ color: colorPalette.UI_Primary }} fontSize="small" />}
+                                    </ListItemIcon>
+                                    <ListItemText>Tools</ListItemText>
+                                </MenuItem>
+                                <Collapse in={toolsOpen} timeout="auto" unmountOnExit>
+                                    <MenuList disablePadding>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Oscilloscope)}>
+                                            <ListItemIcon>
+                                                <TimelineIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                            </ListItemIcon>
+                                            <ListItemText sx={{ color: colorPalette.UI_Primary }}>Oscilloscope</ListItemText>
+                                        </MenuItem>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.FrequencyVis)}>
+                                            <ListItemIcon>
+                                                <TimelineIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                            </ListItemIcon>
+                                            <ListItemText sx={{ color: colorPalette.UI_Primary }}>Frequency Visualizer</ListItemText>
+                                        </MenuItem>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.DiatonicExplorer)}>
+                                            <ListItemIcon>
+                                                <SquareFootIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                            </ListItemIcon>
+                                            <ListItemText sx={{ color: colorPalette.UI_Primary }}>Diatonic Chord Explorer</ListItemText>
+                                        </MenuItem>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.MicPitch)}>
+                                            <ListItemIcon>
+                                                <MicIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                            </ListItemIcon>
+                                            <ListItemText sx={{ color: colorPalette.UI_Primary }}>Tuner</ListItemText>
+                                        </MenuItem>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Analyzer)}>
+                                            <ListItemIcon>
+                                                <SquareFootIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                            </ListItemIcon>
+                                            <ListItemText sx={{ color: colorPalette.UI_Primary }}>Chord Identifier</ListItemText>
+                                        </MenuItem>
+                                    </MenuList>
+                                </Collapse>
+                            </Box>
+                            <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate }}>
+                                <MenuItem onClick={() => setExercisesOpen(open => !open)}>
+                                    <ListItemIcon>
+                                        {exercisesOpen ? <ExpandLess sx={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <ExpandMore sx={{ color: colorPalette.UI_Primary }} fontSize="small" />}
+                                    </ListItemIcon>
+                                    <ListItemText>Exercises</ListItemText>
+                                </MenuItem>
+                                <Collapse in={exercisesOpen} timeout="auto" unmountOnExit>
+                                    <MenuList disablePadding>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.PlayShapeGame)}>
+                                            <ListItemIcon>
+                                                <VideogameAssetIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                            </ListItemIcon>
+                                            <ListItemText sx={{ color: colorPalette.UI_Primary }}>Chord Game</ListItemText>
+                                        </MenuItem>
+                                    </MenuList>
+                                </Collapse>
+                            </Box>
+                        </MenuList>
+                    </ClickAwayListener>
                 </Popover>
                 <Popover
                     open={settingsDropdownOpen}
@@ -537,51 +536,54 @@ function ToolBar(props: Props) {
                     style={{ transform: "translate(-15px, 0px)" }}
                     role={"menu"}
                     disablePortal
+
                 >
-                    <Paper>
+                    <Paper sx={{ borderRadius: 2 }}>
                         <ClickAwayListener onClickAway={() => setAddDropdownOpen(false)}>
-                            <MenuList>
-                                <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>In-Browser Synth Settings</DialogTitle>
-                                <MenuItem >
-                                    <ListItemIcon>
-                                        {settings?.isMuted ? <VolumeOffIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <VolumeUpIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />}
-                                    </ListItemIcon>
-                                    <VolumeSlider />
-                                </MenuItem>
-                                <MenuItem onClick={() => settings?.setIsMuted(muted => !muted)}>
-                                    <ListItemIcon>
-                                        {settings?.isMuted ? <VolumeOffIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <VolumeUpIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />}
-                                    </ListItemIcon>
-                                    <ListItemText> In-browser Synth </ListItemText>
-                                    <Switch checked={!settings?.isMuted} onChange={e => settings?.setIsMuted(!e.target.checked)}></Switch>
-                                </MenuItem>
-                                <MenuItem onClick={() => settings?.setIsPercussionMuted(muted => !muted)}>
-                                    <ListItemIcon>
-                                        {settings?.isPercussionMuted ? <VolumeOffIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <VolumeUpIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />}
-                                    </ListItemIcon>
-                                    <ListItemText> In-browser Percussion (beta) </ListItemText>
-                                    <Switch checked={!settings?.isPercussionMuted} onChange={e => settings?.setIsPercussionMuted(!e.target.checked)}></Switch>
-                                </MenuItem>
-                                <MenuItem>
-                                    <ListItemIcon>
-                                        <CampaignIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
-                                    </ListItemIcon>
-                                    <ListItemText> Synth voice </ListItemText>
-                                    <Select
-                                        sx={{ fontFamily: "monospace", marginLeft: "16px" }}
-                                        id="menu-dropdown"
-                                        value={settings?.localSynthVoice}
-                                        label="Octave Count"
-                                        labelId="demo-simple-select-filled-label"
-                                        onChange={e => { settings?.setLocalSynthVoice(e.target.value as LocalSynthVoice) }}
-                                    >
-                                        <MenuItem value={LocalSynthVoice.Sine}>{LocalSynthVoice.Sine}</MenuItem>
-                                        <MenuItem value={LocalSynthVoice.Triangle}>{LocalSynthVoice.Triangle}</MenuItem>
-                                        <MenuItem value={LocalSynthVoice.Square}>{LocalSynthVoice.Square}</MenuItem>
-                                        <MenuItem value={LocalSynthVoice.AMSynth}>{LocalSynthVoice.AMSynth}</MenuItem>
-                                        <MenuItem value={LocalSynthVoice.FMSynth}>{LocalSynthVoice.FMSynth}</MenuItem>
-                                    </Select>
-                                </MenuItem>
+                            <MenuList sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 1 }}>
+                                <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate }}>
+                                    <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>In-Browser Synth Settings</DialogTitle>
+                                    <MenuItem >
+                                        <ListItemIcon>
+                                            {settings?.isMuted ? <VolumeOffIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <VolumeUpIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />}
+                                        </ListItemIcon>
+                                        <VolumeSlider />
+                                    </MenuItem>
+                                    <MenuItem onClick={() => settings?.setIsMuted(muted => !muted)}>
+                                        <ListItemIcon>
+                                            {settings?.isMuted ? <VolumeOffIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <VolumeUpIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />}
+                                        </ListItemIcon>
+                                        <ListItemText> In-browser Synth </ListItemText>
+                                        <Switch checked={!settings?.isMuted} onChange={e => settings?.setIsMuted(!e.target.checked)}></Switch>
+                                    </MenuItem>
+                                    <MenuItem onClick={() => settings?.setIsPercussionMuted(muted => !muted)}>
+                                        <ListItemIcon>
+                                            {settings?.isPercussionMuted ? <VolumeOffIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <VolumeUpIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />}
+                                        </ListItemIcon>
+                                        <ListItemText> In-browser Percussion (beta) </ListItemText>
+                                        <Switch checked={!settings?.isPercussionMuted} onChange={e => settings?.setIsPercussionMuted(!e.target.checked)}></Switch>
+                                    </MenuItem>
+                                    <MenuItem>
+                                        <ListItemIcon>
+                                            <CampaignIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                        </ListItemIcon>
+                                        <ListItemText> Synth voice </ListItemText>
+                                        <Select
+                                            sx={{ fontFamily: "monospace", marginLeft: "16px" }}
+                                            id="menu-dropdown"
+                                            value={settings?.localSynthVoice}
+                                            label="Octave Count"
+                                            labelId="demo-simple-select-filled-label"
+                                            onChange={e => { settings?.setLocalSynthVoice(e.target.value as LocalSynthVoice) }}
+                                        >
+                                            <MenuItem value={LocalSynthVoice.Sine}>{LocalSynthVoice.Sine}</MenuItem>
+                                            <MenuItem value={LocalSynthVoice.Triangle}>{LocalSynthVoice.Triangle}</MenuItem>
+                                            <MenuItem value={LocalSynthVoice.Square}>{LocalSynthVoice.Square}</MenuItem>
+                                            <MenuItem value={LocalSynthVoice.AMSynth}>{LocalSynthVoice.AMSynth}</MenuItem>
+                                            <MenuItem value={LocalSynthVoice.FMSynth}>{LocalSynthVoice.FMSynth}</MenuItem>
+                                        </Select>
+                                    </MenuItem>
+                                </Box>
                             </MenuList>
                         </ClickAwayListener>
                     </Paper>
@@ -598,17 +600,22 @@ function ToolBar(props: Props) {
                         style={{ transform: "translate(-15px, 0px)" }}
                         role={"menu"}
                         disablePortal
+
                     >
-                        <Paper>
+                        <Paper sx={{ borderRadius: 2 }}>
                             <ClickAwayListener onClickAway={() => setMidiSettingsDropdownOpen(false)}>
-                                <MenuList>
-                                    <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>MIDI File</DialogTitle>
-                                    <MidiFileParser key={"midifileparser"} closeContainer={() => setMidiSettingsDropdownOpen(false)} />
-                                    <MidiTransport />
-                                    <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>MIDI Devices</DialogTitle>
-                                    <MenuItem onClick={() => { }}>
-                                        <MIDIConnectionManager key={"midiconnectionmanager"} />
-                                    </MenuItem>
+                                <MenuList sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 1 }}>
+                                    <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate }}>
+                                        <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>MIDI File</DialogTitle>
+                                        <MidiFileParser key={"midifileparser"} closeContainer={() => setMidiSettingsDropdownOpen(false)} />
+                                        <MidiTransport />
+                                    </Box>
+                                    <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate }}>
+                                        <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>MIDI Devices</DialogTitle>
+                                        <MenuItem onClick={() => { }}>
+                                            <MIDIConnectionManager key={"midiconnectionmanager"} />
+                                        </MenuItem>
+                                    </Box>
                                 </MenuList>
                             </ClickAwayListener>
                         </Paper>
@@ -625,12 +632,15 @@ function ToolBar(props: Props) {
                     style={{ transform: "translate(-15px, 0px)" }}
                     role={"menu"}
                     disablePortal
+
                 >
-                    <Paper>
+                    <Paper sx={{ borderRadius: 2 }}>
                         <ClickAwayListener onClickAway={() => setNoteBankDropdownOpen(false)}>
-                            <MenuList>
-                                <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>Shapes Bound to Number Keys</DialogTitle>
-                                {noteBankElems}
+                            <MenuList sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 1 }}>
+                                <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate }}>
+                                    <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>Shapes Bound to Number Keys</DialogTitle>
+                                    {noteBankElems}
+                                </Box>
                             </MenuList>
                         </ClickAwayListener>
                     </Paper>
