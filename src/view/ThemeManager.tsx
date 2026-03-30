@@ -123,7 +123,7 @@ export function useChangeAppTheme() {
     return React.useContext(ChangeColorPaletteContext);
 }
 
-const Theme_Classic: ColorPalette =
+export const Theme_Classic: ColorPalette =
 {
     Main_Background: "#373737",
     UI_Primary: "white",
@@ -146,7 +146,7 @@ const Theme_Classic: ColorPalette =
     Note_Home: "yellow",
 }
 
-const Theme_BlackOnWhite: ColorPalette =
+export const Theme_BlackOnWhite: ColorPalette =
 {
     Main_Background: "rgb(243, 238, 212)",
     UI_Primary: "black",
@@ -167,7 +167,7 @@ const Theme_BlackOnWhite: ColorPalette =
     Note_Home: "lightgreen",
 }
 
-const Theme_WhiteOnBlack: ColorPalette =
+export const Theme_WhiteOnBlack: ColorPalette =
 {
     Main_Background: "black",
     UI_Primary: "white",

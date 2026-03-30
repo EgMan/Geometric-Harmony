@@ -27,7 +27,7 @@ import { LocalSynthVoice } from "../sound/SynthVoicings";
 import DensityMediumRoundedIcon from '@mui/icons-material/DensityMediumRounded';
 import MIDIConnectionManager from "../sound/MIDIConnectionManager";
 import MicIcon from '@mui/icons-material/Mic';
-import { useAppTheme, useChangeAppTheme } from "./ThemeManager";
+import { useAppTheme, useChangeAppTheme, Theme_Classic, Theme_BlackOnWhite, Theme_WhiteOnBlack, ColorPalette } from "./ThemeManager";
 import { blendColors, changeLightness, getRandomColor, getRandomColorWithAlpha } from "../utils/Utils";
 import VolumeSlider from "../sound/VolumeSlider";
 import { WidgetConfig_Wheel_Figths as WidgetConfig_Wheel_Fifths, WidgetConfig_Wheel_Semitones } from "../toys/Wheel";
@@ -40,6 +40,66 @@ import { useActiveNoteBank } from "../utils/NotesetBank";
 import { on } from "events";
 import { ShapeType } from "../utils/KnownHarmonicShapes";
 // import useSettings from "./SettingsProvider"
+
+function cssColorToHex(color: string): string {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 1;
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, 1, 1);
+    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+}
+
+function getAlpha(color: string): number | null {
+    const match = color.match(/rgba\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+\s*,\s*([\d.]+)\s*\)/);
+    return match ? parseFloat(match[1]) : null;
+}
+
+function hexToRgba(hex: string, alpha: number): string {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+const colorGroups: { label: string; fields: { key: keyof ColorPalette; label: string }[] }[] = [
+    {
+        label: 'UI',
+        fields: [
+            { key: 'Main_Background', label: 'Background' },
+            { key: 'UI_Primary', label: 'Text & Icons' },
+            { key: 'UI_Background', label: 'Panel' },
+            { key: 'UI_Background_Alternate', label: 'Panel Alt' },
+            { key: 'UI_Accent', label: 'Accent' },
+        ]
+    },
+    {
+        label: 'Widgets',
+        fields: [
+            { key: 'Widget_Primary', label: 'Primary' },
+            { key: 'Widget_MutedPrimary', label: 'Muted Primary' },
+        ]
+    },
+    {
+        label: 'Notes',
+        fields: [
+            { key: 'Note_Active', label: 'Active' },
+            { key: 'Note_Home', label: 'Home' },
+        ]
+    },
+    {
+        label: 'Intervals',
+        fields: [
+            { key: 'Interval_Semitone', label: 'Semitone' },
+            { key: 'Interval_Wholetone', label: 'Whole Tone' },
+            { key: 'Interval_MinorThird', label: 'Minor Third' },
+            { key: 'Interval_MajorThird', label: 'Major Third' },
+            { key: 'Interval_PerfectFourth', label: 'Perfect Fourth' },
+            { key: 'Interval_Tritone', label: 'Tritone' },
+        ]
+    },
+];
 
 type Props =
     {
@@ -58,6 +118,8 @@ function ToolBar(props: Props) {
     const [toolsOpen, setToolsOpen] = React.useState(false);
     const [abstractOpen, setAbstractOpen] = React.useState(false);
     const [exercisesOpen, setExercisesOpen] = React.useState(false);
+    const [colorDropdownOpen, setColorDropdownOpen] = React.useState(false);
+    const [customizeOpen, setCustomizeOpen] = React.useState(false);
     const addNewWidget = React.useCallback((widgetType: WidgetType, config?: WidgetConfig) => {
         // const pos = props.stageRef.current?.getPointerPosition() ?? undefined;
         const pos = { x: 0.5 * window.innerWidth, y: 0.25 * window.innerHeight };
@@ -68,6 +130,31 @@ function ToolBar(props: Props) {
     const changeTheme = useChangeAppTheme();
     const { colorPalette } = useAppTheme()!;
     const noteBank = useNoteBank();
+
+    const hexColors = React.useMemo(() => {
+        const result: Partial<Record<keyof ColorPalette, string>> = {};
+        for (const group of colorGroups) {
+            for (const field of group.fields) {
+                result[field.key] = cssColorToHex(colorPalette[field.key]);
+            }
+        }
+        return result;
+    }, [colorPalette]);
+
+    const handleColorChange = React.useCallback((key: keyof ColorPalette, hexValue: string) => {
+        changeTheme?.(prev => {
+            const alpha = getAlpha(prev[key]);
+            const newColor = alpha !== null ? hexToRgba(hexValue, alpha) : hexValue;
+            const updated = { ...prev, [key]: newColor };
+            if (key === 'Main_Background' || key === 'Widget_Primary') {
+                updated.Widget_MutedPrimary = blendColors([
+                    updated.Widget_Primary, updated.Widget_Primary, updated.Widget_Primary,
+                    updated.Main_Background, updated.Main_Background
+                ])!;
+            }
+            return updated;
+        });
+    }, [changeTheme]);
 
     const swapBank = useActiveNoteBank();
     const noteBankElems = React.useMemo(() => {
@@ -174,30 +261,9 @@ function ToolBar(props: Props) {
                                                 color: "grey"
                                             }
                                         }}
-                                        onClick={
-                                            () => changeTheme?.(prev => {
-                                                const Widget_Primary = changeLightness(getRandomColor(), 1.25);
-                                                const Main_Background = changeLightness(getRandomColor(), 0.75);
-                                                const Widget_MutedPrimary = blendColors([Widget_Primary, Widget_Primary, Widget_Primary, Main_Background, Main_Background])!;
-                                                return {
-                                                    ...prev,
-                                                    Main_Background,
-                                                    UI_Background: getRandomColorWithAlpha(),
-                                                    UI_Primary: getRandomColor(),
-                                                    UI_Accent: getRandomColor(),
-                                                    // Interval_Semitone: getRandomColor(),
-                                                    // Interval_Wholetone: getRandomColor(),
-                                                    // Interval_MinorThird: getRandomColor(),
-                                                    // Interval_MajorThird: getRandomColor(),
-                                                    // Interval_PerfectFourth: getRandomColor(),
-                                                    // Interval_Tritone: getRandomColor(),
-                                                    Widget_Primary,
-                                                    Widget_MutedPrimary,
-                                                    Note_Home: getRandomColor(),
-                                                }
-                                            }
-                                            )
-                                        }
+                                        onClick={() => {
+                                            setColorDropdownOpen(true);
+                                        }}
                                     >
                                         <ColorLensIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                     </Button>
@@ -644,6 +710,108 @@ function ToolBar(props: Props) {
                             </MenuList>
                         </ClickAwayListener>
                     </Paper>
+                </Popover>
+                <Popover
+                    open={colorDropdownOpen}
+                    onClose={() => setColorDropdownOpen(false)}
+                    anchorEl={addButtonRef.current}
+                    anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: -10,
+                    }}
+                    style={{ transform: "translate(-15px, 0px)" }}
+                    role={"menu"}
+                    disablePortal
+                    slotProps={{ paper: { sx: { minWidth: 280, maxHeight: 'calc(100vh - 50px)', overflowY: 'auto', borderRadius: 2 } } }}
+                >
+                    <ClickAwayListener onClickAway={() => setColorDropdownOpen(false)}>
+                        <MenuList sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 1 }}>
+                            <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
+                                <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold", textAlign: "center" }}>Theme</DialogTitle>
+                                <MenuItem onClick={() => { changeTheme?.(Theme_Classic); setColorDropdownOpen(false); }}>
+                                    <ListItemIcon>
+                                        <ColorLensIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                    </ListItemIcon>
+                                    <ListItemText sx={{ color: colorPalette.UI_Primary }}>Classic</ListItemText>
+                                </MenuItem>
+                                <MenuItem onClick={() => { changeTheme?.(Theme_WhiteOnBlack); setColorDropdownOpen(false); }}>
+                                    <ListItemIcon>
+                                        <ColorLensIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                    </ListItemIcon>
+                                    <ListItemText sx={{ color: colorPalette.UI_Primary }}>White on Black</ListItemText>
+                                </MenuItem>
+                                <MenuItem onClick={() => { changeTheme?.(Theme_BlackOnWhite); setColorDropdownOpen(false); }}>
+                                    <ListItemIcon>
+                                        <ColorLensIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                    </ListItemIcon>
+                                    <ListItemText sx={{ color: colorPalette.UI_Primary }}>Black on White</ListItemText>
+                                </MenuItem>
+                                <MenuItem onClick={() => {
+                                    changeTheme?.(prev => {
+                                        const Widget_Primary = changeLightness(getRandomColor(), 1.25);
+                                        const Main_Background = changeLightness(getRandomColor(), 0.75);
+                                        const Widget_MutedPrimary = blendColors([Widget_Primary, Widget_Primary, Widget_Primary, Main_Background, Main_Background])!;
+                                        return {
+                                            ...prev,
+                                            Main_Background,
+                                            UI_Background: getRandomColorWithAlpha(),
+                                            UI_Primary: getRandomColor(),
+                                            UI_Accent: getRandomColor(),
+                                            Widget_Primary,
+                                            Widget_MutedPrimary,
+                                            Note_Home: getRandomColor(),
+                                        }
+                                    });
+                                    setColorDropdownOpen(false);
+                                }}>
+                                    <ListItemIcon>
+                                        <ColorLensIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                    </ListItemIcon>
+                                    <ListItemText sx={{ color: colorPalette.UI_Primary }}>I'm feelin lucky</ListItemText>
+                                </MenuItem>
+                            </Box>
+                            <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
+                                <MenuItem onClick={() => setCustomizeOpen(open => !open)}>
+                                    <ListItemIcon>
+                                        {customizeOpen ? <ExpandLess sx={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <ExpandMore sx={{ color: colorPalette.UI_Primary }} fontSize="small" />}
+                                    </ListItemIcon>
+                                    <ListItemText>Customize</ListItemText>
+                                </MenuItem>
+                                <Collapse in={customizeOpen} timeout="auto" unmountOnExit>
+                                    <Box sx={{ px: 1, pb: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                        {colorGroups.map(group => (
+                                            <Box key={group.label}>
+                                                <Typography variant="caption" sx={{ color: colorPalette.UI_Primary, fontFamily: 'monospace', fontWeight: 'bold', px: 1, opacity: 0.6, display: 'block', textAlign: 'center' }}>
+                                                    {group.label}
+                                                </Typography>
+                                                {group.fields.map(field => (
+                                                    <Box key={field.key} sx={{ display: 'flex', alignItems: 'center', px: 1, py: 0.25, gap: 1.5 }}>
+                                                        <input
+                                                            type="color"
+                                                            value={hexColors[field.key]}
+                                                            onChange={e => handleColorChange(field.key, e.target.value)}
+                                                            style={{
+                                                                width: 28,
+                                                                height: 22,
+                                                                border: 'none',
+                                                                padding: 0,
+                                                                cursor: 'pointer',
+                                                                backgroundColor: 'transparent',
+                                                                borderRadius: 4,
+                                                            }}
+                                                        />
+                                                        <Typography sx={{ color: colorPalette.UI_Primary, fontFamily: 'monospace' }}>
+                                                            {field.label}
+                                                        </Typography>
+                                                    </Box>
+                                                ))}
+                                            </Box>
+                                        ))}
+                                    </Box>
+                                </Collapse>
+                            </Box>
+                        </MenuList>
+                    </ClickAwayListener>
                 </Popover>
             </div>
         </div >
