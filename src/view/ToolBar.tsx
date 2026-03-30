@@ -384,7 +384,7 @@ function ToolBar(props: Props) {
                         // anchorEl={addButtonRef.current}
                         >
                             <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold", textAlign: "center" }}>Spawn Toys</DialogTitle>
-                            <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate }}>
+                            <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
                                 <MenuItem onClick={() => setInstrumentsOpen(open => !open)}>
                                     <ListItemIcon>
                                         {instrumentsOpen ? <ExpandLess sx={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <ExpandMore sx={{ color: colorPalette.UI_Primary }} fontSize="small" />}
@@ -414,7 +414,7 @@ function ToolBar(props: Props) {
                                     </MenuList>
                                 </Collapse>
                             </Box>
-                            <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate }}>
+                            <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
                                 <MenuItem onClick={() => setAbstractOpen(open => !open)}>
                                     <ListItemIcon>
                                         {abstractOpen ? <ExpandLess sx={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <ExpandMore sx={{ color: colorPalette.UI_Primary }} fontSize="small" />}
@@ -462,7 +462,7 @@ function ToolBar(props: Props) {
                                     </MenuList>
                                 </Collapse>
                             </Box>
-                            <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate }}>
+                            <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
                                 <MenuItem onClick={() => setToolsOpen(open => !open)}>
                                     <ListItemIcon>
                                         {toolsOpen ? <ExpandLess sx={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <ExpandMore sx={{ color: colorPalette.UI_Primary }} fontSize="small" />}
@@ -504,7 +504,7 @@ function ToolBar(props: Props) {
                                     </MenuList>
                                 </Collapse>
                             </Box>
-                            <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate }}>
+                            <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
                                 <MenuItem onClick={() => setExercisesOpen(open => !open)}>
                                     <ListItemIcon>
                                         {exercisesOpen ? <ExpandLess sx={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <ExpandMore sx={{ color: colorPalette.UI_Primary }} fontSize="small" />}
@@ -541,8 +541,8 @@ function ToolBar(props: Props) {
                     <Paper sx={{ borderRadius: 2 }}>
                         <ClickAwayListener onClickAway={() => setAddDropdownOpen(false)}>
                             <MenuList sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 1 }}>
-                                <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate }}>
-                                    <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>In-Browser Synth Settings</DialogTitle>
+                                <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
+                                    <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold", textAlign: "center" }}>In-Browser Synth Settings</DialogTitle>
                                     <MenuItem >
                                         <ListItemIcon>
                                             {settings?.isMuted ? <VolumeOffIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <VolumeUpIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />}
@@ -605,13 +605,13 @@ function ToolBar(props: Props) {
                         <Paper sx={{ borderRadius: 2 }}>
                             <ClickAwayListener onClickAway={() => setMidiSettingsDropdownOpen(false)}>
                                 <MenuList sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 1 }}>
-                                    <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate }}>
-                                        <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>MIDI File</DialogTitle>
+                                    <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
+                                        <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold", textAlign: "center" }}>MIDI File</DialogTitle>
                                         <MidiFileParser key={"midifileparser"} closeContainer={() => setMidiSettingsDropdownOpen(false)} />
                                         <MidiTransport />
                                     </Box>
-                                    <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate }}>
-                                        <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>MIDI Devices</DialogTitle>
+                                    <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
+                                        <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold", textAlign: "center" }}>MIDI Devices</DialogTitle>
                                         <MenuItem onClick={() => { }}>
                                             <MIDIConnectionManager key={"midiconnectionmanager"} />
                                         </MenuItem>
@@ -637,8 +637,8 @@ function ToolBar(props: Props) {
                     <Paper sx={{ borderRadius: 2 }}>
                         <ClickAwayListener onClickAway={() => setNoteBankDropdownOpen(false)}>
                             <MenuList sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 1 }}>
-                                <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate }}>
-                                    <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold" }}>Shapes Bound to Number Keys</DialogTitle>
+                                <Box sx={{ borderRadius: 2, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
+                                    <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold", textAlign: "center" }}>Shapes Bound to Number Keys</DialogTitle>
                                     {noteBankElems}
                                 </Box>
                             </MenuList>
