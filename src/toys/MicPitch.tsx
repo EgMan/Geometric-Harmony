@@ -37,7 +37,11 @@ function MicPitch(props: Props) {
     const [micError, setMicError] = React.useState<string | null>(null);
     const { colorPalette } = useAppTheme()!;
 
+    const isPreview = props.fromWidget.isPreview ?? false;
+
     React.useEffect(() => {
+        if (isPreview) return;
+
         let stream: MediaStream | null = null;
         let audioContext: AudioContext | null = null;
         let pollInterval: ReturnType<typeof setInterval> | null = null;
@@ -73,7 +77,7 @@ function MicPitch(props: Props) {
             audioContext?.close();
             stream?.getTracks().forEach(t => t.stop());
         };
-    }, []);
+    }, [isPreview]);
     const updateNotes = useUpdateNoteSet();
     const activeNotes = useNoteSet(NoteSet.Active).notes;
 

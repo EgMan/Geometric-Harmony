@@ -14,7 +14,7 @@ type Props = {
 function LineGraph(props: Props) {
     const valRange = props.maxVal - props.minVal;
     const medVal = (props.minVal + props.maxVal) / 2;
-    const { colorPalette } = useAppTheme()!;
+    const theme = useAppTheme();
 
     const points = React.useMemo(() => {
         return props.values.map((val, idx) => {
@@ -23,6 +23,9 @@ function LineGraph(props: Props) {
             return [x, y];
         }).reduce((prev, point) => prev.concat(point), []);
     }, [medVal, props.height, props.values, props.width, valRange]);
+
+    if (!theme) return null;
+    const { colorPalette } = theme;
 
     return <Line
         points={points}

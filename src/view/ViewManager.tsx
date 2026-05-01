@@ -1,4 +1,4 @@
-import { Layer, Stage } from "react-konva";
+import { Group, Layer, Stage } from "react-konva";
 import BackPlate from "./BackPlate";
 import HarmonyAnalyzer from "../toys/HarmonyAnalyzer";
 import Wheel from "../toys/Wheel";
@@ -16,6 +16,7 @@ import Oscilloscope from "../toys/Oscilloscope";
 import FrequencyVisualizer from "../toys/FrequencyVisualizer";
 import HeartModal from "./HeartModal";
 import { useSettings } from "./SettingsProvider";
+import { useSpring as useSpring_web, animated as animated_web } from "@react-spring/web";
 import Wireframe from "../toys/Wireframe";
 import Icosahedron from "../toys/Icosahedron";
 import Spiral from "../toys/Spiral";
@@ -121,6 +122,7 @@ function ViewManager(props: Props) {
     const settings = useSettings();
     const isPeaceModeEnabled = settings?.isPeaceModeEnabled ?? false;
     const [isHeartModalOpen, setIsHeartModalOpen] = React.useState(false);
+    const [previewWidgetInfo, setPreviewWidgetInfo] = React.useState<{ type: WidgetType, config?: WidgetConfig } | null>(null);
 
     const [trackedWidgets, setTrackedWidgets] = React.useState<Map<String, WidgetTracker>>(
         new Map<String, WidgetTracker>(limitingAxisIsHeight ?
@@ -562,6 +564,81 @@ function ViewManager(props: Props) {
         return Array.from(trackedWidgets).map(([uid, widget]) => renderWidgetFromTracker(uid, widget));
     }, [renderWidgetFromTracker, trackedWidgets]);
 
+    const previewFromWidget = React.useMemo(() => ({
+        isOverlayVisible: false,
+        setIsOverlayVisible: (() => { }) as React.Dispatch<React.SetStateAction<boolean>>,
+        position: { x: 0, y: 0 },
+        positionOffset: { x: 0, y: 0 },
+        containerPosition: { x: 0, y: 0 },
+        widgetConfig: previewWidgetInfo?.config ?? WidgetConfig_Default,
+        isPreview: true,
+    }), [previewWidgetInfo?.config]);
+
+    const renderPreviewWidget = React.useCallback(() => {
+        if (!previewWidgetInfo) return null;
+        // Match the spawn position used in ToolBar's addNewWidget
+        const spawnX = 0.5 * props.width;
+        const spawnY = 0.25 * props.height;
+        const fw = previewFromWidget;
+
+        switch (previewWidgetInfo.type) {
+            case WidgetType.Piano:
+                return <Group x={spawnX - pianoWidth / 2} y={spawnY + 20}>
+                    <Piano fromWidget={fw} width={pianoWidth} height={pianoHeight} octaveCount={pianoOctaveCount} octaveOffset={limitingAxisIsHeight ? -2 : 0} />
+                </Group>;
+            case WidgetType.Wheel:
+                return <Group x={spawnX - wheelRadius} y={spawnY + 40}>
+                    <Wheel fromWidget={fw} width={wheelRadius * 2} height={wheelRadius * 2} subdivisionCount={12} />
+                </Group>;
+            case WidgetType.Guitar:
+                return <Group x={spawnX - wheelRadius / 2} y={spawnY + guitarHeight / 13}>
+                    <StringInstrument fromWidget={fw} width={wheelRadius} height={guitarHeight} fretCount={13} />
+                </Group>;
+            case WidgetType.Analyzer: {
+                const analyzerWidth = props.width / (8 / 3);
+                return <Group x={spawnX - analyzerWidth / 2} y={spawnY}>
+                    <HarmonyAnalyzer fromWidget={fw} width={analyzerWidth} subdivisionCount={12} />
+                </Group>;
+            }
+            case WidgetType.Tonnetz:
+                return <Group x={spawnX - wheelRadius} y={spawnY + 40}>
+                    <Tonnetz fromWidget={fw} width={wheelRadius * 2} height={wheelRadius * 2} />
+                </Group>;
+            case WidgetType.PlayShapeGame:
+                return <Group x={spawnX - wheelRadius * 0.6} y={spawnY + 20}>
+                    <PlayTheShapeGame fromWidget={fw} width={wheelRadius * 1.2} height={wheelRadius / 2} />
+                </Group>;
+            case WidgetType.Oscilloscope:
+                return <Group x={spawnX - wheelRadius * 0.6} y={spawnY + 20}>
+                    <Oscilloscope fromWidget={fw} width={wheelRadius * 1.2} height={wheelRadius / 2} />
+                </Group>;
+            case WidgetType.FrequencyVis:
+                return <Group x={spawnX - wheelRadius * 0.6} y={spawnY + 20}>
+                    <FrequencyVisualizer fromWidget={fw} width={wheelRadius * 1.2} height={wheelRadius / 2} />
+                </Group>;
+            case WidgetType.Icosahedron:
+                return <Group x={spawnX - wheelRadius / 4} y={spawnY + 20}>
+                    <Icosahedron fromWidget={fw} width={wheelRadius / 2} height={wheelRadius / 2} />
+                </Group>;
+            case WidgetType.Spiral:
+                return <Group x={spawnX - wheelRadius} y={spawnY + 20}>
+                    <Spiral fromWidget={fw} width={wheelRadius * 2} height={wheelRadius * 2} />
+                </Group>;
+            case WidgetType.DiatonicExplorer:
+                return <Group x={spawnX - wheelRadius} y={spawnY + 20}>
+                    <DiatonicChordExplorer fromWidget={fw} width={wheelRadius * 2} height={wheelRadius * 2} />
+                </Group>;
+            case WidgetType.MicPitch:
+                return <Group x={spawnX - 100} y={spawnY + 20}>
+                    <MicPitch fromWidget={fw} width={200} height={150} />
+                </Group>;
+            default:
+                return null;
+        }
+    }, [previewWidgetInfo, previewFromWidget, props.width, props.height, pianoWidth, pianoHeight, pianoOctaveCount, limitingAxisIsHeight, wheelRadius, guitarHeight]);
+
+    const previewSpring = useSpring_web({ opacity: previewWidgetInfo ? 1 : 0 });
+
     const stageRef = React.useRef<Konva.Stage>(null);
 
     const onContainerFocus: React.FocusEventHandler<HTMLDivElement> = React.useCallback((event) => {
@@ -570,7 +647,27 @@ function ViewManager(props: Props) {
 
     return (
         <div className="container-div" onFocus={onContainerFocus}>
-            <ToolBar widgetTrackerActions={trackerActions} stageRef={stageRef} setIsHeartModalOpen={setIsHeartModalOpen} />
+            <ToolBar widgetTrackerActions={trackerActions} stageRef={stageRef} setIsHeartModalOpen={setIsHeartModalOpen} onWidgetHover={setPreviewWidgetInfo} />
+            {previewWidgetInfo && (
+                <animated_web.div
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        zIndex: 1299,
+                        pointerEvents: 'auto',
+                        backdropFilter: 'blur(16px)',
+                        backgroundColor: '#7c7c7c37',
+                        ...previewSpring,
+                    }}
+                    onClick={() => setPreviewWidgetInfo(null)}
+                >
+                    <Stage width={props.width} height={props.height} style={{ pointerEvents: 'none' }}>
+                        <Layer listening={false}>
+                            {renderPreviewWidget()}
+                        </Layer>
+                    </Stage>
+                </animated_web.div>
+            )}
             <Stage
                 ref={stageRef}
                 width={props.width}

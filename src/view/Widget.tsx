@@ -17,6 +17,7 @@ export type WidgetComponentProps = {
         positionOffset: Vector2d;
         containerPosition: Vector2d;
         widgetConfig: WidgetConfig;
+        isPreview?: boolean;
     }
 }
 
