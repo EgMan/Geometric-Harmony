@@ -53,6 +53,15 @@ export type WidgetTrackerActions = {
     updateWidgetTracker: (uid: String, callback: (currentTracker: WidgetTracker) => WidgetTracker) => boolean,
 }
 
+type WidgetDescriptor = {
+    component: React.ElementType;
+    displayName: string;
+    lockAspectRatio?: boolean;
+    contextMenuOffset: Vector2d;
+    previewYOffset: number;
+    componentProps: Record<string, any>;
+};
+
 
 export enum WidgetType {
     Wheel,
@@ -357,208 +366,156 @@ function ViewManager(props: Props) {
         return (val: Vector2d) => { onWidgetDrag(uid, val) }
     }, [onWidgetDrag])
 
+    const widgetDescriptors = React.useMemo((): Record<WidgetType, WidgetDescriptor> => ({
+        [WidgetType.Piano]: {
+            component: Piano,
+            displayName: "Piano",
+            contextMenuOffset: { x: pianoWidth / 2, y: -20 },
+            previewYOffset: 20,
+            componentProps: {
+                width: pianoWidth,
+                height: pianoHeight,
+                octaveCount: pianoOctaveCount,
+                octaveOffset: limitingAxisIsHeight ? -2 : 0,
+            },
+        },
+        [WidgetType.Wheel]: {
+            component: Wheel,
+            displayName: "Wheel",
+            lockAspectRatio: true,
+            contextMenuOffset: { x: wheelRadius, y: -40 },
+            previewYOffset: 40,
+            componentProps: {
+                width: wheelRadius * 2,
+                height: wheelRadius * 2,
+                subdivisionCount: 12,
+            },
+        },
+        [WidgetType.Guitar]: {
+            component: StringInstrument,
+            displayName: "Guitar",
+            contextMenuOffset: { x: wheelRadius / 2, y: -guitarHeight / 13 },
+            previewYOffset: guitarHeight / 13,
+            componentProps: {
+                width: wheelRadius,
+                height: guitarHeight,
+                fretCount: 13,
+            },
+        },
+        [WidgetType.Analyzer]: {
+            component: HarmonyAnalyzer,
+            displayName: "Harmony Analyzer",
+            contextMenuOffset: { x: props.width / (16 / 3), y: 0 },
+            previewYOffset: 0,
+            componentProps: {
+                width: props.width / (8 / 3),
+                subdivisionCount: 12,
+            },
+        },
+        [WidgetType.Tonnetz]: {
+            component: Tonnetz,
+            displayName: "Tonnetz Diagram",
+            lockAspectRatio: true,
+            contextMenuOffset: { x: wheelRadius, y: -40 },
+            previewYOffset: 40,
+            componentProps: {
+                width: wheelRadius * 2,
+                height: wheelRadius * 2,
+            },
+        },
+        [WidgetType.PlayShapeGame]: {
+            component: PlayTheShapeGame,
+            displayName: "Chord Game",
+            contextMenuOffset: { x: wheelRadius * 0.6, y: -20 },
+            previewYOffset: 20,
+            componentProps: {
+                width: wheelRadius * 1.2,
+                height: wheelRadius / 2,
+            },
+        },
+        [WidgetType.Oscilloscope]: {
+            component: Oscilloscope,
+            displayName: "Oscilloscope",
+            contextMenuOffset: { x: wheelRadius * 0.6, y: -20 },
+            previewYOffset: 20,
+            componentProps: {
+                width: wheelRadius * 1.2,
+                height: wheelRadius / 2,
+            },
+        },
+        [WidgetType.FrequencyVis]: {
+            component: FrequencyVisualizer,
+            displayName: "Frequency Visualizer",
+            contextMenuOffset: { x: wheelRadius * 0.6, y: -20 },
+            previewYOffset: 20,
+            componentProps: {
+                width: wheelRadius * 1.2,
+                height: wheelRadius / 2,
+            },
+        },
+        [WidgetType.Icosahedron]: {
+            component: Icosahedron,
+            displayName: "Icosahedron",
+            lockAspectRatio: true,
+            contextMenuOffset: { x: wheelRadius / 4, y: -20 },
+            previewYOffset: 20,
+            componentProps: {
+                width: wheelRadius / 2,
+                height: wheelRadius / 2,
+            },
+        },
+        [WidgetType.Spiral]: {
+            component: Spiral,
+            displayName: "Spiral",
+            lockAspectRatio: true,
+            contextMenuOffset: { x: wheelRadius, y: -20 },
+            previewYOffset: 20,
+            componentProps: {
+                width: wheelRadius * 2,
+                height: wheelRadius * 2,
+            },
+        },
+        [WidgetType.DiatonicExplorer]: {
+            component: DiatonicChordExplorer,
+            displayName: "DiatonicChordExplorer",
+            contextMenuOffset: { x: wheelRadius, y: -20 },
+            previewYOffset: 20,
+            componentProps: {
+                width: wheelRadius * 2,
+                height: wheelRadius * 2,
+            },
+        },
+        [WidgetType.MicPitch]: {
+            component: MicPitch,
+            displayName: "Tuner",
+            contextMenuOffset: { x: 100, y: -20 },
+            previewYOffset: 20,
+            componentProps: {
+                width: 200,
+                height: 150,
+            },
+        },
+    }), [pianoWidth, pianoHeight, pianoOctaveCount, limitingAxisIsHeight, wheelRadius, guitarHeight, props.width]);
+
     const renderWidgetFromTracker = React.useCallback((uid: String, widget: WidgetTracker) => {
-        switch (widget.type) {
-            case WidgetType.Piano:
-                return <Widget of={Piano}
-                    layout={{ displayName: "Piano" }}
-                    uid={uid}
-                    actions={trackerActions}
-                    tracker={widget}
-                    key={`${uid}`}
-                    isPeaceModeEnabled={isPeaceModeEnabled}
-                    isMaxamized={widget.isMaxamized ?? true}
-                    initialPosition={widget.initialPosition}
-                    draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
-                    setDraggedPosition={setDraggedPosition(uid)}
-                    contextMenuOffset={{ x: pianoWidth / 2, y: -20 }}
-                    width={pianoWidth}
-                    height={pianoHeight}
-                    octaveCount={pianoOctaveCount}
-                    octaveOffset={limitingAxisIsHeight ? -2 : 0} />
-            case WidgetType.Wheel:
-                return <Widget of={Wheel}
-                    layout={{ displayName: "Wheel" }}
-                    uid={uid}
-                    actions={trackerActions}
-                    tracker={widget}
-                    key={`${uid}`}
-                    isPeaceModeEnabled={isPeaceModeEnabled}
-                    isMaxamized={widget.isMaxamized ?? true}
-                    initialPosition={widget.initialPosition}
-                    draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
-                    setDraggedPosition={setDraggedPosition(uid)}
-                    contextMenuOffset={{ x: wheelRadius, y: -40 }}
-                    subdivisionCount={12}
-                    width={wheelRadius * 2}
-                    height={wheelRadius * 2}
-                    lockAspectRatio
-                />
-            case WidgetType.Guitar:
-                const fretCount = 13;
-                return <Widget of={StringInstrument}
-                    layout={{ displayName: "Guitar" }}
-                    uid={uid}
-                    actions={trackerActions}
-                    tracker={widget}
-                    key={`${uid}`}
-                    isPeaceModeEnabled={isPeaceModeEnabled}
-                    isMaxamized={widget.isMaxamized ?? true}
-                    initialPosition={widget.initialPosition}
-                    draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
-                    setDraggedPosition={setDraggedPosition(uid)}
-                    contextMenuOffset={{ x: wheelRadius / 2, y: - guitarHeight / fretCount }}
-                    height={guitarHeight}
-                    width={wheelRadius}
-                    fretCount={fretCount}
-                />
-            case WidgetType.Analyzer:
-                return <Widget of={HarmonyAnalyzer}
-                    layout={{ displayName: "Harmony Analyzer" }}
-                    uid={uid}
-                    actions={trackerActions}
-                    tracker={widget}
-                    key={`${uid}`}
-                    isPeaceModeEnabled={isPeaceModeEnabled}
-                    isMaxamized={widget.isMaxamized ?? true}
-                    contextMenuOffset={{ x: props.width / (16 / 3), y: 0 }}
-                    initialPosition={widget.initialPosition}
-                    draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
-                    setDraggedPosition={setDraggedPosition(uid)}
-                    subdivisionCount={12}
-                    width={props.width / (8 / 3)}
-                />
-            case WidgetType.Tonnetz:
-                return <Widget of={Tonnetz}
-                    layout={{ displayName: "Tonnetz Diagram" }}
-                    uid={uid}
-                    actions={trackerActions}
-                    tracker={widget}
-                    key={`${uid}`}
-                    isPeaceModeEnabled={isPeaceModeEnabled}
-                    isMaxamized={widget.isMaxamized ?? true}
-                    initialPosition={widget.initialPosition}
-                    draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
-                    setDraggedPosition={setDraggedPosition(uid)}
-                    lockAspectRatio
-                    contextMenuOffset={{ x: wheelRadius, y: -40 }}
-                    width={wheelRadius * 2}
-                    height={wheelRadius * 2}
-                />
-            case WidgetType.PlayShapeGame:
-                return <Widget of={PlayTheShapeGame}
-                    layout={{ displayName: "Chord Game" }}
-                    uid={uid}
-                    actions={trackerActions}
-                    tracker={widget}
-                    key={`${uid}`}
-                    isPeaceModeEnabled={isPeaceModeEnabled}
-                    isMaxamized={widget.isMaxamized ?? true}
-                    initialPosition={widget.initialPosition}
-                    draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
-                    setDraggedPosition={setDraggedPosition(uid)}
-                    contextMenuOffset={{ x: wheelRadius * 0.6, y: -20 }}
-                    width={wheelRadius * 1.2}
-                    height={wheelRadius / 2}
-                />
-            case WidgetType.Oscilloscope:
-                return <Widget of={Oscilloscope}
-                    layout={{ displayName: "Oscilloscope" }}
-                    uid={uid}
-                    actions={trackerActions}
-                    tracker={widget}
-                    key={`${uid}`}
-                    isPeaceModeEnabled={isPeaceModeEnabled}
-                    isMaxamized={widget.isMaxamized ?? true}
-                    initialPosition={widget.initialPosition}
-                    draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
-                    setDraggedPosition={setDraggedPosition(uid)}
-                    contextMenuOffset={{ x: wheelRadius * 0.6, y: -20 }}
-                    width={wheelRadius * 1.2}
-                    height={wheelRadius / 2}
-                />
-            case WidgetType.FrequencyVis:
-                return <Widget of={FrequencyVisualizer}
-                    layout={{ displayName: "Frequency Visualizer" }}
-                    uid={uid}
-                    actions={trackerActions}
-                    tracker={widget}
-                    key={`${uid}`}
-                    isPeaceModeEnabled={isPeaceModeEnabled}
-                    isMaxamized={widget.isMaxamized ?? true}
-                    initialPosition={widget.initialPosition}
-                    draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
-                    setDraggedPosition={setDraggedPosition(uid)}
-                    contextMenuOffset={{ x: wheelRadius * 0.6, y: -20 }}
-                    width={wheelRadius * 1.2}
-                    height={wheelRadius / 2}
-                />
-            case WidgetType.Icosahedron:
-                return <Widget of={Icosahedron}
-                    layout={{ displayName: "Icosahedron" }}
-                    lockAspectRatio
-                    uid={uid}
-                    actions={trackerActions}
-                    tracker={widget}
-                    key={`${uid}`}
-                    isPeaceModeEnabled={isPeaceModeEnabled}
-                    isMaxamized={widget.isMaxamized ?? true}
-                    initialPosition={widget.initialPosition}
-                    draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
-                    setDraggedPosition={setDraggedPosition(uid)}
-                    contextMenuOffset={{ x: wheelRadius / 4, y: -20 }}
-                    width={wheelRadius / 2}
-                    height={wheelRadius / 2}
-                />
-            case WidgetType.Spiral:
-                return <Widget of={Spiral}
-                    layout={{ displayName: "Spiral" }}
-                    lockAspectRatio
-                    uid={uid}
-                    actions={trackerActions}
-                    tracker={widget}
-                    key={`${uid}`}
-                    isPeaceModeEnabled={isPeaceModeEnabled}
-                    isMaxamized={widget.isMaxamized ?? true}
-                    initialPosition={widget.initialPosition}
-                    draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
-                    setDraggedPosition={setDraggedPosition(uid)}
-                    contextMenuOffset={{ x: wheelRadius, y: -20 }}
-                    width={wheelRadius * 2}
-                    height={wheelRadius * 2}
-                />
-            case WidgetType.DiatonicExplorer:
-                return <Widget of={DiatonicChordExplorer}
-                    layout={{ displayName: "DiatonicChordExplorer" }}
-                    uid={uid}
-                    actions={trackerActions}
-                    tracker={widget}
-                    key={`${uid}`}
-                    isPeaceModeEnabled={isPeaceModeEnabled}
-                    isMaxamized={widget.isMaxamized ?? true}
-                    initialPosition={widget.initialPosition}
-                    draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
-                    setDraggedPosition={setDraggedPosition(uid)}
-                    contextMenuOffset={{ x: wheelRadius, y: -20 }}
-                    width={wheelRadius * 2}
-                    height={wheelRadius * 2} />
-            case WidgetType.MicPitch:
-                return <Widget of={MicPitch}
-                    layout={{ displayName: "Tuner" }}
-                    uid={uid}
-                    actions={trackerActions}
-                    tracker={widget}
-                    key={`${uid}`}
-                    isPeaceModeEnabled={isPeaceModeEnabled}
-                    isMaxamized={widget.isMaxamized ?? true}
-                    initialPosition={widget.initialPosition}
-                    draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
-                    setDraggedPosition={setDraggedPosition(uid)}
-                    contextMenuOffset={{ x: 100, y: -20 }}
-                    width={200}
-                    height={150} />
-        }
-    }, [guitarHeight, isPeaceModeEnabled, pianoHeight, pianoOctaveCount, pianoWidth, props.width, setDraggedPosition, trackerActions, wheelRadius])
+        const desc = widgetDescriptors[widget.type];
+        if (!desc) return null;
+        return <Widget of={desc.component}
+            layout={{ displayName: desc.displayName }}
+            uid={uid}
+            actions={trackerActions}
+            tracker={widget}
+            key={`${uid}`}
+            isPeaceModeEnabled={isPeaceModeEnabled}
+            isMaxamized={widget.isMaxamized ?? true}
+            initialPosition={widget.initialPosition}
+            draggedPosition={widget.draggedPosition ?? { x: 0, y: 0 }}
+            setDraggedPosition={setDraggedPosition(uid)}
+            contextMenuOffset={desc.contextMenuOffset}
+            lockAspectRatio={desc.lockAspectRatio}
+            {...desc.componentProps}
+        />;
+    }, [widgetDescriptors, isPeaceModeEnabled, setDraggedPosition, trackerActions])
 
     const widgetElements = React.useMemo(() => {
         return Array.from(trackedWidgets).map(([uid, widget]) => renderWidgetFromTracker(uid, widget));
@@ -576,66 +533,16 @@ function ViewManager(props: Props) {
 
     const renderPreviewWidget = React.useCallback(() => {
         if (!previewWidgetInfo) return null;
-        // Match the spawn position used in ToolBar's addNewWidget
+        const desc = widgetDescriptors[previewWidgetInfo.type];
+        if (!desc) return null;
+        const Component = desc.component;
         const spawnX = 0.5 * props.width;
         const spawnY = 0.25 * props.height;
-        const fw = previewFromWidget;
-
-        switch (previewWidgetInfo.type) {
-            case WidgetType.Piano:
-                return <Group x={spawnX - pianoWidth / 2} y={spawnY + 20}>
-                    <Piano fromWidget={fw} width={pianoWidth} height={pianoHeight} octaveCount={pianoOctaveCount} octaveOffset={limitingAxisIsHeight ? -2 : 0} />
-                </Group>;
-            case WidgetType.Wheel:
-                return <Group x={spawnX - wheelRadius} y={spawnY + 40}>
-                    <Wheel fromWidget={fw} width={wheelRadius * 2} height={wheelRadius * 2} subdivisionCount={12} />
-                </Group>;
-            case WidgetType.Guitar:
-                return <Group x={spawnX - wheelRadius / 2} y={spawnY + guitarHeight / 13}>
-                    <StringInstrument fromWidget={fw} width={wheelRadius} height={guitarHeight} fretCount={13} />
-                </Group>;
-            case WidgetType.Analyzer: {
-                const analyzerWidth = props.width / (8 / 3);
-                return <Group x={spawnX - analyzerWidth / 2} y={spawnY}>
-                    <HarmonyAnalyzer fromWidget={fw} width={analyzerWidth} subdivisionCount={12} />
-                </Group>;
-            }
-            case WidgetType.Tonnetz:
-                return <Group x={spawnX - wheelRadius} y={spawnY + 40}>
-                    <Tonnetz fromWidget={fw} width={wheelRadius * 2} height={wheelRadius * 2} />
-                </Group>;
-            case WidgetType.PlayShapeGame:
-                return <Group x={spawnX - wheelRadius * 0.6} y={spawnY + 20}>
-                    <PlayTheShapeGame fromWidget={fw} width={wheelRadius * 1.2} height={wheelRadius / 2} />
-                </Group>;
-            case WidgetType.Oscilloscope:
-                return <Group x={spawnX - wheelRadius * 0.6} y={spawnY + 20}>
-                    <Oscilloscope fromWidget={fw} width={wheelRadius * 1.2} height={wheelRadius / 2} />
-                </Group>;
-            case WidgetType.FrequencyVis:
-                return <Group x={spawnX - wheelRadius * 0.6} y={spawnY + 20}>
-                    <FrequencyVisualizer fromWidget={fw} width={wheelRadius * 1.2} height={wheelRadius / 2} />
-                </Group>;
-            case WidgetType.Icosahedron:
-                return <Group x={spawnX - wheelRadius / 4} y={spawnY + 20}>
-                    <Icosahedron fromWidget={fw} width={wheelRadius / 2} height={wheelRadius / 2} />
-                </Group>;
-            case WidgetType.Spiral:
-                return <Group x={spawnX - wheelRadius} y={spawnY + 20}>
-                    <Spiral fromWidget={fw} width={wheelRadius * 2} height={wheelRadius * 2} />
-                </Group>;
-            case WidgetType.DiatonicExplorer:
-                return <Group x={spawnX - wheelRadius} y={spawnY + 20}>
-                    <DiatonicChordExplorer fromWidget={fw} width={wheelRadius * 2} height={wheelRadius * 2} />
-                </Group>;
-            case WidgetType.MicPitch:
-                return <Group x={spawnX - 100} y={spawnY + 20}>
-                    <MicPitch fromWidget={fw} width={200} height={150} />
-                </Group>;
-            default:
-                return null;
-        }
-    }, [previewWidgetInfo, previewFromWidget, props.width, props.height, pianoWidth, pianoHeight, pianoOctaveCount, limitingAxisIsHeight, wheelRadius, guitarHeight]);
+        const w = desc.componentProps.width ?? 0;
+        return <Group x={spawnX - w / 2} y={spawnY + desc.previewYOffset}>
+            <Component fromWidget={previewFromWidget} {...desc.componentProps} />
+        </Group>;
+    }, [previewWidgetInfo, widgetDescriptors, previewFromWidget, props.width, props.height]);
 
     const previewSpring = useSpring_web({ opacity: previewWidgetInfo ? 1 : 0 });
 
