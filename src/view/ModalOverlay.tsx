@@ -1,19 +1,9 @@
 import React from "react";
 import { Layer, Stage } from "react-konva";
 import { Html } from "react-konva-utils";
-import { ThemeProvider, createTheme } from "@mui/material";
-import { green, purple } from "@mui/material/colors";
+import { ThemeProvider } from "@mui/material";
 import { useSpring as useSpring_web, animated as animated_web } from "@react-spring/web";
-
-const theme = createTheme({
-    palette: {
-        primary: {
-            main: green["A700"],
-            light: purple[300],
-            dark: purple[900],
-        },
-    }
-});
+import { useAppTheme } from "./ThemeManager";
 
 type Props = {
     isVisible: boolean,
@@ -23,7 +13,9 @@ type Props = {
 }
 
 function ModalOverlay(props: Props) {
+    const appTheme = useAppTheme();
     const overlayProps = useSpring_web({ opacity: props.isVisible ? 1 : 0 })
+    if (!appTheme) return null;
     return <Html divProps={{ id: props.isVisible ? "overlay" : "overlay-no-pointer-events" }} >
         < animated_web.div id="backdrop-blur" style={overlayProps}>
             {
@@ -36,7 +28,7 @@ function ModalOverlay(props: Props) {
             }
             {
                 props.htmlContent &&
-                <ThemeProvider theme={theme}>
+                <ThemeProvider theme={appTheme.muiTheme}>
                     <div id="click-back-div" onClick={() => props.setIsVisible(false)}>
                         <div id="overlay-content" onClick={(e) => e.stopPropagation()}>
                             {props.htmlContent}

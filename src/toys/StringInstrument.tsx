@@ -1,7 +1,7 @@
 import React from 'react';
 import { Circle, Rect, Line, Text, Shape, Group } from 'react-konva';
 import { WidgetComponentProps } from '../view/Widget';
-import { MenuItem, Select } from '@mui/material';
+import { Button, MenuItem, Select } from '@mui/material';
 import { getIntervalColor, getIntervalDistance, useActiveNoteNames } from '../utils/Utils';
 import { NoteSet, normalizeToSingleOctave, useChannelDisplays, useCheckNoteEmphasis, useGetCombinedModdedEmphasis, useHomeNote, useNoteDisplays, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
 import { KonvaEventObject } from 'konva/lib/Node';
@@ -26,6 +26,19 @@ export const WidgetConfig_String_Harpejji: StringWidgetConfig = {
     tuning: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
 }
 
+const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+const GUITAR_TUNINGS: Record<string, { label: string; tuning: number[] }> = {
+    standard: { label: "Standard (EADGBE)", tuning: [4, 9, 14, 19, 23, 28] },
+    allFourths: { label: "All Fourths (The best tuning)", tuning: [4, 9, 14, 19, 24, 29] },
+    allFourths7: { label: "All Fourths 7 string", tuning: [4, 9, 14, 19, 24, 29, 34] },
+    dropD: { label: "Drop D (DADGBE)", tuning: [2, 9, 14, 19, 23, 28] },
+    openG: { label: "Open G (DGDGBD)", tuning: [2, 7, 14, 19, 23, 26] },
+    openD: { label: "Open D (DADF#AD)", tuning: [2, 9, 14, 18, 21, 26] },
+    dadgad: { label: "DADGAD", tuning: [2, 9, 14, 19, 21, 26] },
+    halfDown: { label: "Half Step Down", tuning: [3, 8, 13, 18, 22, 27] },
+};
+
 type Props = {
     height: number
     width: number
@@ -35,7 +48,46 @@ type Props = {
 function StringInstrument(props: Props) {
     const config = props.fromWidget.widgetConfig as StringWidgetConfig;
     const { colorPalette } = useAppTheme()!;
-    const stringSpacing = props.width / (config.tuning.length - 1);
+
+    const [tuning, setTuning] = React.useState(config.tuning);
+
+    const tuningPreset = React.useMemo(() => {
+        return Object.entries(GUITAR_TUNINGS).find(
+            ([, preset]) => preset.tuning.length === tuning.length &&
+                preset.tuning.every((val, i) => val === tuning[i])
+        )?.[0] ?? "custom";
+    }, [tuning]);
+
+    const addString = React.useCallback(() => {
+        setTuning(prev => {
+            if (config.type === "harpejji") {
+                return [...prev, prev[prev.length - 1] + 2];
+            }
+            return [prev[0] - 5, ...prev];
+        });
+    }, [config.type]);
+
+    const removeStringAt = React.useCallback((index: number) => {
+        setTuning(prev => prev.length <= 2 ? prev : prev.filter((_, i) => i !== index));
+    }, []);
+
+    const updateStringNote = React.useCallback((index: number, note: number) => {
+        setTuning(prev => {
+            const next = [...prev];
+            next[index] = Math.floor(prev[index] / 12) * 12 + note;
+            return next;
+        });
+    }, []);
+
+    const updateStringOctave = React.useCallback((index: number, octave: number) => {
+        setTuning(prev => {
+            const next = [...prev];
+            next[index] = octave * 12 + ((prev[index] % 12) + 12) % 12;
+            return next;
+        });
+    }, []);
+
+    const stringSpacing = props.width / (tuning.length - 1);
     const fretSpacing = props.height / props.fretCount;
     const fretElemYOffset = -fretSpacing / 2;
     const circleElemRadius = stringSpacing / 5;
@@ -74,7 +126,6 @@ function StringInstrument(props: Props) {
     const settingsMenuItems = [
         (<tr key="tr0">
             <td>Note labeling</td>
-            {/* <td><FormControlLabel control={<Switch checked={isCircleOfFifths} onChange={e => setIsCircleOfFiths(e.target.checked)}/>} label={isCircleOfFifths ? "" : 1} /></td> */}
             <td colSpan={2}>  <Select
                 id="menu-dropdown"
                 value={noteLabeling}
@@ -86,19 +137,56 @@ function StringInstrument(props: Props) {
                 <MenuItem value={NoteLabling.ActiveNoteNames}>Note Names (only active notes)</MenuItem>
             </Select></td>
         </tr>),
-        // (<tr>
-        //     <td>Display Intervals For</td>
-        //     <td colSpan={2}><Select
-        //         id="menu-dropdown"
-        //         value={intervalDisplay}
-        //         label="Interval Display Type"
-        //         labelId="demo-simple-select-filled-label"
-        //         onChange={e => { setIntervalDisplay(e.target.value as number) }}
-        //     >
-        //         <MenuItem value={IntervalDisplayType.Active_No_Inverse}>Active Notes</MenuItem>
-        //         <MenuItem value={IntervalDisplayType.Playing}>Playing Notes</MenuItem>
-        //     </Select></td>
-        // </tr>),
+        ...(config.type === "guitar" ? [(
+            <tr key="tuning-preset">
+                <td>Preset</td>
+                <td colSpan={2}>
+                    <Select
+                        id="menu-dropdown"
+                        value={tuningPreset}
+                        onChange={e => {
+                            const preset = GUITAR_TUNINGS[e.target.value as string];
+                            if (preset) setTuning(preset.tuning);
+                        }}
+                    >
+                        {Object.entries(GUITAR_TUNINGS).map(([key, { label }]) => (
+                            <MenuItem key={key} value={key}>{label}</MenuItem>
+                        ))}
+                        {tuningPreset === "custom" && (
+                            <MenuItem value="custom">Custom</MenuItem>
+                        )}
+                    </Select>
+                </td>
+            </tr>
+        )] : []),
+        (<tr key="tuning-strings">
+            <td style={{ verticalAlign: 'top' }}>Strings</td>
+            <td colSpan={2}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {tuning.map((semitone, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <span style={{ fontFamily: 'monospace', fontSize: 11, width: 16, opacity: 0.5 }}>{i + 1}</span>
+                            <Select
+                                id="menu-dropdown"
+                                value={((semitone % 12) + 12) % 12}
+                                onChange={e => updateStringNote(i, e.target.value as number)}
+                            >
+                                {NOTE_NAMES.map((name, n) => <MenuItem key={n} value={n}>{name}</MenuItem>)}
+                            </Select>
+                            <Select
+                                id="menu-dropdown"
+                                value={Math.floor(semitone / 12)}
+                                onChange={e => updateStringOctave(i, e.target.value as number)}
+                            >
+                                {[-1, 0, 1, 2, 3, 4].map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
+                            </Select>
+                            <Button size="small" onClick={() => removeStringAt(i)} disabled={tuning.length <= 2}>×</Button>
+                        </div>
+                    ))}
+                    <Button size="small" onClick={addString}>+ Add String</Button>
+                </div>
+            </td>
+        </tr>),
     ];
 
     const getXPos = React.useCallback((stringNum: number): number => { return (stringSpacing * stringNum) }, [stringSpacing])
@@ -130,7 +218,7 @@ function StringInstrument(props: Props) {
                     <Circle key={`c3-${fretNum}`} x={7 * props.width / 10} y={posY + fretElemYOffset} radius={stringSpacing / 6} fill={colorPalette.Widget_Primary} />
                 );
             }
-            config.tuning.forEach((openNote, stringNum) => {
+            tuning.forEach((openNote, stringNum) => {
                 const posX = getXPos(stringNum);
                 if (props.fromWidget.widgetConfig.type === "harpejji") {
 
@@ -288,7 +376,7 @@ function StringInstrument(props: Props) {
             emphasized,
             clickListeners,
         }
-    }, [NoteLabling.ActiveNoteNames, NoteLabling.NoteNames, activeNotes, circleElemRadius, colorPalette.Main_Background, colorPalette.Note_Active, colorPalette.Note_Home, colorPalette.Widget_Primary, config.tuning, fretElemYOffset, fretSpacing, getNoteName, getXPos, getYPos, homeNote, noteDisplays.octaveGnostic, noteLabeling, props.fretCount, props.fromWidget.widgetConfig.type, props.width, setHomeNote, settings?.isPeaceModeEnabled, stringSpacing, updateNotes]);
+    }, [NoteLabling.ActiveNoteNames, NoteLabling.NoteNames, activeNotes, circleElemRadius, colorPalette.Main_Background, colorPalette.Note_Active, colorPalette.Note_Home, colorPalette.Widget_Primary, tuning, fretElemYOffset, fretSpacing, getNoteName, getXPos, getYPos, homeNote, noteDisplays.octaveGnostic, noteLabeling, props.fretCount, props.fromWidget.widgetConfig.type, props.width, setHomeNote, settings?.isPeaceModeEnabled, stringSpacing, updateNotes]);
 
     const getOrgnogonalUnitVect = (x: number, y: number) => {
         const mag = Math.sqrt(x * x + y * y);
@@ -304,8 +392,8 @@ function StringInstrument(props: Props) {
 
         // Todo also check if note displays size is greater than one
         if (channelDisplays.length > 0)
-            config.tuning.forEach((openNoteA, stringA) => {
-                config.tuning.forEach((openNoteB, stringB) => {
+            tuning.forEach((openNoteA, stringA) => {
+                tuning.forEach((openNoteB, stringB) => {
                     for (let fretA = 0; fretA < props.fretCount; fretA++) {
                         for (let fretB = 0; fretB < props.fretCount; fretB++) {
                             if (stringA === stringB) continue;
@@ -436,7 +524,7 @@ function StringInstrument(props: Props) {
             emphasized: emphasized,
             listeners: touchListeners,
         }
-    }, [channelDisplays.length, colorPalette, config.tuning, fretElemYOffset, fretSpacing, getXPos, getYPos, noteDisplays.octaveGnostic, props.fretCount, props.fromWidget.widgetConfig.type, props.height, stringSpacing, updateNotes]);
+    }, [channelDisplays.length, colorPalette, tuning, fretElemYOffset, fretSpacing, getXPos, getYPos, noteDisplays.octaveGnostic, props.fretCount, props.fromWidget.widgetConfig.type, props.height, stringSpacing, updateNotes]);
 
     const fullRender = React.useMemo((
     ) => {
