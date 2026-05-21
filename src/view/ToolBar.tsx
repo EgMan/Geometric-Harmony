@@ -12,7 +12,7 @@ import ColorLensIcon from '@mui/icons-material/ColorLens';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import PianoIcon from '@mui/icons-material/Piano';
 import FavoriteBorderRoundedIcon from '@mui/icons-material/FavoriteBorderRounded';
-// import SettingsIcon from '@mui/icons-material/Settings';
+import SettingsIcon from '@mui/icons-material/Settings';
 import HeadphonesIcon from '@mui/icons-material/Headphones';
 import SquareFootIcon from '@mui/icons-material/SquareFoot';
 import SquareRoundedIcon from '@mui/icons-material/SquareRounded';
@@ -25,6 +25,7 @@ import { MidiFileDataProvider, MidiFileParser } from "../sound/MidiFileParser";
 import { MidiTransport } from "./MidiTransport";
 import { LocalSynthVoice } from "../sound/SynthVoicings";
 import DensityMediumRoundedIcon from '@mui/icons-material/DensityMediumRounded';
+import { NoteDisplayMode } from "./SettingsProvider";
 import MIDIConnectionManager from "../sound/MIDIConnectionManager";
 import MicIcon from '@mui/icons-material/Mic';
 import { useAppTheme, useChangeAppTheme, Theme_Classic, Theme_BlackOnWhite, Theme_WhiteOnBlack, ColorPalette } from "./ThemeManager";
@@ -120,6 +121,7 @@ function ToolBar(props: Props) {
     const [abstractOpen, setAbstractOpen] = React.useState(false);
     const [exercisesOpen, setExercisesOpen] = React.useState(false);
     const [colorDropdownOpen, setColorDropdownOpen] = React.useState(false);
+    const [otherDropdownOpen, setOtherDropdownOpen] = React.useState(false);
     const [customizeOpen, setCustomizeOpen] = React.useState(false);
     const addNewWidget = React.useCallback((widgetType: WidgetType, config?: WidgetConfig) => {
         // const pos = props.stageRef.current?.getPointerPosition() ?? undefined;
@@ -158,7 +160,7 @@ function ToolBar(props: Props) {
         });
     }, [changeTheme]);
 
-    const anyDropdownOpen = addDropdownOpen || colorDropdownOpen || settingsDropdownOpen || midiSettingsDropdownOpen || noteBankDropdownOpen;
+    const anyDropdownOpen = addDropdownOpen || colorDropdownOpen || settingsDropdownOpen || midiSettingsDropdownOpen || noteBankDropdownOpen || otherDropdownOpen;
 
     const closeAllDropdowns = React.useCallback(() => {
         setAddDropdownOpen(false);
@@ -166,6 +168,7 @@ function ToolBar(props: Props) {
         setSettingsDropdownOpen(false);
         setMidiSettingsDropdownOpen(false);
         setNoteBankDropdownOpen(false);
+        setOtherDropdownOpen(false);
         props.onWidgetHover(null);
     }, [props.onWidgetHover]);
 
@@ -205,10 +208,10 @@ function ToolBar(props: Props) {
     }, [colorPalette.Note_Home, colorPalette.UI_Primary, noteBank.get.activeIndex, noteBank.get.entries, swapBank]);
 
     React.useEffect(() => {
-        if (!addDropdownOpen && !settingsDropdownOpen && !midiSettingsDropdownOpen && !noteBankDropdownOpen) {
+        if (!addDropdownOpen && !settingsDropdownOpen && !midiSettingsDropdownOpen && !noteBankDropdownOpen && !otherDropdownOpen) {
             (document.activeElement as HTMLElement).blur();
         }
-    }, [props.stageRef, addDropdownOpen, settingsDropdownOpen, midiSettingsDropdownOpen, noteBankDropdownOpen]);
+    }, [props.stageRef, addDropdownOpen, settingsDropdownOpen, midiSettingsDropdownOpen, noteBankDropdownOpen, otherDropdownOpen]);
 
     React.useEffect(() => {
         if (!addDropdownOpen) {
@@ -410,6 +413,43 @@ function ToolBar(props: Props) {
                                         }}
                                     >
                                         <CharIcon charDisplay={`${noteBank.get.activeIndex}`} />
+                                    </Button>
+                                </Tooltip>
+                                <Tooltip title="Other" slotProps={{ popper: { modifiers: [{ name: 'offset', options: { offset: [0, -10] } }] } }}>
+                                    <Button className="top-nav-button" type="submit" variant="contained"
+                                        sx={{
+                                            height: "34px",
+                                            maxWidth: '66px',
+                                            minWidth: '66px',
+                                            fontSize: "0.7em",
+                                            color: 'white',
+                                            backgroundColor: 'transparent',
+                                            boxShadow: 'none',
+                                            padding: "1.8px",
+                                            borderTopLeftRadius: '0px',
+                                            borderTopRightRadius: '9px',
+                                            borderBottomLeftRadius: '9px',
+                                            borderBottomRightRadius: '9px',
+                                            '&:hover': {
+                                                backgroundColor: 'rgb(255,255,255,0.1)',
+                                            },
+                                            "&.Mui-disabled": {
+                                                background: 'transparent',
+                                                color: "grey"
+                                            }
+                                        }}
+                                        onClick={() => {
+                                            closeAllDropdowns();
+                                            setOtherDropdownOpen(true);
+                                        }}
+                                        onMouseEnter={() => {
+                                            if (anyDropdownOpen && !otherDropdownOpen) {
+                                                closeAllDropdowns();
+                                                setOtherDropdownOpen(true);
+                                            }
+                                        }}
+                                    >
+                                        <SettingsIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                     </Button>
                                 </Tooltip>
                             </>
@@ -868,6 +908,38 @@ function ToolBar(props: Props) {
                             </Box>
                         </MenuList>
                     </ClickAwayListener>
+                </Popover>
+                <Popover
+                    open={otherDropdownOpen}
+                    onClose={() => setOtherDropdownOpen(false)}
+                    anchorEl={addButtonRef.current}
+                    anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: -10,
+                    }}
+                    style={{ transform: "translate(-15px, 0px)" }}
+                    role={"menu"}
+                    disablePortal
+                >
+                    <Paper sx={{ borderRadius: 2 }}>
+                        <MenuList sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 1 }}>
+                            <Box sx={{ borderRadius: 1, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
+                                <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold", textAlign: "center" }}>Other Settings</DialogTitle>
+                                <MenuItem>
+                                    <ListItemText> Note Display </ListItemText>
+                                    <Select
+                                        sx={{ fontFamily: "monospace", marginLeft: "16px" }}
+                                        id="menu-dropdown"
+                                        value={settings?.noteDisplayMode}
+                                        onChange={e => { settings?.setNoteDisplayMode(e.target.value as NoteDisplayMode) }}
+                                    >
+                                        <MenuItem value={NoteDisplayMode.NoteNames}>Note Names</MenuItem>
+                                        <MenuItem value={NoteDisplayMode.Intervals}>Intervals</MenuItem>
+                                    </Select>
+                                </MenuItem>
+                            </Box>
+                        </MenuList>
+                    </Paper>
                 </Popover>
             </div>
         </div >

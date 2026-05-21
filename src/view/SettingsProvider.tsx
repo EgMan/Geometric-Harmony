@@ -1,5 +1,11 @@
 import React from "react";
 import { LocalSynthVoice } from "../sound/SynthVoicings";
+
+export enum NoteDisplayMode {
+    NoteNames = "noteNames",
+    Intervals = "intervals",
+}
+
 type Props = {
     children: JSX.Element
 }
@@ -17,6 +23,8 @@ type Settings = {
     setIsPeaceModeEnabled: React.Dispatch<React.SetStateAction<boolean>>,
     synthVolume: number,
     setSynthVolume: React.Dispatch<React.SetStateAction<number>>,
+    noteDisplayMode: NoteDisplayMode,
+    setNoteDisplayMode: React.Dispatch<React.SetStateAction<NoteDisplayMode>>,
 }
 
 const settingsContext = React.createContext<Settings | null>(null);
@@ -28,6 +36,7 @@ function SettingsProvider(props: Props) {
     const [localSynthVoice, setLocalSynthVoice] = React.useState<LocalSynthVoice>(LocalSynthVoice.Sine);
     const [isPeaceModeEnabled, setIsPeaceModeEnabled] = React.useState<boolean>(false);
     const [synthVolume, setSynthVolume] = React.useState<number>(100);
+    const [noteDisplayMode, setNoteDisplayMode] = React.useState<NoteDisplayMode>(NoteDisplayMode.NoteNames);
 
     const settings = React.useMemo(() => ({
         isMuted,
@@ -42,7 +51,9 @@ function SettingsProvider(props: Props) {
         setIsPeaceModeEnabled,
         synthVolume,
         setSynthVolume,
-    }), [isMuted, isPeaceModeEnabled, isPercussionMuted, localSynthVoice, prioritizeMIDIAudio, synthVolume]);
+        noteDisplayMode,
+        setNoteDisplayMode,
+    }), [isMuted, isPeaceModeEnabled, isPercussionMuted, localSynthVoice, noteDisplayMode, prioritizeMIDIAudio, synthVolume]);
 
     return (
         <settingsContext.Provider value={settings}>

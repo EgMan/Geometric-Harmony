@@ -1,5 +1,5 @@
 import React from "react";
-import { normalizeToSingleOctave, NoteSet, useNoteSet } from "../sound/NoteProvider";
+import { normalizeToSingleOctave, NoteSet, useHomeNote, useNoteSet } from "../sound/NoteProvider";
 import { Vector2d } from "konva/lib/types";
 import { KonvaEventObject } from "konva/lib/Node";
 import ColorConverter from "string-color-converter";
@@ -7,6 +7,7 @@ import { enqueueSnackbar } from "notistack";
 import { ColorPalette } from "../view/ThemeManager";
 import { useActiveNoteBank } from "./NotesetBank";
 import { deprecate } from "util";
+import { NoteDisplayMode, useSettings } from "../view/SettingsProvider";
 
 // const numberToNote = ["C-1", "C#3", "D3", "D#3", "E3", "F3", "F#3", "G3", "G#3", "A3", "A#3", "B3"];
 const numberToPlayableNote = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
@@ -33,7 +34,15 @@ export function getNoteMIDI(note: number) {
 
 export function useActiveNoteNames() {
     const activeNotes = useNoteSet(NoteSet.Active).notes;
-    return useNoteNames(activeNotes);
+    const noteNames = useNoteNames(activeNotes);
+    const intervalNames = useIntervalNames(activeNotes);
+    const settings = useSettings();
+    const homeNote = useHomeNote();
+    const mode = settings?.noteDisplayMode ?? NoteDisplayMode.NoteNames;
+    return React.useMemo(() => {
+        if (mode === NoteDisplayMode.Intervals && homeNote !== null) return intervalNames;
+        return noteNames;
+    }, [mode, homeNote, noteNames, intervalNames]);
 }
 
 function useNoteNames(notes: Set<number>) {
@@ -49,8 +58,54 @@ function useNoteNames(notes: Set<number>) {
         } else {
             return numberToNoteNameFlat[note] ?? "?";
         }
-        // return getNoteName(normalizeToSingleOctave(note), activeNotes);
     }, [noteSpellingResult.preferSharps, noteSpellingResult.spelling]);
+}
+
+function getNameIdxForNote(note: number, spelling: NoteSpellingResult): number {
+    const s = spelling.spelling.get(note);
+    if (s) return s.nameIdx;
+    const possibilities = noteToPossibleNoteNames[note];
+    if (possibilities.length === 1) return possibilities[0][0];
+    const natural = possibilities.find(p => p[1] === 0);
+    if (natural) return natural[0];
+    return spelling.preferSharps
+        ? (possibilities.find(p => p[1] > 0) ?? possibilities[0])[0]
+        : (possibilities.find(p => p[1] < 0) ?? possibilities[1])[0];
+}
+
+function useIntervalNames(notes: Set<number>) {
+    const noteSpellingResult: NoteSpellingResult = useNoteSpelling(notes);
+    const homeNote = useHomeNote() ?? 0;
+    const normalizedHome = normalizeToSingleOctave(homeNote);
+    const homeNoteName = noteSpellingResult.preferSharps ? numberToNoteNameSharp[normalizedHome] : numberToNoteNameFlat[normalizedHome];
+    const homeSpelling = noteSpellingResult.spelling.get(normalizedHome);
+    const rootLabel = homeSpelling
+        ? (homeSpelling.accidentalNum >= 0 ? numberToNoteNameSharp[normalizedHome] : numberToNoteNameFlat[normalizedHome])
+        : homeNoteName;
+
+    return React.useCallback((note: number) => {
+        const normalizedNote = normalizeToSingleOctave(note);
+        if (normalizedNote === normalizedHome) return rootLabel;
+
+        const homeNameIdx = getNameIdxForNote(normalizedHome, noteSpellingResult);
+        let noteNameIdx = getNameIdxForNote(normalizedNote, noteSpellingResult);
+
+        // If note got same letter name as root (e.g. Db when home is D), use alternate spelling
+        if (noteNameIdx === homeNameIdx) {
+            const alt = noteToPossibleNoteNames[normalizedNote].find(p => p[0] !== homeNameIdx);
+            if (alt) noteNameIdx = alt[0];
+        }
+
+        const genericInterval = ((noteNameIdx - homeNameIdx) + 7) % 7; // 0-6
+        const expectedSemitones = noteNameToNaturalIndex[genericInterval];
+        const actualSemitones = ((normalizedNote - normalizedHome) + 12) % 12;
+        const quality = actualSemitones - expectedSemitones;
+        const degreeNumber = genericInterval + 1;
+
+        if (quality < 0) return `♭${degreeNumber}`;
+        if (quality > 0) return `#${degreeNumber}`;
+        return `${degreeNumber}`;
+    }, [normalizedHome, noteSpellingResult, rootLabel]);
 }
 
 export function getNoteName_DEPRECATED(i: number, activeNotes: Set<number>) {
