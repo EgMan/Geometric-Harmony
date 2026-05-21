@@ -123,13 +123,18 @@ function ToolBar(props: Props) {
     const [colorDropdownOpen, setColorDropdownOpen] = React.useState(false);
     const [otherDropdownOpen, setOtherDropdownOpen] = React.useState(false);
     const [customizeOpen, setCustomizeOpen] = React.useState(false);
+    const isClosingRef = React.useRef(false);
     const addNewWidget = React.useCallback((widgetType: WidgetType, config?: WidgetConfig) => {
         // const pos = props.stageRef.current?.getPointerPosition() ?? undefined;
         const pos = { x: 0.5 * window.innerWidth, y: 0.25 * window.innerHeight };
+        isClosingRef.current = true;
         props.widgetTrackerActions.spawnWidget(widgetType, pos, config);
         setAddDropdownOpen(false);
         props.onWidgetHover(null);
     }, [props.widgetTrackerActions, props.onWidgetHover]);
+    const onItemHover = React.useCallback((info: { type: WidgetType, config?: WidgetConfig } | null) => {
+        if (!isClosingRef.current) props.onWidgetHover(info);
+    }, [props.onWidgetHover]);
     const settings = useSettings();
     const changeTheme = useChangeAppTheme();
     const { colorPalette } = useAppTheme()!;
@@ -255,6 +260,7 @@ function ToolBar(props: Props) {
                                         }}
                                         onClick={() => {
                                             closeAllDropdowns();
+                                            isClosingRef.current = false;
                                             setAddDropdownOpen(true);
                                         }}
                                         onMouseEnter={() => {
@@ -418,7 +424,7 @@ function ToolBar(props: Props) {
                                 <Tooltip title="Other" slotProps={{ popper: { modifiers: [{ name: 'offset', options: { offset: [0, -10] } }] } }}>
                                     <Button className="top-nav-button" type="submit" variant="contained"
                                         sx={{
-                                            height: "34px",
+                                            height: "auto",
                                             maxWidth: '66px',
                                             minWidth: '66px',
                                             fontSize: "0.7em",
@@ -541,9 +547,9 @@ function ToolBar(props: Props) {
                         // onClose={() => setAddDropdownOpen(false)}
                         // anchorEl={addButtonRef.current}
                         >
-                            <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold", textAlign: "center" }} onMouseEnter={() => props.onWidgetHover(null)}>Spawn Toys</DialogTitle>
+                            <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold", textAlign: "center" }} onMouseEnter={() => onItemHover(null)}>Spawn Toys</DialogTitle>
                             <Box sx={{ borderRadius: 1, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
-                                <MenuItem onClick={() => setInstrumentsOpen(open => !open)} onMouseEnter={() => props.onWidgetHover(null)}>
+                                <MenuItem onClick={() => setInstrumentsOpen(open => !open)} onMouseEnter={() => onItemHover(null)}>
                                     <ListItemIcon>
                                         {instrumentsOpen ? <ExpandLess sx={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <ExpandMore sx={{ color: colorPalette.UI_Primary }} fontSize="small" />}
                                     </ListItemIcon>
@@ -551,19 +557,19 @@ function ToolBar(props: Props) {
                                 </MenuItem>
                                 <Collapse in={instrumentsOpen} timeout="auto" unmountOnExit>
                                     <MenuList disablePadding>
-                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Piano)} onMouseEnter={() => props.onWidgetHover({ type: WidgetType.Piano })}>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Piano)} onMouseEnter={() => onItemHover({ type: WidgetType.Piano })}>
                                             <ListItemIcon>
                                                 <MusicNoteIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                             </ListItemIcon>
                                             <ListItemText sx={{ color: colorPalette.UI_Primary }}>Piano</ListItemText>
                                         </MenuItem>
-                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Guitar, WidgetConfig_String_Guitar)} onMouseEnter={() => props.onWidgetHover({ type: WidgetType.Guitar, config: WidgetConfig_String_Guitar })}>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Guitar, WidgetConfig_String_Guitar)} onMouseEnter={() => onItemHover({ type: WidgetType.Guitar, config: WidgetConfig_String_Guitar })}>
                                             <ListItemIcon>
                                                 <MusicNoteIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                             </ListItemIcon>
                                             <ListItemText sx={{ color: colorPalette.UI_Primary }}>Guitar</ListItemText>
                                         </MenuItem>
-                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Guitar, WidgetConfig_String_Harpejji)} onMouseEnter={() => props.onWidgetHover({ type: WidgetType.Guitar, config: WidgetConfig_String_Harpejji })}>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Guitar, WidgetConfig_String_Harpejji)} onMouseEnter={() => onItemHover({ type: WidgetType.Guitar, config: WidgetConfig_String_Harpejji })}>
                                             <ListItemIcon>
                                                 <MusicNoteIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                             </ListItemIcon>
@@ -573,7 +579,7 @@ function ToolBar(props: Props) {
                                 </Collapse>
                             </Box>
                             <Box sx={{ borderRadius: 1, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
-                                <MenuItem onClick={() => setAbstractOpen(open => !open)} onMouseEnter={() => props.onWidgetHover(null)}>
+                                <MenuItem onClick={() => setAbstractOpen(open => !open)} onMouseEnter={() => onItemHover(null)}>
                                     <ListItemIcon>
                                         {abstractOpen ? <ExpandLess sx={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <ExpandMore sx={{ color: colorPalette.UI_Primary }} fontSize="small" />}
                                     </ListItemIcon>
@@ -584,19 +590,19 @@ function ToolBar(props: Props) {
                                         <Typography variant="caption" sx={{ color: colorPalette.UI_Primary, fontFamily: 'monospace', fontWeight: 'bold', px: 1, opacity: 0.6, display: 'block', textAlign: 'center' }}>
                                             2D
                                         </Typography>
-                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Tonnetz)} onMouseEnter={() => props.onWidgetHover({ type: WidgetType.Tonnetz })}>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Tonnetz)} onMouseEnter={() => onItemHover({ type: WidgetType.Tonnetz })}>
                                             <ListItemIcon>
                                                 <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                             </ListItemIcon>
                                             <ListItemText sx={{ color: colorPalette.UI_Primary }}>Tonnetz Diagram</ListItemText>
                                         </MenuItem>
-                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Wheel, WidgetConfig_Wheel_Fifths)} onMouseEnter={() => props.onWidgetHover({ type: WidgetType.Wheel, config: WidgetConfig_Wheel_Fifths })}>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Wheel, WidgetConfig_Wheel_Fifths)} onMouseEnter={() => onItemHover({ type: WidgetType.Wheel, config: WidgetConfig_Wheel_Fifths })}>
                                             <ListItemIcon>
                                                 <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                             </ListItemIcon>
                                             <ListItemText sx={{ color: colorPalette.UI_Primary }}>Circle of Fifths</ListItemText>
                                         </MenuItem>
-                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Wheel, WidgetConfig_Wheel_Semitones)} onMouseEnter={() => props.onWidgetHover({ type: WidgetType.Wheel, config: WidgetConfig_Wheel_Semitones })}>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Wheel, WidgetConfig_Wheel_Semitones)} onMouseEnter={() => onItemHover({ type: WidgetType.Wheel, config: WidgetConfig_Wheel_Semitones })}>
                                             <ListItemIcon>
                                                 <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                             </ListItemIcon>
@@ -612,13 +618,13 @@ function ToolBar(props: Props) {
                                             </ListItemIcon>
                                             <ListItemText sx={{ color: colorPalette.UI_Primary }}>Spiral of Fifths</ListItemText>
                                         </MenuItem> */}
-                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Spiral)} onMouseEnter={() => props.onWidgetHover({ type: WidgetType.Spiral })}>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Spiral)} onMouseEnter={() => onItemHover({ type: WidgetType.Spiral })}>
                                             <ListItemIcon>
                                                 <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                             </ListItemIcon>
                                             <ListItemText sx={{ color: colorPalette.UI_Primary }}>Coil of Semitones</ListItemText>
                                         </MenuItem>
-                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Icosahedron)} onMouseEnter={() => props.onWidgetHover({ type: WidgetType.Icosahedron })}>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Icosahedron)} onMouseEnter={() => onItemHover({ type: WidgetType.Icosahedron })}>
                                             <ListItemIcon>
                                                 <ConstructionIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                             </ListItemIcon>
@@ -628,7 +634,7 @@ function ToolBar(props: Props) {
                                 </Collapse>
                             </Box>
                             <Box sx={{ borderRadius: 1, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
-                                <MenuItem onClick={() => setToolsOpen(open => !open)} onMouseEnter={() => props.onWidgetHover(null)}>
+                                <MenuItem onClick={() => setToolsOpen(open => !open)} onMouseEnter={() => onItemHover(null)}>
                                     <ListItemIcon>
                                         {toolsOpen ? <ExpandLess sx={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <ExpandMore sx={{ color: colorPalette.UI_Primary }} fontSize="small" />}
                                     </ListItemIcon>
@@ -636,31 +642,31 @@ function ToolBar(props: Props) {
                                 </MenuItem>
                                 <Collapse in={toolsOpen} timeout="auto" unmountOnExit>
                                     <MenuList disablePadding>
-                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Oscilloscope)} onMouseEnter={() => props.onWidgetHover({ type: WidgetType.Oscilloscope })}>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Oscilloscope)} onMouseEnter={() => onItemHover({ type: WidgetType.Oscilloscope })}>
                                             <ListItemIcon>
                                                 <TimelineIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                             </ListItemIcon>
                                             <ListItemText sx={{ color: colorPalette.UI_Primary }}>Oscilloscope</ListItemText>
                                         </MenuItem>
-                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.FrequencyVis)} onMouseEnter={() => props.onWidgetHover({ type: WidgetType.FrequencyVis })}>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.FrequencyVis)} onMouseEnter={() => onItemHover({ type: WidgetType.FrequencyVis })}>
                                             <ListItemIcon>
                                                 <TimelineIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                             </ListItemIcon>
                                             <ListItemText sx={{ color: colorPalette.UI_Primary }}>Frequency Visualizer</ListItemText>
                                         </MenuItem>
-                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.DiatonicExplorer)} onMouseEnter={() => props.onWidgetHover({ type: WidgetType.DiatonicExplorer })}>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.DiatonicExplorer)} onMouseEnter={() => onItemHover({ type: WidgetType.DiatonicExplorer })}>
                                             <ListItemIcon>
                                                 <SquareFootIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                             </ListItemIcon>
                                             <ListItemText sx={{ color: colorPalette.UI_Primary }}>Diatonic Chord Explorer</ListItemText>
                                         </MenuItem>
-                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.MicPitch)} onMouseEnter={() => props.onWidgetHover({ type: WidgetType.MicPitch })}>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.MicPitch)} onMouseEnter={() => onItemHover({ type: WidgetType.MicPitch })}>
                                             <ListItemIcon>
                                                 <MicIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                             </ListItemIcon>
                                             <ListItemText sx={{ color: colorPalette.UI_Primary }}>Tuner</ListItemText>
                                         </MenuItem>
-                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Analyzer)} onMouseEnter={() => props.onWidgetHover({ type: WidgetType.Analyzer })}>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.Analyzer)} onMouseEnter={() => onItemHover({ type: WidgetType.Analyzer })}>
                                             <ListItemIcon>
                                                 <SquareFootIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                             </ListItemIcon>
@@ -670,7 +676,7 @@ function ToolBar(props: Props) {
                                 </Collapse>
                             </Box>
                             <Box sx={{ borderRadius: 1, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
-                                <MenuItem onClick={() => setExercisesOpen(open => !open)} onMouseEnter={() => props.onWidgetHover(null)}>
+                                <MenuItem onClick={() => setExercisesOpen(open => !open)} onMouseEnter={() => onItemHover(null)}>
                                     <ListItemIcon>
                                         {exercisesOpen ? <ExpandLess sx={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <ExpandMore sx={{ color: colorPalette.UI_Primary }} fontSize="small" />}
                                     </ListItemIcon>
@@ -678,7 +684,7 @@ function ToolBar(props: Props) {
                                 </MenuItem>
                                 <Collapse in={exercisesOpen} timeout="auto" unmountOnExit>
                                     <MenuList disablePadding>
-                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.PlayShapeGame)} onMouseEnter={() => props.onWidgetHover({ type: WidgetType.PlayShapeGame })}>
+                                        <MenuItem sx={{}} onClick={() => addNewWidget(WidgetType.PlayShapeGame)} onMouseEnter={() => onItemHover({ type: WidgetType.PlayShapeGame })}>
                                             <ListItemIcon>
                                                 <VideogameAssetIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                             </ListItemIcon>

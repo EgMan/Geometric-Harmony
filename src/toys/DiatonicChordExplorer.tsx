@@ -173,10 +173,14 @@ function DiatonicChordExplorer(props: Props) {
     }, [chordDisplay, radius]);
 
     return (
-        <Group x={-props.width / 2} y={-props.height / 2}>
-            {fullRender}
-            <SettingsMenuOverlay settingsRows={[]} fromWidget={props.fromWidget}>
+        <Group>
+            <Group x={-props.width / 2} y={-props.height / 2}>
                 {fullRender}
+            </Group>
+            <SettingsMenuOverlay settingsRows={[]} fromWidget={props.fromWidget}>
+                <Group x={-props.width / 2} y={-props.height / 2}>
+                    {fullRender}
+                </Group>
             </SettingsMenuOverlay>
         </Group>
     );

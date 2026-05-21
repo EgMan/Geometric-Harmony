@@ -172,12 +172,15 @@ function NoteProvider(props: Props) {
     //     console.log(`[${str.slice(0, -2)}]`);
     // }, [getNoteSet, noteSets]);
 
+    const rawChannelValue = React.useMemo(() => ({ get: channels, set: setChannels }), [channels, setChannels]);
+    const noteBankValue = React.useMemo(() => ({ get: noteBank, set: setNoteBank }), [noteBank, setNoteBank]);
+
     return (
         <updateNoteSetContext.Provider value={setNoteSet}>
             <homeNoteContext.Provider value={homeNote}>
                 <setHomeNoteContext.Provider value={setHomeNote}>
-                    <rawChannelContext.Provider value={{ get: channels, set: setChannels }}>
-                        <noteBankContext.Provider value={{ get: noteBank, set: setNoteBank }}>
+                    <rawChannelContext.Provider value={rawChannelValue}>
+                        <noteBankContext.Provider value={noteBankValue}>
                             {props.children}
                         </noteBankContext.Provider>
                     </rawChannelContext.Provider>
