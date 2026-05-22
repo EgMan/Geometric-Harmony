@@ -85,6 +85,7 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
 
     const contextMenuRef = React.useRef<Konva.Group>(null);
     const widgetRef = React.useRef<Konva.Group>(null);
+    const contentRef = React.useRef<Konva.Group>(null);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const [initialWidth, initialHeight] = React.useMemo(() => [otherProps.width ?? 1, otherProps.height ?? 1], []);
@@ -212,6 +213,42 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
         setDragComplete?.({ x: event.currentTarget.x() + initialPosition.x, y: event.currentTarget.y() + initialPosition.y });
     }, [initialPosition.x, initialPosition.y, setDragComplete]);
 
+    const exportWidget = React.useCallback(async () => {
+        const node = contentRef.current;
+        if (!node) return;
+        const dataURL = node.toDataURL({ pixelRatio: 3 });
+
+        // Convert data URL to blob for file picker
+        const res = await fetch(dataURL);
+        const blob = await res.blob();
+
+        let name = `GeometricMusic_${layout.displayName}.png`
+
+        if ('showSaveFilePicker' in window) {
+            try {
+                const handle = await (window as any).showSaveFilePicker({
+                    suggestedName: name,
+                    types: [{ description: 'PNG Image', accept: { 'image/png': ['.png'] } }],
+                });
+                const writable = await handle.createWritable();
+                await writable.write(blob);
+                await writable.close();
+                return;
+            } catch (e: any) {
+                if (e.name === 'AbortError') return; // User cancelled
+            }
+        }
+
+        // Fallback: auto-download
+        const link = document.createElement('a');
+        link.download = name;
+        link.href = URL.createObjectURL(blob);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    }, [layout.displayName]);
+
     const resizeComplete = React.useCallback((event: KonvaEventObject<DragEvent>) => {
         setLeftBoundBase(oldVal => (oldVal + leftBoundDragged));
         setRightBoundBase(oldVal => (oldVal + rightBoundDragged));
@@ -236,9 +273,11 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                         listening={!resizeMenuOpen}
                     >
                         {item && (
-                            <Component {...otherProps} fromWidget={fromWidget} width={resizedWidth} height={resizedHeight}>
-                                {children}
-                            </Component>
+                            <Group ref={contentRef}>
+                                <Component {...otherProps} fromWidget={fromWidget} width={resizedWidth} height={resizedHeight}>
+                                    {children}
+                                </Component>
+                            </Group>
                         )
                         }
                     </animated.Group>
@@ -440,10 +479,11 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                                     onClick={() => { setResizeMenuOpen(!resizeMenuOpen); setFullContextMenuOpen(false) }}
                                     onContextMenu={() => { setResizeMenuOpen(!resizeMenuOpen); setFullContextMenuOpen(false) }}
                                 />
-                                <MiniButton icon={"⟳"}
+                                <MiniButton icon={"↓"}
                                     x={-30}
                                     y={-30}
-                                    disabled={true}
+                                    onTouchStart={exportWidget}
+                                    onClick={exportWidget}
                                 />
                             </animated.Group>
                             <Group>
