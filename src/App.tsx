@@ -7,6 +7,7 @@ import SettingsProvider from './view/SettingsProvider';
 import { SnackbarProvider } from 'notistack';
 import ThemeManager from './view/ThemeManager';
 import HTMLOverlayProvider from './view/HTMLOverlayProvider';
+import { emitSnackbar, isMobile } from './utils/Utils';
 function App() {
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth)
   const [windowHeight, setWindowHeight] = React.useState(window.innerHeight)
@@ -19,6 +20,9 @@ function App() {
       console.log('scrolled!');
     });
     window.addEventListener('resize', setWindowDimensions);
+    if (isMobile()) {
+      emitSnackbar("Looks like you're on mobile!\nNote: you may need to un-silence phone to hear in-browser synth\nAlso, this app generally works better on a desktop browser (:", 5000, "info", false, true);
+    }
     return () => {
       window.removeEventListener('resize', setWindowDimensions)
     }

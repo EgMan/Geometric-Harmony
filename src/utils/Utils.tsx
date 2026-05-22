@@ -3,7 +3,7 @@ import { normalizeToSingleOctave, NoteSet, useHomeNote, useNoteSet } from "../so
 import { Vector2d } from "konva/lib/types";
 import { KonvaEventObject } from "konva/lib/Node";
 import ColorConverter from "string-color-converter";
-import { enqueueSnackbar } from "notistack";
+import { closeSnackbar, enqueueSnackbar, SnackbarKey } from "notistack";
 import { ColorPalette } from "../view/ThemeManager";
 import { useActiveNoteBank } from "./NotesetBank";
 import { deprecate } from "util";
@@ -377,6 +377,10 @@ export function useBrowserVersion() {
     }, []);
 }
 
+export function isMobile() {
+    return window.innerWidth <= 768 || 'ontouchstart' in window;
+}
+
 export function useShadowVector(position: Vector2d, source: Vector2d, magnitude: number): [Vector2d, number] {
     return React.useMemo(() => {
         const deltaX = position.x - source.x;
@@ -479,8 +483,9 @@ export function getRandomColorWithAlpha() {
 
 type SnackVariant = "default" | "success" | "error" | "warning" | "info";
 
-export function emitSnackbar(message: string, duration: number = 3000, variant: SnackVariant = "default", persist = false) {
-    enqueueSnackbar(message,
+export function emitSnackbar(message: string, duration: number = 3000, variant: SnackVariant = "default", persist = false, dismissable = true) {
+    let key: SnackbarKey;
+    key = enqueueSnackbar(message,
         {
             variant,
             preventDuplicate: true,
@@ -488,11 +493,17 @@ export function emitSnackbar(message: string, duration: number = 3000, variant: 
             style: {
                 backgroundColor: "rgba(255, 255, 255, 0.05)",
                 backdropFilter: "blur(16px)",
+                whiteSpace: "pre-line",
+                fontFamily: "monospace",
+                ...(dismissable ? { cursor: "pointer" } : {}),
             },
             anchorOrigin: {
                 vertical: "top",
                 horizontal: "right"
             },
+            ...(dismissable ? {
+                action: () => <span onClick={() => closeSnackbar(key)} onTouchEnd={() => closeSnackbar(key)} style={{ position: 'absolute', inset: 0 }} />,
+            } : {}),
         });
 }
 
