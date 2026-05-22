@@ -54,18 +54,15 @@ export function useActiveNoteBank() {
             index = 0;
         }
 
+        const targetEntry = noteBank.get.entries[index];
         noteBank.set!((prev) => {
-
-            // const newBank = [...prev];
-            const newBank = prev;
-            const activeNotesArr = Array.from(activeNotes);
-            newBank.entries[prev.activeIndex] = { activeNotes: activeNotesArr, homeNote };
-            newBank.activeIndex = index;
-            return newBank;
+            const newEntries = [...prev.entries];
+            newEntries[prev.activeIndex] = { activeNotes: Array.from(activeNotes), homeNote };
+            return { ...prev, entries: newEntries, activeIndex: index };
         });
 
-        updateNotes(NoteSet.Active, Array.from(noteBank.get.entries[index].activeNotes), true, true);
-        setHomeNote(noteBank.get.entries[index].homeNote);
+        updateNotes(NoteSet.Active, Array.from(targetEntry.activeNotes), true, true);
+        setHomeNote(targetEntry.homeNote);
 
         emitSnackbar(`Swapped to note bank ${index}`, 1000, "info");
         return true;

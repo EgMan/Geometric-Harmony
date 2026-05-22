@@ -192,7 +192,7 @@ function Piano(props: Props) {
 
     const getAbsoluteNoteNum = React.useCallback((note: number, octave: number) => {
         return note + ((octave + props.octaveOffset) * 12);
-    }, []);
+    }, [props.octaveOffset]);
 
     const keys = React.useMemo(() => {
         var whitekeys: JSX.Element[] = [];

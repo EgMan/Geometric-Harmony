@@ -80,9 +80,9 @@ function NoteProvider(props: Props) {
 
         // Update the active note bank entry
         setNoteBank(prevBank => {
-            const newBank = { ...prevBank };
-            newBank.entries[newBank.activeIndex] = { activeNotes: prevBank.entries[prevBank.activeIndex].activeNotes, homeNote: newHome };
-            return newBank;
+            const newEntries = [...prevBank.entries];
+            newEntries[prevBank.activeIndex] = { activeNotes: prevBank.entries[prevBank.activeIndex].activeNotes, homeNote: newHome };
+            return { ...prevBank, entries: newEntries };
         });
     }, []);
 
@@ -151,9 +151,9 @@ function NoteProvider(props: Props) {
             // If changing the Active channel, update the note bank entries
             if (noteSetsToUpdate.includes(NoteSet.Active)) {
                 setNoteBank(prevBank => {
-                    const newBank = { ...prevBank };
-                    newBank.entries[newBank.activeIndex] = { activeNotes: nums, homeNote: homeNote };
-                    return newBank;
+                    const newEntries = [...prevBank.entries];
+                    newEntries[prevBank.activeIndex] = { activeNotes: nums, homeNote: homeNote };
+                    return { ...prevBank, entries: newEntries };
                 });
             }
         },

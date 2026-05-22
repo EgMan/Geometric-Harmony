@@ -25,14 +25,13 @@ export function useModulateActiveNotes() {
         // Notebanks are unaffected by this operation.
         if (notes) return;
 
-        noteBank.set!(prevNoteBank => {
-        const newNoteBank = {...prevNoteBank};
-        for (let noteBankEntry of newNoteBank.entries) {
-            noteBankEntry.homeNote = normalizeToSingleOctave(noteBankEntry.homeNote ?? 0 + semitones);
-            noteBankEntry.activeNotes = getModulatedNotes(new Set(noteBankEntry.activeNotes), semitones);
-        }
-        return newNoteBank;
-        });
+        noteBank.set!(prevNoteBank => ({
+            ...prevNoteBank,
+            entries: prevNoteBank.entries.map(entry => ({
+                homeNote: normalizeToSingleOctave((entry.homeNote ?? 0) + semitones),
+                activeNotes: getModulatedNotes(new Set(entry.activeNotes), semitones),
+            })),
+        }));
     }, [activeNotes, homeNote, noteBank.set, setHomeNote, updateNotes])
 }
 
