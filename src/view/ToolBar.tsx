@@ -424,7 +424,7 @@ function ToolBar(props: Props) {
                                         <CharIcon charDisplay={`${noteBank.get.activeIndex}`} />
                                     </Button>
                                 </Tooltip>
-                                <Tooltip title="Other" slotProps={{ popper: { modifiers: [{ name: 'offset', options: { offset: [0, -10] } }] } }}>
+                                <Tooltip title="Other Bits" slotProps={{ popper: { modifiers: [{ name: 'offset', options: { offset: [0, -10] } }] } }}>
                                     <Button className="top-nav-button" type="submit" variant="contained"
                                         sx={{
                                             height: "auto",
