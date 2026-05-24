@@ -149,13 +149,13 @@ export const CHORD_DOMINANT7_OMIT5: HarmonicShape = {
     groupByOverride: "Triadic Chords",
 };
 export const CHORD_DOMINANT7_SUS4: HarmonicShape = {
-    name: "Dominant Seven Sus 4",
+    name: "Seven Sus 4",
     notes: [[true], [false], [false], [false], [false], [true], [false], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
 };
 export const CHORD_DOMINANT7_SUS_SHARP4: HarmonicShape = {
-    name: "Dominant Seven Sus ♯4",
+    name: "Seven Sus ♯4",
     notes: [[true], [false], [false], [false], [false], [false], [true], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
