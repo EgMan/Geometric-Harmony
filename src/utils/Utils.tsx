@@ -496,6 +496,8 @@ export function emitSnackbar(message: string, duration: number = 3000, variant: 
                 whiteSpace: "pre-line",
                 fontFamily: "monospace",
                 ...(dismissable ? { cursor: "pointer" } : {}),
+                marginTop: isMobile() ? '20px' : '0px',
+                ...(isMobile() ? { maxWidth: 'calc(100vw - 32px)', wordBreak: 'break-word' as const, textAlign: 'center' as const } : {}),
             },
             anchorOrigin: {
                 vertical: "top",

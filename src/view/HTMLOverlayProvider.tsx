@@ -49,7 +49,6 @@ function HTMLOverlayProvider(props: Props) {
                     ],
                 }}
             >
-                {/* {props.children} */}
                 <div ref={divRef}>
                     {props.children}
                 </div>

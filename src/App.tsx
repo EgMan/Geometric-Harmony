@@ -21,7 +21,7 @@ function App() {
     });
     window.addEventListener('resize', setWindowDimensions);
     if (isMobile()) {
-      emitSnackbar("Looks like you're on mobile!\nThis app was designed for desktop, though many (not all) thangs should still work here.\n\nNote: you may to un-silence your phone to hear in-browser synth.", 5000, "info", false, true);
+      emitSnackbar("Looks like you're on mobile!\nThis app was designed for desktop,\nthough many (not all) thangs should still work here.\n\nNote: you may need to un-silence your phone to hear in-browser synth.", 10000, "info", false, true);
     }
     return () => {
       window.removeEventListener('resize', setWindowDimensions)
