@@ -115,8 +115,15 @@ function DiatonicChordExplorer(props: Props) {
                     if (note[0] === false) return -1;
                     return normalizeToSingleOctave(idx + fit.rootNote);
                 })
-                    .filter(note => note !== -1)
-                    .map((note, idx) => note + (idx % 2 === 1 ? 12 : 0));
+                    .filter(note => note !== -1);
+
+                // Voicing (currently closed aescending from root)
+                // TODO configurable voicings
+                for (let i = 1; i < chordNotes.length; i++) {
+                    while (chordNotes[i] <= chordNotes[i - 1]) {
+                        chordNotes[i] += 12;
+                    }
+                }
 
                 // TODO multiple channels
                 const key = fit.rootNote + ":" + fit.shape.name;
