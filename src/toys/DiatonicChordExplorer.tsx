@@ -125,6 +125,18 @@ function DiatonicChordExplorer(props: Props) {
                     }
                 }
 
+                // Open up voicing a bit for tetratic+ chords
+                // Move extensions up an octave
+                if (chordNotes.length > 3) {
+                    for (let i = 1; i < chordNotes.length; i++) {
+                        const interval = chordNotes[i] - chordNotes[0];
+                        // ♭9, 9, 11, #11, ♭13, 13
+                        if ([1, 2, 5, 6, 8, 9].includes(interval) && chordNotes[i] <= chordNotes[i - 1] + 2) {
+                            chordNotes[i] += 12;
+                        }
+                    }
+                }
+
                 // TODO multiple channels
                 const key = fit.rootNote + ":" + fit.shape.name;
                 const tileColor = fitChannelMap[key] ? fitChannelMap[key]![0]?.color : colorPalette.UI_Background;
