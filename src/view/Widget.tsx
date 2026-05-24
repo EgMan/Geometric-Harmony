@@ -192,7 +192,7 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
         // console.log("ypos", event.target.absolutePosition().y, event.target.y(), event.target.absolutePosition().y - event.target.y())
 
 
-        // Scroll to adjacent space if dragging near edge
+        // Constrain widget to screen bounds
         if (stage !== null) {
             // console.log("stagepos", stage.getAbsolutePosition());
             var pointerPos = stage.getPointerPosition();

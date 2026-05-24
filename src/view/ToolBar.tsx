@@ -12,7 +12,7 @@ import ColorLensIcon from '@mui/icons-material/ColorLens';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import PianoIcon from '@mui/icons-material/Piano';
 import FavoriteBorderRoundedIcon from '@mui/icons-material/FavoriteBorderRounded';
-import SettingsIcon from '@mui/icons-material/Settings';
+import WidgetsIcon from '@mui/icons-material/Widgets';
 import HeadphonesIcon from '@mui/icons-material/Headphones';
 import SquareFootIcon from '@mui/icons-material/SquareFoot';
 import SquareRoundedIcon from '@mui/icons-material/SquareRounded';
@@ -124,16 +124,18 @@ function ToolBar(props: Props) {
     const [otherDropdownOpen, setOtherDropdownOpen] = React.useState(false);
     const [customizeOpen, setCustomizeOpen] = React.useState(false);
     const isClosingRef = React.useRef(false);
+    const isTouchRef = React.useRef(false);
     const addNewWidget = React.useCallback((widgetType: WidgetType, config?: WidgetConfig) => {
         // const pos = props.stageRef.current?.getPointerPosition() ?? undefined;
         const pos = { x: 0.5 * window.innerWidth, y: 0.25 * window.innerHeight };
         isClosingRef.current = true;
+        isTouchRef.current = false;
         props.widgetTrackerActions.spawnWidget(widgetType, pos, config);
         setAddDropdownOpen(false);
         props.onWidgetHover(null);
     }, [props.widgetTrackerActions, props.onWidgetHover]);
     const onItemHover = React.useCallback((info: { type: WidgetType, config?: WidgetConfig } | null) => {
-        if (!isClosingRef.current) props.onWidgetHover(info);
+        if (!isClosingRef.current && !isTouchRef.current) props.onWidgetHover(info);
     }, [props.onWidgetHover]);
     const settings = useSettings();
     const changeTheme = useChangeAppTheme();
@@ -221,6 +223,7 @@ function ToolBar(props: Props) {
     React.useEffect(() => {
         if (!addDropdownOpen) {
             props.onWidgetHover(null);
+            isTouchRef.current = false;
         }
     }, [addDropdownOpen, props.onWidgetHover]);
 
@@ -455,7 +458,7 @@ function ToolBar(props: Props) {
                                             }
                                         }}
                                     >
-                                        <SettingsIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                        <WidgetsIcon sx={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                     </Button>
                                 </Tooltip>
                             </>
@@ -543,9 +546,7 @@ function ToolBar(props: Props) {
                 >
                     <ClickAwayListener onClickAway={() => { setAddDropdownOpen(false); props.onWidgetHover(null); }}>
                         <MenuList sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 1 }}
-                        // open={addDropdownOpen}
-                        // onClose={() => setAddDropdownOpen(false)}
-                        // anchorEl={addButtonRef.current}
+                            onTouchStart={() => { isTouchRef.current = true; }}
                         >
                             <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold", textAlign: "center" }} onMouseEnter={() => onItemHover(null)}>Spawn Toys</DialogTitle>
                             <Box sx={{ borderRadius: 1, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>

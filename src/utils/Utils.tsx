@@ -378,7 +378,7 @@ export function useBrowserVersion() {
 }
 
 export function isMobile() {
-    return window.innerWidth <= 768 || 'ontouchstart' in window;
+    return matchMedia('(pointer: coarse)').matches && matchMedia('(hover: none)').matches;
 }
 
 export function useShadowVector(position: Vector2d, source: Vector2d, magnitude: number): [Vector2d, number] {
