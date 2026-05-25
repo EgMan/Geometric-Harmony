@@ -182,7 +182,7 @@ function ToolBar(props: Props) {
     const swapBank = useActiveNoteBank();
     const noteBankElems = React.useMemo(() => {
         return noteBank.get.entries.map((noteBankEntry, i) => {
-            const noteBankFit = getAllExactFits(new Set(noteBankEntry.activeNotes))[0];
+            const noteBankFit = getAllExactFits(new Set(noteBankEntry.activeNotes), noteBankEntry.homeNote, ShapeType.SCALE)[0];
             const label = getNoteNameInExactFitShape(new Set(noteBankEntry.activeNotes), noteBankEntry.homeNote ?? 0, noteBankFit);
             const shapeType = ShapeType[noteBankFit.shape.type].toString().toLowerCase();
             return <MenuItem

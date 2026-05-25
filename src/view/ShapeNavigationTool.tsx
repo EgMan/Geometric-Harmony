@@ -50,7 +50,7 @@ function ShapeNavigationTool(props: Props) {
     const homeNote = useHomeNote();
     const getNoteName = useActiveNoteNames();
 
-    const activeExactFits = useGetAllExactFits(activeNotes);
+    const activeExactFits = useGetAllExactFits(activeNotes, homeNote, ShapeType.SCALE);
     const activeExactFit = activeExactFits[0];
 
     const keySelectorExplorerWidth = 70;
@@ -79,7 +79,7 @@ function ShapeNavigationTool(props: Props) {
                     var hasExplicitName = false;
                     switch (shape.type) {
                         case ShapeType.CHORD:
-                            hasExplicitName = startingNoteNum === 0;
+                            hasExplicitName = startingNoteNum === 0 || startingNote.length >= 2;
                             break;
                         default:
                             hasExplicitName = startingNote.length >= 2;

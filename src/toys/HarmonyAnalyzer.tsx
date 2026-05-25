@@ -23,21 +23,35 @@ function HarmonyAnalyzer(props: Props) {
     const channelDisplays = useChannelDisplays();
     const getNoteName = useActiveNoteNames();
 
-    const activeExactFits = useGetAllExactFits(activeNotes);
+    const activeExactFits = useGetAllExactFits(activeNotes, homeNote, ShapeType.SCALE);
     const activeExactFit = activeExactFits[0];
     const activeExactFitName = activeExactFit ? activeExactFit.shape.name : "";
 
-    const emphasizedExactFits = useGetAllExactFits(emphasizedNotes);
+    const emphasizedOctaveGnosticRaw = useNoteSet(NoteSet.Emphasized_OctaveGnostic).notes;
+    const emphasizedBassNote = React.useMemo(() => {
+        if (emphasizedOctaveGnosticRaw.size === 0) return null;
+        return normalizeToSingleOctave(Math.min(...emphasizedOctaveGnosticRaw));
+    }, [emphasizedOctaveGnosticRaw]);
+    const emphasizedExactFits = useGetAllExactFits(emphasizedNotes, emphasizedBassNote, ShapeType.CHORD);
     const emphasizedExactFit = emphasizedExactFits[0];
 
+    const inputNotesRaw = useNoteSet(NoteSet.PlayingInput).notes;
     const inputNotes = useNoteSet(NoteSet.PlayingInput, true).notes;
-    const inputExactFits = useGetAllExactFits(inputNotes);
+    const inputBassNote = React.useMemo(() => {
+        if (inputNotesRaw.size === 0) return null;
+        return normalizeToSingleOctave(Math.min(...inputNotesRaw));
+    }, [inputNotesRaw]);
+    const inputExactFits = useGetAllExactFits(inputNotes, inputBassNote, ShapeType.CHORD);
     const inputExactFit = inputExactFits[0];
 
     // const midifileNotes = useNoteSet(NoteSet.MIDIFileInput, true).notes;
     const midifileNoteInfo = useNotesOfType(NoteSet.MIDIFileInput);
     const midifileNotes = midifileNoteInfo.map(note => normalizeToSingleOctave(note[1]));
-    const midiFileExactFits = useGetAllExactFits(new Set(midifileNotes));
+    const midiBassNote = React.useMemo(() => {
+        if (midifileNoteInfo.length === 0) return null;
+        return normalizeToSingleOctave(Math.min(...midifileNoteInfo.map(n => n[1])));
+    }, [midifileNoteInfo]);
+    const midiFileExactFits = useGetAllExactFits(new Set(midifileNotes), midiBassNote, ShapeType.CHORD);
     const midiFileExactFit = midiFileExactFits[0];
 
     const channelDisplaysExactFits = useChannelDisplaysExactFits();
@@ -201,8 +215,8 @@ export function getScaleDegree(noteInShapeFrom: number, noteInShapeTo: number, s
 
 export function useGetActiveShapeScaleDegreeFromNote() {
     const activeNotes = useNoteSet(NoteSet.Active).notes;
-    const exactFit = useGetAllExactFits(activeNotes)[0];
     const homeNote = useHomeNote() ?? 0;
+    const exactFit = useGetAllExactFits(activeNotes, homeNote, ShapeType.SCALE)[0];
 
     const shape = exactFit?.shape ?? SCALE_CHROMATIC;
     const shapeOffset = exactFit?.noteToFirstNoteInShapeIdxOffset ?? 0;
@@ -252,6 +266,8 @@ export function getModeNameInShape(shapeIdx: number, shape: HarmonicShape): stri
         case ShapeType.CHORD:
             if (scaleDegree < 0) return "Not a chord";
             if (scaleDegree === 1) return shape.name;
+            const chordInversionName = shape.notes[shapeIdx]?.[1];
+            if (chordInversionName) return chordInversionName;
             return `${shape.name} inversion ${scaleDegree - 1}`;
         case ShapeType.SCALE:
             // First, attempt to find the true name of the mode
@@ -371,7 +387,7 @@ export function getDynamicShape(notes: Set<number>): HarmonicShape {
     }
 }
 
-export function getAllExactFits(notes: Set<number>): ExactFit[] {
+export function getAllExactFits(notes: Set<number>, preferredRoot?: number | null, preferShapeType?: ShapeType): ExactFit[] {
     const defaultExactFit: ExactFit = {
         shape: getDynamicShape(notes),
         doesFit: true,
@@ -380,11 +396,23 @@ export function getAllExactFits(notes: Set<number>): ExactFit[] {
     }
     const shapesOfCorrectSize = knownShapes[notes.size] ?? [];
     const fits = shapesOfCorrectSize.map(shape => tryToFitShape(shape, notes)).filter(shapeFit => shapeFit.doesFit);
-    // if (shapesOfCorrectSize[0].name.includes("Minor")) {
+    fits.sort((a, b) => {
+        if (preferShapeType != null) {
+            const aType = a.shape.type === preferShapeType ? 0 : 1;
+            const bType = b.shape.type === preferShapeType ? 0 : 1;
+            if (aType !== bType) return aType - bType;
+        }
+        if (preferredRoot != null) {
+            const aRoot = a.rootNote === preferredRoot ? 0 : 1;
+            const bRoot = b.rootNote === preferredRoot ? 0 : 1;
+            if (aRoot !== bRoot) return aRoot - bRoot;
+        }
+        return 0;
+    });
     return fits.length > 0 ? fits : [defaultExactFit];
 }
 
-export function useGetAllExactFits(notes: Set<number>): ExactFit[] {
+export function useGetAllExactFits(notes: Set<number>, preferredRoot?: number | null, preferShapeType?: ShapeType): ExactFit[] {
     const tryToFitShape = useTryToFitShape();
 
     return React.useMemo(() => {
@@ -395,8 +423,22 @@ export function useGetAllExactFits(notes: Set<number>): ExactFit[] {
             rootNote: -1,
         }
         const shapesOfCorrectSize = knownShapes[notes.size] ?? [];
-        return shapesOfCorrectSize.map(shape => tryToFitShape(shape, notes)).filter(shapeFit => shapeFit.doesFit).concat(defaultExactFit);
-    }, [notes, tryToFitShape]);
+        const fits = shapesOfCorrectSize.map(shape => tryToFitShape(shape, notes)).filter(shapeFit => shapeFit.doesFit);
+        fits.sort((a, b) => {
+            if (preferShapeType != null) {
+                const aType = a.shape.type === preferShapeType ? 0 : 1;
+                const bType = b.shape.type === preferShapeType ? 0 : 1;
+                if (aType !== bType) return aType - bType;
+            }
+            if (preferredRoot != null) {
+                const aRoot = a.rootNote === preferredRoot ? 0 : 1;
+                const bRoot = b.rootNote === preferredRoot ? 0 : 1;
+                if (aRoot !== bRoot) return aRoot - bRoot;
+            }
+            return 0;
+        });
+        return fits.concat(defaultExactFit);
+    }, [notes, tryToFitShape, preferredRoot, preferShapeType]);
 }
 
 type DiatonicFits = {
@@ -448,7 +490,7 @@ export function useDiatonicRomanNumerals() {
     const diatonicFits: DiatonicFits = useGetDiatonicFits();
     const homeNote = useHomeNote() ?? 0;
     const activeNotes = useNoteSet(NoteSet.Active).notes;
-    const activeExactFits = useGetAllExactFits(activeNotes);
+    const activeExactFits = useGetAllExactFits(activeNotes, homeNote, ShapeType.SCALE);
 
     return React.useMemo(() => {
         let numeralsByScaleDegree: string[] = [];
@@ -491,14 +533,26 @@ export function useDiatonicRomanNumerals() {
 
 export function useChannelDisplaysExactFits() {
     const channels = useChannelDisplays();
-    const tryToFitShape = useTryToFitShape();
+    const shapeFits = useAllShapeFits();
     return React.useMemo(() => {
         return channels.map(channel => {
             const normalizedNotes = new Set(Array.from(channel.notes).map(note => normalizeToSingleOctave(note)));
             const shapesOfCorrectSize = knownShapes[normalizedNotes.size] ?? [];
-            return { exactFits: shapesOfCorrectSize.map(shape => tryToFitShape(shape, normalizedNotes)).filter(shapeFit => shapeFit.doesFit), channel: channel };
+            const fits = shapesOfCorrectSize
+                .filter(shape => shape.type === ShapeType.CHORD)
+                .flatMap(shape => shapeFits(shape, normalizedNotes))
+                .filter(shapeFit => shapeFit.doesFit);
+            if (channel.notes.size > 0) {
+                const bassNote = normalizeToSingleOctave(Math.min(...channel.notes));
+                fits.sort((a, b) => {
+                    const aMatch = a.rootNote === bassNote ? 0 : 1;
+                    const bMatch = b.rootNote === bassNote ? 0 : 1;
+                    return aMatch - bMatch;
+                });
+            }
+            return { exactFits: fits, channel: channel };
         });
-    }, [channels, tryToFitShape]);
+    }, [channels, shapeFits]);
 }
 
 export const getNoteNameInExactFitShape = (notes: Set<number>, note: number, exactFit: ExactFit) => {
