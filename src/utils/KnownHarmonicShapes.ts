@@ -11,6 +11,7 @@ export enum ShapeType {
 export type HarmonicShape =
     {
         name: string,
+        shortName?: string,
         notes: NoteInContext[],
         type: ShapeType,
         groupByOverride?: string,
@@ -55,12 +56,14 @@ export const INTERVAL_TRITONE: HarmonicShape = {
 
 export const CHORD_MINORTRIAD: HarmonicShape = {
     name: "Minor Triad",
+    shortName: "m",
     notes: [[true], [false], [false], [true], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Triadic Chords",
 };
 export const CHORD_MAJORTRIAD: HarmonicShape = {
     name: "Major Triad",
+    shortName: "",
     notes: [[true], [false], [false], [false], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Triadic Chords",
@@ -68,18 +71,21 @@ export const CHORD_MAJORTRIAD: HarmonicShape = {
 
 export const CHORD_DOMINANT7_SUS2: HarmonicShape = {
     name: "Seven Sus 2",
+    shortName: "7 sus2",
     notes: [[true], [false], [true], [false], [false], [false], [false], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
 };
 export const CHORD_MAJOR7_SUS2: HarmonicShape = {
     name: "Major Seven Sus 2",
+    shortName: "M7 sus2",
     notes: [[true], [false], [true], [false], [false], [false], [false], [true], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
 };
 export const CHORD_SUS4_TRIAD: HarmonicShape = {
     name: "Sus 4",
+    shortName: "sus4",
     notes: [[true], [false], [false], [false], [false], [true], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Triadic Chords",
@@ -87,6 +93,7 @@ export const CHORD_SUS4_TRIAD: HarmonicShape = {
 
 export const CHORD_SUS_SHARP4_TRIAD: HarmonicShape = {
     name: "Sus ♯4",
+    shortName: "sus ♯4",
     notes: [[true], [false], [false], [false], [false], [false], [true], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Triadic Chords",
@@ -94,6 +101,7 @@ export const CHORD_SUS_SHARP4_TRIAD: HarmonicShape = {
 
 export const CHORD_SUS2_TRIAD: HarmonicShape = {
     name: "Sus 2",
+    shortName: "sus2",
     notes: [[true], [false], [true], [false], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Triadic Chords",
@@ -101,30 +109,35 @@ export const CHORD_SUS2_TRIAD: HarmonicShape = {
 
 export const CHORD_MAJOR6_OMIT5: HarmonicShape = {
     name: "Major 6 (omit 5)",
+    shortName: "6 no5",
     notes: [[true], [false], [false], [false], [true], [false], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Triadic Chords",
 };
 export const CHORD_MINOR6_OMIT5: HarmonicShape = {
     name: "Minor 6 (omit 5)",
+    shortName: "m6 no5",
     notes: [[true], [false], [false], [true], [false], [false], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Triadic Chords",
 };
 export const CHORD_MINOR_FLAT6_OMIT5: HarmonicShape = {
     name: "Minor ♭6 (omit 5)",
+    shortName: "m♭6 (-5)",
     notes: [[true], [false], [false], [true], [false], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Triadic Chords",
 };
 export const CHORD_DIMINISHEDTRIAD: HarmonicShape = {
     name: "Diminished Triad",
+    shortName: "°",
     notes: [[true], [false], [false], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Triadic Chords",
 };
 export const CHORD_AUGMENTEDTRIAD: HarmonicShape = {
     name: "Augmented Triad",
+    shortName: "+",
     notes: [[true], [false], [false], [false], [true], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Triadic Chords",
@@ -132,114 +145,133 @@ export const CHORD_AUGMENTEDTRIAD: HarmonicShape = {
 
 export const CHORD_DIMINISHED7: HarmonicShape = {
     name: "Diminished Seven",
+    shortName: "°7",
     notes: [[true], [false], [false], [true], [false], [false], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
 };
 export const CHORD_HALFDIMINISHED7: HarmonicShape = {
     name: "Half Diminished Seven",
+    shortName: "ø7",
     notes: [[true], [false], [false], [true], [false], [false], [true], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
 };
 export const CHORD_MINOR6: HarmonicShape = {
     name: "Minor 6",
+    shortName: "m6",
     notes: [[true], [false], [false], [true], [false], [false], [false], [true], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
 };
 export const CHORD_MAJOR6: HarmonicShape = {
     name: "Major 6",
+    shortName: "6",
     notes: [[true], [false], [false], [false], [true], [false], [false], [true], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
 };
 export const CHORD_MAJOR_FLAT6: HarmonicShape = {
     name: "Major ♭6",
+    shortName: "♭6",
     notes: [[true], [false], [false], [false], [true], [false], [false], [true], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
 };
 export const CHORD_MINOR_FLAT6: HarmonicShape = {
     name: "Minor ♭6",
+    shortName: "m♭6",
     notes: [[true], [false], [false], [true], [false], [false], [false], [true], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
 };
 export const CHORD_MINOR7: HarmonicShape = {
     name: "Minor Seven",
+    shortName: "7",
     notes: [[true], [false], [false], [true], [false], [false], [false], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
 };
 export const CHORD_MINOR7_OMIT5: HarmonicShape = {
     name: "Minor Seven (omit 5)",
+    shortName: "m7 no5",
     notes: [[true], [false], [false], [true], [false], [false], [false], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
 };
 export const CHORD_HITCHCOCK7: HarmonicShape = {
     name: "Minor Major Seven",
+    shortName: "mM7",
     notes: [[true], [false], [false], [true], [false], [false], [false], [true], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
 };
 export const CHORD_HITCHCOCK7_OMIT5: HarmonicShape = {
     name: "Minor Major Seven (omit 5)",
+    shortName: "mM7 no5",
     notes: [[true], [false], [false], [true], [false], [false], [false], [false], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Triadic Chords",
 };
 export const CHORD_DOMINANT7: HarmonicShape = {
     name: "Dominant Seven",
+    shortName: "7",
     notes: [[true], [false], [false], [false], [true], [false], [false], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
 };
 export const CHORD_DOMINANT7_OMIT5: HarmonicShape = {
     name: "Dominant Seven (omit 5)",
+    shortName: "7 no5",
     notes: [[true], [false], [false], [false], [true], [false], [false], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Triadic Chords",
 };
 export const CHORD_DOMINANT7_SUS4: HarmonicShape = {
     name: "Seven Sus 4",
+    shortName: "7 sus4",
     notes: [[true], [false], [false], [false], [false], [true], [false], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
 };
 export const CHORD_DOMINANT7_SUS_SHARP4: HarmonicShape = {
     name: "Seven Sus ♯4",
+    shortName: "7 sus♯4",
     notes: [[true], [false], [false], [false], [false], [false], [true], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
 };
 export const CHORD_MAJOR7: HarmonicShape = {
     name: "Major Seven",
+    shortName: "M7",
     notes: [[true], [false], [false], [false], [true], [false], [false], [true], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
 };
 export const CHORD_MAJOR7_OMIT5: HarmonicShape = {
     name: "Major Seven (omit 5)",
+    shortName: "M7 no5",
     notes: [[true], [false], [false], [false], [true], [false], [false], [false], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Triadic Chords",
 };
 export const CHORD_MAJOR7_SUS4: HarmonicShape = {
     name: "Major Seven Sus 4",
+    shortName: "M7 sus4",
     notes: [[true], [false], [false], [false], [false], [true], [false], [true], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
 };
 export const CHORD_AUGMENTED7: HarmonicShape = {
     name: "Augmented Seven",
+    shortName: "+7",
     notes: [[true], [false], [false], [false], [true], [false], [false], [false], [true], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
 };
 export const CHORD_AUGMENTED_MAJOR7: HarmonicShape = {
     name: "Augmented Major Seven",
+    shortName: "+ M7",
     notes: [[true], [false], [false], [false], [true], [false], [false], [false], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
@@ -247,6 +279,7 @@ export const CHORD_AUGMENTED_MAJOR7: HarmonicShape = {
 
 export const CHORD_MAJOR_ADD_FLAT9: HarmonicShape = {
     name: "Major Add ♭9",
+    shortName: "add ♭9",
     notes: [[true], [true], [false], [false], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
@@ -254,6 +287,7 @@ export const CHORD_MAJOR_ADD_FLAT9: HarmonicShape = {
 
 export const CHORD_MAJOR_ADD9: HarmonicShape = {
     name: "Major Add 9",
+    shortName: "add9",
     notes: [[true], [false], [true], [false], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
@@ -261,6 +295,7 @@ export const CHORD_MAJOR_ADD9: HarmonicShape = {
 
 export const CHORD_MAJOR_ADD11: HarmonicShape = {
     name: "Major Add 11",
+    shortName: "add 11",
     notes: [[true], [false], [false], [false], [true], [true], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
@@ -268,6 +303,7 @@ export const CHORD_MAJOR_ADD11: HarmonicShape = {
 
 export const CHORD_MAJOR_ADD_SHARP11: HarmonicShape = {
     name: "Major Add ♯11",
+    shortName: "add ♯11",
     notes: [[true], [false], [false], [false], [true], [false], [true], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
@@ -275,66 +311,77 @@ export const CHORD_MAJOR_ADD_SHARP11: HarmonicShape = {
 
 export const CHORD_DOMINANT7_FLAT5: HarmonicShape = {
     name: "Altered Seven ♭5",
+    shortName: "7 ♭5",
     notes: [[true], [false], [false], [false], [true], [false], [true], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
 };
 export const CHORD_DOMINANT7_FLAT9: HarmonicShape = {
     name: "Altered Seven ♭9",
+    shortName: "7 ♭9",
     notes: [[true], [true], [false], [false], [true], [false], [false], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Pentadic Chords",
 };
 export const CHORD_DOMINANT7_SHARP9: HarmonicShape = {
     name: "Altered Seven #9",
+    shortName: "7 #9",
     notes: [[true], [false], [false], [true], [true], [false], [false], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Pentadic Chords",
 };
 export const CHORD_DOMINANT7_SHARP11: HarmonicShape = {
     name: "Dominant Seven #11",
+    shortName: "7 #11",
     notes: [[true], [false], [false], [false], [true], [false], [true], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Pentadic Chords",
 };
 export const CHORD_DOMINANT9_FLAT5: HarmonicShape = {
     name: "Dominant 9 ♭5",
+    shortName: "9 ♭5",
     notes: [[true], [false], [true], [false], [true], [false], [true], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Pentadic Chords",
 };
 export const CHORD_DOMINANT9_SHARP5: HarmonicShape = {
     name: "Dominant 9 #5",
+    shortName: "9 #5",
     notes: [[true], [false], [true], [false], [true], [false], [false], [false], [true], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Pentadic Chords",
 };
 export const CHORD_ALTERED7_FLAT5_FLAT9: HarmonicShape = {
     name: "Altered Seven ♭5♭9",
+    shortName: "7 ♭5 ♭9",
     notes: [[true], [true], [false], [false], [true], [false], [true], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Pentadic Chords",
 };
 export const CHORD_ALTERED7_FLAT5_SHARP9: HarmonicShape = {
     name: "Altered Seven ♭5#9",
+    shortName: "7 ♭5 #9",
     notes: [[true], [false], [false], [true], [true], [false], [true], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Pentadic Chords",
 };
 export const CHORD_ALTERED7_SHARP5_FLAT9: HarmonicShape = {
     name: "Altered Seven #5♭9",
+    shortName: "7 #5 ♭9",
     notes: [[true], [true], [false], [false], [true], [false], [false], [false], [true], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Pentadic Chords",
 };
 export const CHORD_ALTERED7_SHARP5_SHARP9: HarmonicShape = {
     name: "Altered Seven #5#9",
+    shortName: "7 #5 #9",
     notes: [[true], [false], [false], [true], [true], [false], [false], [false], [true], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Pentadic Chords",
 };
 export const CHORD_DOMINANT9: HarmonicShape = {
     name: "Dominant 9",
+    shortName: "9",
     notes: [[true], [false], [true], [false], [true], [false], [false], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Pentadic Chords",
@@ -342,6 +389,7 @@ export const CHORD_DOMINANT9: HarmonicShape = {
 
 export const CHORD_DOMINANT9_SUS4: HarmonicShape = {
     name: "Dominant 9 Sus 4",
+    shortName: "9 sus4",
     notes: [[true], [false], [true], [false], [true], [false], [false], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Pentadic Chords",
@@ -349,6 +397,7 @@ export const CHORD_DOMINANT9_SUS4: HarmonicShape = {
 
 export const CHORD_MAJOR7_SHARP11: HarmonicShape = {
     name: "Major 7 ♯11",
+    shortName: "M7 ♯11",
     notes: [[true], [false], [false], [false], [true], [false], [true], [true], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Pentadic Chords",
@@ -356,6 +405,7 @@ export const CHORD_MAJOR7_SHARP11: HarmonicShape = {
 
 export const CHORD_MINOR_ADD_FLAT9: HarmonicShape = {
     name: "Minor Add ♭9",
+    shortName: "m add ♭9",
     notes: [[true], [true], [false], [true], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
@@ -363,6 +413,7 @@ export const CHORD_MINOR_ADD_FLAT9: HarmonicShape = {
 
 export const CHORD_MINOR_ADD9: HarmonicShape = {
     name: "Minor Add 9",
+    shortName: "m add9",
     notes: [[true], [false], [true], [true], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
@@ -370,6 +421,7 @@ export const CHORD_MINOR_ADD9: HarmonicShape = {
 
 export const CHORD_MINOR_ADD_FLAT11: HarmonicShape = {
     name: "Minor Add ♭11",
+    shortName: "m add ♭11",
     notes: [[true], [false], [false], [true], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
@@ -377,6 +429,7 @@ export const CHORD_MINOR_ADD_FLAT11: HarmonicShape = {
 
 export const CHORD_MINOR_ADD11: HarmonicShape = {
     name: "Minor Add 11",
+    shortName: "m add 11",
     notes: [[true], [false], [false], [true], [false], [true], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
@@ -384,6 +437,7 @@ export const CHORD_MINOR_ADD11: HarmonicShape = {
 
 export const CHORD_MINOR_ADD_SHARP11: HarmonicShape = {
     name: "Minor Add ♯11",
+    shortName: "m add ♯11",
     notes: [[true], [false], [false], [true], [false], [false], [true], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
@@ -391,6 +445,7 @@ export const CHORD_MINOR_ADD_SHARP11: HarmonicShape = {
 
 export const CHORD_DIMINISHED_ADD9: HarmonicShape = {
     name: "Diminished Add 9",
+    shortName: "° add9",
     notes: [[true], [false], [true], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
@@ -398,6 +453,7 @@ export const CHORD_DIMINISHED_ADD9: HarmonicShape = {
 
 export const CHORD_DIMINISHED_ADD11: HarmonicShape = {
     name: "Diminished Add 11",
+    shortName: "° add 11",
     notes: [[true], [false], [false], [true], [false], [true], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
@@ -405,6 +461,7 @@ export const CHORD_DIMINISHED_ADD11: HarmonicShape = {
 
 export const CHORD_MINOR_FLAT9: HarmonicShape = {
     name: "Minor ♭9",
+    shortName: "m ♭9",
     notes: [[true], [true], [false], [true], [false], [false], [false], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Pentadic Chords",
@@ -412,6 +469,7 @@ export const CHORD_MINOR_FLAT9: HarmonicShape = {
 
 export const CHORD_MAJOR9: HarmonicShape = {
     name: "Major 9",
+    shortName: "M9",
     notes: [[true], [false], [true], [false], [true], [false], [false], [true], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Pentadic Chords",
@@ -419,6 +477,7 @@ export const CHORD_MAJOR9: HarmonicShape = {
 
 export const CHORD_MINOR9: HarmonicShape = {
     name: "Minor 9",
+    shortName: "m9",
     notes: [[true], [false], [true], [true], [false], [false], [false], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Pentadic Chords",
@@ -426,66 +485,77 @@ export const CHORD_MINOR9: HarmonicShape = {
 
 export const CHORD_MAJOR_6_9: HarmonicShape = {
     name: "6/9",
+    shortName: "6/9",
     notes: [[true], [false], [true], [false], [true], [false], [false], [true], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Pentadic Chords",
 };
 export const CHORD_MINOR_6_9: HarmonicShape = {
     name: "Minor 6/9",
+    shortName: "m 6/9",
     notes: [[true], [false], [true], [true], [false], [false], [false], [true], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Pentadic Chords",
 };
 export const CHORD_MAJOR_6_9_OMIT5: HarmonicShape = {
     name: "6/9 (omit 5)",
+    shortName: "6/9 no5",
     notes: [[true], [false], [true], [false], [true], [false], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
 };
 export const CHORD_MINOR_6_9_OMIT5: HarmonicShape = {
     name: "Minor 6/9 (omit 5)",
+    shortName: "m 6/9 no5",
     notes: [[true], [false], [true], [true], [false], [false], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Tetradic Chords",
 };
 export const CHORD_MINOR_MAJOR9: HarmonicShape = {
     name: "Minor Major 9",
+    shortName: "m M9",
     notes: [[true], [false], [true], [true], [false], [false], [false], [true], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Pentadic Chords",
 };
 export const CHORD_DOMINANT13: HarmonicShape = {
     name: "Dominant 13",
+    shortName: "13",
     notes: [[true], [false], [true], [false], [true], [false], [false], [true], [false], [true], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Hexatonic Chords",
 };
 export const CHORD_MAJOR13: HarmonicShape = {
     name: "Major 13",
+    shortName: "M13",
     notes: [[true], [false], [true], [false], [true], [false], [false], [true], [false], [true], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Hexatonic Chords",
 };
 export const CHORD_MINOR11: HarmonicShape = {
     name: "Minor 11",
+    shortName: "m 11",
     notes: [[true], [false], [true], [true], [false], [true], [false], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Hexatonic Chords",
 };
 export const CHORD_MINOR13: HarmonicShape = {
     name: "Minor 13",
+    shortName: "m 13",
     notes: [[true], [false], [true], [true], [false], [false], [false], [true], [false], [true], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Hexatonic Chords",
 };
 export const CHORD_MAJOR9_SHARP11: HarmonicShape = {
     name: "Major 9 #11",
+    shortName: "M9 #11",
     notes: [[true], [false], [true], [false], [true], [false], [true], [true], [false], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Hexatonic Chords",
 };
 export const CHORD_DOMINANT9_SHARP11: HarmonicShape = {
     name: "Dominant 9 #11",
+    shortName: "9 #11",
     notes: [[true], [false], [true], [false], [true], [false], [true], [true], [false], [false], [true]],
     type: ShapeType.CHORD,
     groupByOverride: "Hexatonic Chords",

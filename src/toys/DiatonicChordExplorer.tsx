@@ -191,7 +191,7 @@ function DiatonicChordExplorer(props: Props) {
                             }}
                         >
                         </Rect>
-                        <Text text={`${getNoteName(fit.rootNote)} ${fit.shape.name}`} fill={colorPalette.Widget_Primary} width={tileWidth} height={tileHeight} verticalAlign='middle' padding={5} listening={false} fontSize={10} />
+                        <Text text={`${getNoteName(fit.rootNote)}${(() => { const s = fit.shape.shortName ?? fit.shape.name; const root = getNoteName(fit.rootNote); const firstWord = s.split(" ")[0]; return root.length + firstWord.length > 3 ? " " + s : s; })()}`} fill={colorPalette.Widget_Primary} width={tileWidth} height={tileHeight} verticalAlign='middle' padding={5} listening={false} fontSize={10} />
 
                         {/* {fitsByNote.map((fit, fitIdx) => {
                         const angle = (idx + fitIdx) * Math.PI * 2 / 12;
