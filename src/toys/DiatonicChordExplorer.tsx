@@ -9,6 +9,7 @@ import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import { useSettings } from '../view/SettingsProvider';
 import { useAppTheme } from '../view/ThemeManager';
 import { useChannelDisplaysExactFits, useDiatonicRomanNumerals, useGetActiveShapeScaleDegreeFromNote, useGetDiatonicFits } from './HarmonyAnalyzer';
+import { MenuItem, Select } from '@mui/material';
 type Props = {
     width: number,
     height: number,
@@ -48,6 +49,10 @@ function DiatonicChordExplorer(props: Props) {
 
 
     const [showNoteNames, setShowNoteNames] = React.useState(true);
+    const [playMode, setPlayMode] = React.useState<'hover' | 'selection'>('selection');
+    const [selectedChordNotes, setSelectedChordNotes] = React.useState<number[] | null>(null);
+
+    const selectionChannel = "DiatonicChordExplorer_Selection";
 
     const settings = useSettings();
     const { colorPalette } = useAppTheme()!;
@@ -150,12 +155,31 @@ function DiatonicChordExplorer(props: Props) {
                             fill={tileColor}
                             cornerRadius={5}
                             onMouseEnter={(e: KonvaEventObject<MouseEvent>) => {
-                                // fit.shape.notes.filter(note => note[0]).
-                                updateNotes(NoteSet.Emphasized_OctaveGnostic, chordNotes, true)
-                                console.log("eg " + chordNotes);
+                                if (playMode === 'hover') {
+                                    updateNotes(NoteSet.Emphasized_OctaveGnostic, chordNotes, true);
+                                } else {
+                                    updateNotes(NoteSet.Highlighted, chordNotes, true);
+                                }
                             }}
                             onMouseLeave={(e: KonvaEventObject<MouseEvent>) => {
-                                updateNotes(NoteSet.Emphasized_OctaveGnostic, chordNotes, false);
+                                if (playMode === 'hover') {
+                                    updateNotes(NoteSet.Emphasized_OctaveGnostic, chordNotes, false);
+                                } else {
+                                    updateNotes(NoteSet.Highlighted, chordNotes, false);
+                                }
+                            }}
+                            onClick={(e: KonvaEventObject<MouseEvent>) => {
+                                if (playMode === 'selection') {
+                                    if (selectedChordNotes) {
+                                        updateNotes(selectionChannel, selectedChordNotes, false);
+                                    }
+                                    if (selectedChordNotes && selectedChordNotes.every((n, i) => n === chordNotes[i])) {
+                                        setSelectedChordNotes(null);
+                                    } else {
+                                        updateNotes(selectionChannel, chordNotes, true, true, new Set([NoteSet.Emphasized_OctaveGnostic]), "rgb(171, 0, 0)");
+                                        setSelectedChordNotes(chordNotes);
+                                    }
+                                }
                             }}
                         >
                         </Rect>
@@ -177,7 +201,7 @@ function DiatonicChordExplorer(props: Props) {
             });
         });
         return elems;
-    }, [diatonicFits, romanNumerals, verticalElemOffset, colorPalette.Widget_Primary, colorPalette.UI_Background, tileWidth, tileHeight, fitChannelMap, horrizontalElemOffset, getScaleDegree, getNoteName, updateNotes]);
+    }, [diatonicFits, romanNumerals, verticalElemOffset, colorPalette.Widget_Primary, colorPalette.UI_Background, tileWidth, tileHeight, fitChannelMap, horrizontalElemOffset, getScaleDegree, getNoteName, updateNotes, playMode, selectedChordNotes, selectionChannel]);
 
 
     ///////////////////
@@ -196,7 +220,30 @@ function DiatonicChordExplorer(props: Props) {
             <Group x={-props.width / 2} y={-props.height / 2}>
                 {fullRender}
             </Group>
-            <SettingsMenuOverlay settingsRows={[]} fromWidget={props.fromWidget}>
+            <SettingsMenuOverlay settingsRows={[
+                <tr key="playMode">
+                    <td style={{ color: colorPalette.UI_Primary }}>Play chords on</td>
+                    <td><Select
+                        id="play-mode-dropdown"
+                        value={playMode}
+                        onChange={e => {
+                            if (selectedChordNotes) {
+                                updateNotes(selectionChannel, selectedChordNotes, false);
+                                setSelectedChordNotes(null);
+                            }
+                            setPlayMode(e.target.value as 'hover' | 'selection');
+                        }}
+                        sx={{
+                            color: colorPalette.UI_Primary,
+                            '.MuiSvgIcon-root': { fill: colorPalette.UI_Primary },
+                            '.MuiOutlinedInput-notchedOutline': { borderColor: colorPalette.UI_Primary },
+                        }}
+                    >
+                        <MenuItem value="hover">Hover</MenuItem>
+                        <MenuItem value="selection">Selection</MenuItem>
+                    </Select></td>
+                </tr>
+            ]} fromWidget={props.fromWidget}>
                 <Group x={-props.width / 2} y={-props.height / 2}>
                     {fullRender}
                 </Group>

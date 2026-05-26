@@ -40,14 +40,14 @@ const rawChannelContext = React.createContext<{ get: NoteChannels, set: null | R
 
 const noteBankContext = React.createContext<{ get: NoteBank, set: null | React.Dispatch<React.SetStateAction<NoteBank>> }>({ get: DefaultNoteBank, set: null });
 
-const octaveAgnosticNoteSets = new Set<string>([NoteSet.Active, NoteSet.Emphasized, NoteSet.Highlighted]);
+const octaveAgnosticNoteSets = new Set<string>([NoteSet.Active, NoteSet.Emphasized]);
 
 
 function NoteProvider(props: Props) {
     const [channels, setChannels] = React.useState<NoteChannels>({
         [NoteSet.Active]: { name: NoteSet.Active, channelTypes: new Set([NoteSet.Active]), notes: new Set<number>(INITIAL_ACTIVE_NOTES) },
         [NoteSet.Emphasized]: { name: NoteSet.Emphasized, channelTypes: new Set([NoteSet.Emphasized]), notes: new Set<number>([]), color: "red" },
-        [NoteSet.Highlighted]: { name: NoteSet.Highlighted, channelTypes: new Set([NoteSet.Highlighted]), notes: new Set<number>([]) },
+        [NoteSet.Highlighted]: { name: NoteSet.Highlighted, channelTypes: new Set([NoteSet.Highlighted]), notes: new Set<number>([]), color: "rgb(255, 238, 238)" },
         [NoteSet.Emphasized_OctaveGnostic]: { name: NoteSet.Emphasized_OctaveGnostic, channelTypes: new Set([NoteSet.Emphasized_OctaveGnostic]), notes: new Set<number>([]), color: "red" },
         [NoteSet.KeypressInput]: { name: NoteSet.KeypressInput, channelTypes: new Set([NoteSet.KeypressInput]), notes: new Set<number>([]), color: "hsl(25, 100%, 50%)" },
     });
