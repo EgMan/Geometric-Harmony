@@ -9,7 +9,7 @@ import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import { useSettings } from '../view/SettingsProvider';
 import { useAppTheme } from '../view/ThemeManager';
 import { useChannelDisplaysExactFits, useDiatonicRomanNumerals, useGetActiveShapeScaleDegreeFromNote, useGetDiatonicFits } from './HarmonyAnalyzer';
-import { MenuItem, Select } from '@mui/material';
+import { MenuItem, Select, Switch } from '@mui/material';
 type Props = {
     width: number,
     height: number,
@@ -48,6 +48,7 @@ function DiatonicChordExplorer(props: Props) {
 
 
     const [showNoteNames, setShowNoteNames] = React.useState(true);
+    const [alwaysShowOmit5, setAlwaysShowOmit5] = React.useState(false);
     const [playMode, setPlayMode] = React.useState<'hover' | 'selection'>('selection');
     const [selectedChordNotes, setSelectedChordNotes] = React.useState<number[] | null>(null);
 
@@ -57,8 +58,17 @@ function DiatonicChordExplorer(props: Props) {
     const { colorPalette } = useAppTheme()!;
 
     const diatonicData = useGetDiatonicFits();
-    const diatonicFits = diatonicData.exactFits;
-    const colCount = diatonicData.maxChordsPerNote + 1;
+    const diatonicFits = React.useMemo(() => {
+        if (alwaysShowOmit5) return diatonicData.exactFits;
+        return diatonicData.exactFits.map(fitsByNote =>
+            fitsByNote.filter(fit => {
+                if (!fit.shape.name.includes("omit 5")) return true;
+                const fullName = fit.shape.name.replace(" (omit 5)", "");
+                return !fitsByNote.some(other => other.shape.name === fullName);
+            })
+        );
+    }, [diatonicData.exactFits, alwaysShowOmit5]);
+    const colCount = Math.max(1, ...diatonicFits.map(fits => fits.length)) + 1;
     const rowCount = activeNotes.size;
 
     const tilePadding = 1;
@@ -234,6 +244,10 @@ function DiatonicChordExplorer(props: Props) {
                         <MenuItem value="hover">Hover</MenuItem>
                         <MenuItem value="selection">Selection</MenuItem>
                     </Select></td>
+                </tr>,
+                <tr key="omit5">
+                    <td>Always show omit-5 chords</td>
+                    <td colSpan={2}><Switch checked={alwaysShowOmit5} onChange={e => setAlwaysShowOmit5(e.target.checked)} /></td>
                 </tr>
             ]} fromWidget={props.fromWidget}>
                 {fullRender}
