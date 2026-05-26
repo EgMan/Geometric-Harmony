@@ -946,6 +946,9 @@ function ToolBar(props: Props) {
                                     </Select>
                                 </MenuItem>
                             </Box>
+                            <Box sx={{ textAlign: "center", opacity: 0.5, fontFamily: "monospace", fontSize: "0.45em", py: 0.25 }}>
+                                app version {process.env.REACT_APP_VERSION}
+                            </Box>
                         </MenuList>
                     </Paper>
                 </Popover>
