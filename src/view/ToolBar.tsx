@@ -831,25 +831,26 @@ function ToolBar(props: Props) {
                         <MenuList sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 1 }}>
                             <Box sx={{ borderRadius: 1, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
                                 <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold", textAlign: "center" }}>Theme</DialogTitle>
-                                <MenuItem onClick={() => { changeTheme?.(Theme_Classic); setColorDropdownOpen(false); }}>
+                                <MenuItem onClick={() => { changeTheme?.(Theme_Classic); setColorDropdownOpen(false); (window as any).gtag?.('event', 'change_theme', { theme: 'Classic' }); }}>
                                     <ListItemIcon>
                                         <ColorLensIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                     </ListItemIcon>
                                     <ListItemText sx={{ color: colorPalette.UI_Primary }}>Classic</ListItemText>
                                 </MenuItem>
-                                <MenuItem onClick={() => { changeTheme?.(Theme_WhiteOnBlack); setColorDropdownOpen(false); }}>
+                                <MenuItem onClick={() => { changeTheme?.(Theme_WhiteOnBlack); setColorDropdownOpen(false); (window as any).gtag?.('event', 'change_theme', { theme: 'White on Black' }); }}>
                                     <ListItemIcon>
                                         <ColorLensIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                     </ListItemIcon>
                                     <ListItemText sx={{ color: colorPalette.UI_Primary }}>White on Black</ListItemText>
                                 </MenuItem>
-                                <MenuItem onClick={() => { changeTheme?.(Theme_BlackOnWhite); setColorDropdownOpen(false); }}>
+                                <MenuItem onClick={() => { changeTheme?.(Theme_BlackOnWhite); setColorDropdownOpen(false); (window as any).gtag?.('event', 'change_theme', { theme: 'Black on White' }); }}>
                                     <ListItemIcon>
                                         <ColorLensIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
                                     </ListItemIcon>
                                     <ListItemText sx={{ color: colorPalette.UI_Primary }}>Black on White</ListItemText>
                                 </MenuItem>
                                 <MenuItem onClick={() => {
+                                    (window as any).gtag?.('event', 'change_theme', { theme: 'Random' });
                                     changeTheme?.(prev => {
                                         const Widget_Primary = changeLightness(getRandomColor(), 1.25);
                                         const Main_Background = changeLightness(getRandomColor(), 0.75);

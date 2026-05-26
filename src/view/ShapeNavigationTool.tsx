@@ -208,6 +208,7 @@ function ShapeNavigationTool(props: Props) {
                             onChange={(event, value, reason) => {
                                 if (value != null) {
                                     setActiveShape(value.shape, (homeNote ?? 0) - value.startingNoteNum);
+                                    (window as any).gtag?.('event', 'navigate_shape', { shape_name: value.shapeName, note_count: value.noteCount });
                                 }
                             }}
                             options={explorerElements}

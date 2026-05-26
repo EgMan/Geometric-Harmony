@@ -242,6 +242,7 @@ function ViewManager(props: Props) {
 
     const spawnWidget = React.useCallback((type: WidgetType, position?: Vector2d, config?: WidgetConfig) => {
         console.log("Spawning widget of type:", type, config);
+        (window as any).gtag?.('event', 'spawn_widget', { widget_type: widgetNameByType(type) });
         if (config === undefined) {
             config = type === WidgetType.MicPitch ? WidgetConfig_MicPitch : WidgetConfig_Default;
         }
