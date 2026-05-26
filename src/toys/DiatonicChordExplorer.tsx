@@ -16,7 +16,6 @@ type Props = {
 } & WidgetComponentProps
 
 function DiatonicChordExplorer(props: Props) {
-    const radius = Math.min(props.width, props.height) / 2;
     const activeNotes = useNoteSet(NoteSet.Active).notes;
     const inputNotes = useNoteSet(NoteSet.PlayingInput, true).notes;
 
@@ -60,8 +59,7 @@ function DiatonicChordExplorer(props: Props) {
     const diatonicData = useGetDiatonicFits();
     const diatonicFits = diatonicData.exactFits;
     const colCount = diatonicData.maxChordsPerNote + 1;
-    //todo replace
-    const rowCount = diatonicData.noteCount;
+    const rowCount = activeNotes.size;
 
     const tilePadding = 1;
 
@@ -206,26 +204,25 @@ function DiatonicChordExplorer(props: Props) {
 
     ///////////////////
 
-    const fullRender = React.useMemo((
-    ) => {
+    const fullRender = React.useMemo(() => {
         return (
-            <Group x={radius} y={radius}>
+            <Group>
                 {chordDisplay}
             </Group>
         );
-    }, [chordDisplay, radius]);
+    }, [chordDisplay]);
 
     return (
         <Group>
-            <Group x={-props.width / 2} y={-props.height / 2}>
-                {fullRender}
-            </Group>
+            {fullRender}
             <SettingsMenuOverlay settingsRows={[
                 <tr key="playMode">
-                    <td style={{ color: colorPalette.UI_Primary }}>Play chords on</td>
-                    <td><Select
-                        id="play-mode-dropdown"
+                    <td>Play chords on</td>
+                    <td colSpan={2}><Select
+                        id="menu-dropdown"
                         value={playMode}
+                        label="Play Mode"
+                        labelId="play-mode-label"
                         onChange={e => {
                             if (selectedChordNotes) {
                                 updateNotes(selectionChannel, selectedChordNotes, false);
@@ -233,20 +230,13 @@ function DiatonicChordExplorer(props: Props) {
                             }
                             setPlayMode(e.target.value as 'hover' | 'selection');
                         }}
-                        sx={{
-                            color: colorPalette.UI_Primary,
-                            '.MuiSvgIcon-root': { fill: colorPalette.UI_Primary },
-                            '.MuiOutlinedInput-notchedOutline': { borderColor: colorPalette.UI_Primary },
-                        }}
                     >
                         <MenuItem value="hover">Hover</MenuItem>
                         <MenuItem value="selection">Selection</MenuItem>
                     </Select></td>
                 </tr>
             ]} fromWidget={props.fromWidget}>
-                <Group x={-props.width / 2} y={-props.height / 2}>
-                    {fullRender}
-                </Group>
+                {fullRender}
             </SettingsMenuOverlay>
         </Group>
     );
