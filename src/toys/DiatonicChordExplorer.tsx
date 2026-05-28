@@ -49,7 +49,7 @@ function DiatonicChordExplorer(props: Props) {
 
     const [showNoteNames, setShowNoteNames] = React.useState(true);
     const [alwaysShowOmit5, setAlwaysShowOmit5] = React.useState(false);
-    const [playMode, setPlayMode] = React.useState<'hover' | 'selection'>('selection');
+    const [playMode, setPlayMode] = React.useState<'hover' | 'selection' | 'hold'>('hold');
     const [selectedChordNotes, setSelectedChordNotes] = React.useState<number[] | null>(null);
 
     const selectionChannel = "DiatonicChordExplorer_Selection";
@@ -165,6 +165,8 @@ function DiatonicChordExplorer(props: Props) {
                             onMouseEnter={(e: KonvaEventObject<MouseEvent>) => {
                                 if (playMode === 'hover') {
                                     updateNotes(NoteSet.Emphasized_OctaveGnostic, chordNotes, true);
+                                } else if (playMode === 'hold' && e.evt.buttons === 1) {
+                                    updateNotes(selectionChannel, chordNotes, true, true, new Set([NoteSet.Emphasized_OctaveGnostic]), "rgb(171, 0, 0)");
                                 } else {
                                     updateNotes(NoteSet.Highlighted, chordNotes, true);
                                 }
@@ -172,8 +174,37 @@ function DiatonicChordExplorer(props: Props) {
                             onMouseLeave={(e: KonvaEventObject<MouseEvent>) => {
                                 if (playMode === 'hover') {
                                     updateNotes(NoteSet.Emphasized_OctaveGnostic, chordNotes, false);
+                                } else if (playMode === 'hold' && e.evt.buttons === 1) {
+                                    updateNotes(selectionChannel, chordNotes, false);
+                                    updateNotes(NoteSet.Highlighted, chordNotes, false);
                                 } else {
                                     updateNotes(NoteSet.Highlighted, chordNotes, false);
+                                }
+                            }}
+                            onMouseDown={(e: KonvaEventObject<MouseEvent>) => {
+                                if (playMode === 'hold' && e.evt.button === 0) {
+                                    updateNotes(NoteSet.Highlighted, chordNotes, false);
+                                    updateNotes(selectionChannel, chordNotes, true, true, new Set([NoteSet.Emphasized_OctaveGnostic]), "rgb(171, 0, 0)");
+                                }
+                            }}
+                            onMouseUp={(e: KonvaEventObject<MouseEvent>) => {
+                                if (playMode === 'hold' && e.evt.button === 0) {
+                                    updateNotes(selectionChannel, chordNotes, false);
+                                    updateNotes(NoteSet.Highlighted, chordNotes, true);
+                                }
+                            }}
+                            onContextMenu={(e: KonvaEventObject<MouseEvent>) => {
+                                e.evt.preventDefault();
+                                if (playMode === 'hold') {
+                                    if (selectedChordNotes) {
+                                        updateNotes(selectionChannel, selectedChordNotes, false);
+                                    }
+                                    if (selectedChordNotes && selectedChordNotes.every((n, i) => n === chordNotes[i])) {
+                                        setSelectedChordNotes(null);
+                                    } else {
+                                        updateNotes(selectionChannel, chordNotes, true, true, new Set([NoteSet.Emphasized_OctaveGnostic]), "rgb(171, 0, 0)");
+                                        setSelectedChordNotes(chordNotes);
+                                    }
                                 }
                             }}
                             onClick={(e: KonvaEventObject<MouseEvent>) => {
@@ -238,11 +269,12 @@ function DiatonicChordExplorer(props: Props) {
                                 updateNotes(selectionChannel, selectedChordNotes, false);
                                 setSelectedChordNotes(null);
                             }
-                            setPlayMode(e.target.value as 'hover' | 'selection');
+                            setPlayMode(e.target.value as 'hover' | 'selection' | 'hold');
                         }}
                     >
                         <MenuItem value="hover">Hover</MenuItem>
                         <MenuItem value="selection">Selection</MenuItem>
+                        <MenuItem value="hold">Left/Right click Play/Hold</MenuItem>
                     </Select></td>
                 </tr>,
                 <tr key="omit5">
