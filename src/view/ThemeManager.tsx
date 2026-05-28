@@ -41,11 +41,17 @@ export const ThemeContext = createContext<AppTheme | null>(null);
 export const ChangeColorPaletteContext = createContext<React.Dispatch<React.SetStateAction<ColorPalette>> | null>(null);
 
 function ThemeManager(props: Props) {
-    const [colorPalette, setColorPalette] = React.useState<ColorPalette>(
-        // Theme_WhiteOnBlack
-        Theme_Classic
-        // Theme_BlackOnWhite
-    );
+    const [colorPalette, setColorPalette] = React.useState<ColorPalette>(() => {
+        try {
+            const saved = localStorage.getItem('colorPalette');
+            if (saved) return JSON.parse(saved) as ColorPalette;
+        } catch {}
+        return Theme_Classic;
+    });
+
+    React.useEffect(() => {
+        localStorage.setItem('colorPalette', JSON.stringify(colorPalette));
+    }, [colorPalette]);
 
     const MUITheme: Theme = React.useMemo(() => {
         return createTheme(
