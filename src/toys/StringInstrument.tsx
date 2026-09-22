@@ -93,7 +93,7 @@ function StringInstrument(props: Props) {
     const stringSpacing = props.width / (tuning.length - 1);
     const fretSpacing = props.height / props.fretCount;
     const fretElemYOffset = -fretSpacing / 2;
-    const circleElemRadius = stringSpacing / 5;
+    const circleElemRadius = Math.min(fretSpacing / 2, stringSpacing) / 2;
 
     const activeNotes = useNoteSet(NoteSet.Active).notes;
     const checkEmphasis = useCheckNoteEmphasis();
@@ -209,16 +209,20 @@ function StringInstrument(props: Props) {
                 <Line key={`l1-${fretNum}`} stroke={colorPalette.Widget_Primary} strokeWidth={3} points={[0, posY, props.width, posY]} />
             );
             if (props.fromWidget.widgetConfig.type === "guitar" && [3, 5, 7, 9,].includes(fretNum % 12)) {
+                const markerW = props.width * 0.309;
+                const markerH = fretSpacing * 0.309;
                 fretElements.push(
-                    <Circle key={`c1-${fretNum}`} x={props.width / 2} y={posY + fretElemYOffset} radius={stringSpacing / 6} fill={colorPalette.Widget_Primary} />
+                    <Rect key={`c1-${fretNum}`} x={props.width / 2 - markerW / 2} y={posY - fretSpacing / 2 - markerH / 2} width={markerW} height={markerH} cornerRadius={5} fill={colorPalette.Widget_MutedPrimary} />
                 );
             }
             if (fretNum % 12 === 0 && fretNum > 0) {
+                const markerW = props.width * 0.309;
+                const markerH = fretSpacing * 0.309;
                 fretElements.push(
-                    <Circle key={`c2-${fretNum}`} x={3 * props.width / 10} y={posY + fretElemYOffset} radius={stringSpacing / 6} fill={colorPalette.Widget_Primary} />
+                    <Rect key={`c2-${fretNum}`} x={3 * props.width / 10 - markerW / 2} y={posY - fretSpacing / 2 - markerH / 2} width={markerW} height={markerH} cornerRadius={5} fill={colorPalette.Widget_MutedPrimary} />
                 );
                 fretElements.push(
-                    <Circle key={`c3-${fretNum}`} x={7 * props.width / 10} y={posY + fretElemYOffset} radius={stringSpacing / 6} fill={colorPalette.Widget_Primary} />
+                    <Rect key={`c3-${fretNum}`} x={7 * props.width / 10 - markerW / 2} y={posY - fretSpacing / 2 - markerH / 2} width={markerW} height={markerH} cornerRadius={5} fill={colorPalette.Widget_MutedPrimary} />
                 );
             }
             tuning.forEach((openNote, stringNum) => {
@@ -321,7 +325,7 @@ function StringInstrument(props: Props) {
                 // if (noteDisplays.octaveGnostic[]) {
                 //     emphasized.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={"red"}></Circle>)
                 //     noteNames.push(
-                //         <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note, activeNotes)} fontSize={12} fontFamily='monospace' fill={colorPalette.Main_Background} align="center" verticalAlign="middle" />
+                //         <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 19} text={getNoteName(note, activeNotes)} fontSize={12} fontFamily='monospace' fill={colorPalette.Main_Background} align="center" verticalAlign="middle" />
                 //     )
                 // }
 
@@ -353,13 +357,13 @@ function StringInstrument(props: Props) {
                     activeNoteIndicators.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={noteColor}></Circle>)
                     if (!settings?.isPeaceModeEnabled && ([NoteLabling.ActiveNoteNames, NoteLabling.NoteNames].includes(noteLabeling) || fretNum === 0)) {
                         noteNames.push(
-                            <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note)} fontSize={12} fontFamily='monospace' fill={colorPalette.Main_Background} align="center" verticalAlign="middle" />
+                            <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 19} text={getNoteName(note)} fontSize={12} fontFamily='monospace' fill={colorPalette.Main_Background} align="center" verticalAlign="middle" />
                         )
                     }
                 } else if (!settings?.isPeaceModeEnabled && (noteLabeling === NoteLabling.NoteNames || fretNum === 0)) {
                     if (fretNum !== 0) stringElements.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={colorPalette.Main_Background}></Circle>)
                     noteNames.push(
-                        <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note)} fontSize={12} fontFamily='monospace' fill={colorPalette.Widget_Primary} align="center" verticalAlign="middle" />
+                        <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 19} text={getNoteName(note)} fontSize={12} fontFamily='monospace' fill={colorPalette.Widget_Primary} align="center" verticalAlign="middle" />
                     )
                 }
 
