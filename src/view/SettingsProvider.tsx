@@ -23,6 +23,8 @@ type Settings = {
     setIsPeaceModeEnabled: React.Dispatch<React.SetStateAction<boolean>>,
     synthVolume: number,
     setSynthVolume: React.Dispatch<React.SetStateAction<number>>,
+    percussionVolume: number,
+    setPercussionVolume: React.Dispatch<React.SetStateAction<number>>,
     noteDisplayMode: NoteDisplayMode,
     setNoteDisplayMode: React.Dispatch<React.SetStateAction<NoteDisplayMode>>,
 }
@@ -31,11 +33,12 @@ const settingsContext = React.createContext<Settings | null>(null);
 
 function SettingsProvider(props: Props) {
     const [isMuted, setIsMuted] = React.useState(false);
-    const [isPercussionMuted, setIsPercussionMuted] = React.useState(true);
+    const [isPercussionMuted, setIsPercussionMuted] = React.useState(false);
     const [prioritizeMIDIAudio, setPrioritizeMIDIAudio] = React.useState(true);
     const [localSynthVoice, setLocalSynthVoice] = React.useState<LocalSynthVoice>(LocalSynthVoice.Triangle);
     const [isPeaceModeEnabled, setIsPeaceModeEnabled] = React.useState<boolean>(false);
     const [synthVolume, setSynthVolume] = React.useState<number>(100);
+    const [percussionVolume, setPercussionVolume] = React.useState<number>(50);
     const [noteDisplayMode, setNoteDisplayMode] = React.useState<NoteDisplayMode>(NoteDisplayMode.NoteNames);
 
     const settings = React.useMemo(() => ({
@@ -51,9 +54,11 @@ function SettingsProvider(props: Props) {
         setIsPeaceModeEnabled,
         synthVolume,
         setSynthVolume,
+        percussionVolume,
+        setPercussionVolume,
         noteDisplayMode,
         setNoteDisplayMode,
-    }), [isMuted, isPeaceModeEnabled, isPercussionMuted, localSynthVoice, noteDisplayMode, prioritizeMIDIAudio, synthVolume]);
+    }), [isMuted, isPeaceModeEnabled, isPercussionMuted, localSynthVoice, noteDisplayMode, percussionVolume, prioritizeMIDIAudio, synthVolume]);
 
     return (
         <settingsContext.Provider value={settings}>

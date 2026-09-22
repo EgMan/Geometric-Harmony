@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Button, ClickAwayListener, Collapse, ListItemIcon, ListItemText, DialogTitle, MenuItem, MenuList, Paper, Popover, Switch, Select, Tooltip, Toolbar as MUItoolbar, Badge, Typography, Chip, ListItem } from "@mui/material";
+import { Box, Button, ClickAwayListener, Collapse, ListItemIcon, ListItemText, DialogTitle, MenuItem, MenuList, Paper, Popover, Switch, Select, Slider, Tooltip, Toolbar as MUItoolbar, Badge, Typography, Chip, ListItem } from "@mui/material";
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import ShapeNavigationTool from "./ShapeNavigationTool";
@@ -712,48 +712,69 @@ function ToolBar(props: Props) {
                     <Paper sx={{ borderRadius: 2 }}>
                         <ClickAwayListener onClickAway={() => setAddDropdownOpen(false)}>
                             <MenuList sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 1 }}>
+                                <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold", textAlign: "center" }}>Audio Settings</DialogTitle>
                                 <Box sx={{ borderRadius: 1, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
-                                    <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold", textAlign: "center" }}>In-Browser Synth Settings</DialogTitle>
-                                    <MenuItem >
-                                        <ListItemIcon>
-                                            {settings?.isMuted ? <VolumeOffIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <VolumeUpIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />}
-                                        </ListItemIcon>
-                                        <VolumeSlider />
-                                    </MenuItem>
                                     <MenuItem onClick={() => settings?.setIsMuted(muted => !muted)}>
                                         <ListItemIcon>
                                             {settings?.isMuted ? <VolumeOffIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <VolumeUpIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />}
                                         </ListItemIcon>
-                                        <ListItemText> In-browser Synth </ListItemText>
+                                        <ListItemText>In-browser Synth</ListItemText>
                                         <Switch checked={!settings?.isMuted} onChange={e => settings?.setIsMuted(!e.target.checked)}></Switch>
                                     </MenuItem>
+                                    {!settings?.isMuted && (
+                                        <>
+                                            <MenuItem>
+                                                <ListItemIcon>
+                                                    <VolumeUpIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                                </ListItemIcon>
+                                                <VolumeSlider />
+                                            </MenuItem>
+                                            <MenuItem>
+                                                <ListItemIcon>
+                                                    <CampaignIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                                </ListItemIcon>
+                                                <ListItemText>Synth voice</ListItemText>
+                                                <Select
+                                                    sx={{ fontFamily: "monospace", marginLeft: "16px" }}
+                                                    id="menu-dropdown"
+                                                    value={settings?.localSynthVoice}
+                                                    label="Octave Count"
+                                                    labelId="demo-simple-select-filled-label"
+                                                    onChange={e => { settings?.setLocalSynthVoice(e.target.value as LocalSynthVoice) }}
+                                                >
+                                                    <MenuItem value={LocalSynthVoice.Sine}>{LocalSynthVoice.Sine}</MenuItem>
+                                                    <MenuItem value={LocalSynthVoice.Triangle}>{LocalSynthVoice.Triangle}</MenuItem>
+                                                    <MenuItem value={LocalSynthVoice.Square}>{LocalSynthVoice.Square}</MenuItem>
+                                                    <MenuItem value={LocalSynthVoice.AMSynth}>{LocalSynthVoice.AMSynth}</MenuItem>
+                                                    <MenuItem value={LocalSynthVoice.FMSynth}>{LocalSynthVoice.FMSynth}</MenuItem>
+                                                </Select>
+                                            </MenuItem>
+                                        </>
+                                    )}
+                                </Box>
+                                <Box sx={{ borderRadius: 1, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
                                     <MenuItem onClick={() => settings?.setIsPercussionMuted(muted => !muted)}>
                                         <ListItemIcon>
                                             {settings?.isPercussionMuted ? <VolumeOffIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" /> : <VolumeUpIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />}
                                         </ListItemIcon>
-                                        <ListItemText> In-browser Percussion (beta) </ListItemText>
+                                        <ListItemText>In-browser Percussion</ListItemText>
                                         <Switch checked={!settings?.isPercussionMuted} onChange={e => settings?.setIsPercussionMuted(!e.target.checked)}></Switch>
                                     </MenuItem>
-                                    <MenuItem>
-                                        <ListItemIcon>
-                                            <CampaignIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
-                                        </ListItemIcon>
-                                        <ListItemText> Synth voice </ListItemText>
-                                        <Select
-                                            sx={{ fontFamily: "monospace", marginLeft: "16px" }}
-                                            id="menu-dropdown"
-                                            value={settings?.localSynthVoice}
-                                            label="Octave Count"
-                                            labelId="demo-simple-select-filled-label"
-                                            onChange={e => { settings?.setLocalSynthVoice(e.target.value as LocalSynthVoice) }}
-                                        >
-                                            <MenuItem value={LocalSynthVoice.Sine}>{LocalSynthVoice.Sine}</MenuItem>
-                                            <MenuItem value={LocalSynthVoice.Triangle}>{LocalSynthVoice.Triangle}</MenuItem>
-                                            <MenuItem value={LocalSynthVoice.Square}>{LocalSynthVoice.Square}</MenuItem>
-                                            <MenuItem value={LocalSynthVoice.AMSynth}>{LocalSynthVoice.AMSynth}</MenuItem>
-                                            <MenuItem value={LocalSynthVoice.FMSynth}>{LocalSynthVoice.FMSynth}</MenuItem>
-                                        </Select>
-                                    </MenuItem>
+                                    {!settings?.isPercussionMuted && (
+                                        <MenuItem>
+                                            <ListItemIcon>
+                                                <VolumeUpIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                            </ListItemIcon>
+                                            <Slider
+                                                size="small"
+                                                value={settings?.percussionVolume ?? 100}
+                                                onChange={(e, v) => settings?.setPercussionVolume(v as number)}
+                                                defaultValue={100}
+                                                aria-label="Percussion Volume"
+                                                valueLabelDisplay="auto"
+                                            />
+                                        </MenuItem>
+                                    )}
                                 </Box>
                             </MenuList>
                         </ClickAwayListener>

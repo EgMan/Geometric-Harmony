@@ -69,7 +69,7 @@ function SoundEngine(props: Props) {
     const prioritizeMIDIAudio = settings?.prioritizeMIDIAudio ?? false;
 
     const { synth, synthAfterEffects } = useSynthVoiceFromSettings();
-    const { synthDrum, synthDrumAfterEffects } = useSynthDrumFromSettings();
+    const { synthDrum, synthDrumAfterEffects, volumeNode: synthDrumVolumeNode } = useSynthDrumFromSettings();
 
     const synthRef = React.useRef<Tone.PolySynth | null>(synth);
     const synthDrumRef = React.useRef<Tone.PolySynth | null>(synthDrum);
@@ -78,18 +78,22 @@ function SoundEngine(props: Props) {
 
     // TODO https://tonejs.github.io/docs/r12/Master READ THIS DUDE WTF
     React.useEffect(() => {
-        if (volume === 0) {
+        if (isMuted || volume === 0) {
             synth.volume.value = -Infinity;
         }
         else {
-            synth.volume.value = isMuted ? -Infinity : volume - 98;
+            synth.volume.value = volume - 98;
+            synth.volume.rampTo(volume - 98, 0.5);
         }
-        synth.volume.rampTo(volume - 98, 0.5);
     }, [isMuted, synth.volume, volume]);
 
+    const percussionVolume = settings?.percussionVolume ?? 100;
+    const drumVolumeNode = synthDrumVolumeNode;
     React.useEffect(() => {
-        synthDrum.volume.value = isPercussionMuted ? -Infinity : 1;
-    }, [isPercussionMuted, synthDrum.volume]);
+        if (!drumVolumeNode) return;
+        const targetGain = (isPercussionMuted || percussionVolume === 0) ? 0 : percussionVolume / 100;
+        drumVolumeNode.gain.value = targetGain;
+    }, [isPercussionMuted, percussionVolume, drumVolumeNode]);
 
     React.useEffect(() => {
         Tone.start().then(

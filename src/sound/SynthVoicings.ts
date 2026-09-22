@@ -20,6 +20,7 @@ export type SynthVoice = {
 export type SynthDrum = {
     synthDrum: Tone.PolySynth;
     synthDrumAfterEffects: Tone.ToneAudioNode;
+    volumeNode: Tone.Gain;
 };
 
 export function useSynthDrumFromSettings(): SynthDrum {
@@ -329,52 +330,39 @@ function FMSynth() {
 }
 
 function snare(): SynthDrum {
-        const reverb = new Tone.Reverb({
-            decay: 1.25,
-            wet: 0.75,
-        });
-        const filter = new Tone.Filter({
-            frequency: 75000,
-            type: "lowpass",
-            gain: 0,
-            Q: 10,
-        });
-        const autowah = new Tone.AutoWah().toDestination();
-        const bitcrusher = new Tone.BitCrusher();
-        const distortion = new Tone.Distortion({
-            distortion: 0.1,
-            wet: 0.1,
-        });
-        const eq = new Tone.EQ3({
-            low: 55,
-            mid: 20,
-            high: 0,
-            lowFrequency: 2500,
-            highFrequency: 20000,
-        });
-        const gain = new Tone.Gain(
-            {
-                gain: 1.1,
-                // gain: 1000,
-            }
-        );
-        const compressor = new Tone.Compressor({
-            ratio: 3.5,
-            threshold: -90,
-            // release: 0,
-            // attack: 0.001,
-            // knee: 10,
-        });
+        const masterGain = new Tone.Gain({ gain: 1 });
+        masterGain.toDestination();
 
-        // const panner = new Tone.Panner(1).toDestination();                             
-        // panner.pan.rampTo(0, 0.1);
+        // Dummy polysynth — needed as the "synthDrum" handle for triggerAttack/releaseAll calls
+        const polysynth = new Tone.PolySynth(Tone.MembraneSynth, {
+            envelope: { attack: 0.001, decay: 0.01, sustain: 0, release: 0.01 },
+        });
+        // Not chained to any output — silent
 
-        // const polysynth = new Tone.NoiseSynth({envelope: { attack: 0.1, decay: 0.05, sustain: 0, release: 0 } });
-        // const polysynth = new Tone.PolySynth(Tone.MembraneSynth, { envelope: { attack: 0.05, decay: 0.05, sustain: 0.75, release: 0.2 } });
-        // polysynth.chain(eq, compressor, gain, reverb, Tone.Destination);
-        
-        const polysynth = new Tone.PolySynth(Tone.MembraneSynth, {  envelope: { attack: 0.05, decay: 0.05, sustain: 0.75, release: 0.2 }, oscillator: { type: "square" }});
-        polysynth.chain(eq, compressor, gain, reverb, Tone.Destination);
+        // Noise layer — light snare transient
+        const noiseFilter = new Tone.Filter({ frequency: 8000, type: "bandpass", Q: 1.5 });
+        const noiseGain = new Tone.Gain({ gain: 0.55 });
+        const noiseSynth = new Tone.NoiseSynth({
+            noise: { type: "white" },
+            envelope: { attack: 0.001, decay: 0.12, sustain: 0, release: 0.05 },
+        });
+        noiseSynth.chain(noiseFilter, noiseGain, masterGain);
 
-        return { synthDrum: polysynth, synthDrumAfterEffects: compressor };
+        // Trigger noise whenever the polysynth handle is triggered
+        const origTriggerAttack = polysynth.triggerAttack.bind(polysynth);
+        polysynth.triggerAttack = ((...args: Parameters<typeof polysynth.triggerAttack>) => {
+            try {
+                noiseSynth.triggerRelease(args[1]);
+                noiseSynth.triggerAttack(typeof args[1] === 'number' ? args[1] + 0.001 : args[1], args[2]);
+            } catch (e) { /* ignore timing conflicts */ }
+            return origTriggerAttack(...args);
+        }) as typeof polysynth.triggerAttack;
+
+        const origReleaseAll = polysynth.releaseAll.bind(polysynth);
+        polysynth.releaseAll = ((...args: Parameters<typeof polysynth.releaseAll>) => {
+            try { noiseSynth.triggerRelease(args[0]); } catch (e) { /* ignore */ }
+            return origReleaseAll(...args);
+        }) as typeof polysynth.releaseAll;
+
+        return { synthDrum: polysynth, synthDrumAfterEffects: masterGain, volumeNode: masterGain };
 }
