@@ -10,6 +10,7 @@ type Props = {
     setIsVisible: React.Dispatch<React.SetStateAction<boolean>>,
     htmlContent?: JSX.Element,
     canvasContent?: JSX.Element,
+    panelPosition?: { left?: number, right?: number, center?: boolean },
 }
 
 function ModalOverlay(props: Props) {
@@ -30,7 +31,7 @@ function ModalOverlay(props: Props) {
                 props.htmlContent &&
                 <ThemeProvider theme={appTheme.muiTheme}>
                     <div id="click-back-div" onClick={() => props.setIsVisible(false)}>
-                        <div id="overlay-content" onClick={(e) => e.stopPropagation()}>
+                        <div id="overlay-content" style={props.panelPosition?.center ? undefined : props.panelPosition ? { left: props.panelPosition.left, right: props.panelPosition.right, top: 80 } : undefined} onClick={(e) => e.stopPropagation()}>
                             {props.htmlContent}
                         </div>
                     </div>

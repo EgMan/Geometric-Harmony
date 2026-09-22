@@ -88,9 +88,8 @@ body {
 #overlay-content {
   height: auto;
   position: absolute;
-  /* margin: 0 auto; */
   padding: 10px;
-
+  top: 80px;
 }
 
 #click-back-div {

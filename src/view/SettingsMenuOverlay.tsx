@@ -14,6 +14,19 @@ type Props = {
 } & WidgetComponentProps
 
 function SettingsMenuOverlay(props: Props) {
+    const minSpace = 250;
+    const widgetAbsX = props.fromWidget.position.x + props.fromWidget.containerPosition.x;
+    const widgetWidth = props.fromWidget.widgetSize?.width ?? 0;
+    const widgetRight = widgetAbsX + widgetWidth;
+    const spaceRight = window.innerWidth - widgetRight;
+    const spaceLeft = widgetAbsX;
+
+    const panelPosition = spaceRight >= minSpace
+        ? { left: widgetRight + 20 }
+        : spaceLeft >= minSpace
+            ? { right: window.innerWidth - widgetAbsX + 20 }
+            : { center: true };
+
     return (
         <Group
             x={-(props.fromWidget.position.x + props.fromWidget.containerPosition.x)}
@@ -21,6 +34,7 @@ function SettingsMenuOverlay(props: Props) {
             <ModalOverlay
                 isVisible={props.fromWidget.isOverlayVisible}
                 setIsVisible={props.fromWidget.setIsOverlayVisible}
+                panelPosition={panelPosition}
                 htmlContent={
                     <div>
                         <table>

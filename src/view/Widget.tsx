@@ -17,6 +17,7 @@ export type WidgetComponentProps = {
         positionOffset: Vector2d;
         containerPosition: Vector2d;
         widgetConfig: WidgetConfig;
+        widgetSize?: { width: number; height: number };
         isPreview?: boolean;
     }
 }
@@ -176,8 +177,9 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
         isOverlayVisible: isSettingsOverlayVisible,
         setIsOverlayVisible: setIsSettingsOverlayVisible,
         position: { x: initialPosition.x + draggedPosition.x, y: initialPosition.y + draggedPosition.y },
-        containerPosition: { x: - contextMenuOffset.x, y: - contextMenuOffset.y },
+        containerPosition: { x: - contextMenuOffset.x + leftBound, y: - contextMenuOffset.y + topBound },
         widgetConfig: tracker.config,
+        widgetSize: { width: resizedWidth, height: resizedHeight },
     }
 
     const CONSTRAIN_DRAG_FROM_TOP = 50;
