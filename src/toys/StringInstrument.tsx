@@ -31,12 +31,15 @@ const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 
 const GUITAR_TUNINGS: Record<string, { label: string; tuning: number[] }> = {
     standard: { label: "Standard (EADGBE)", tuning: [4, 9, 14, 19, 23, 28] },
     allFourths: { label: "All Fourths (EADGCF)", tuning: [4, 9, 14, 19, 24, 29] },
-    allFourths7: { label: "All Fourths 7 string (The best tuning)", tuning: [-1, 4, 9, 14, 19, 24, 29] },
+    allFourths7: { label: "All Fourths 7 String — The Best Tuning (BEADGCF)", tuning: [-1, 4, 9, 14, 19, 24, 29] },
+    newStandard: { label: "Robert Fripp's \"New Standard\" (CGDAEG)", tuning: [0, 7, 14, 21, 28, 31] },
+    allFifths: { label: "All Fifths (CGDAEB)", tuning: [0, 7, 14, 21, 28, 35] },
+    allFifths7: { label: "All Fifths 7 String (FCGDAEB)", tuning: [-7, 0, 7, 14, 21, 28, 35] },
     dropD: { label: "Drop D (DADGBE)", tuning: [2, 9, 14, 19, 23, 28] },
     openG: { label: "Open G (DGDGBD)", tuning: [2, 7, 14, 19, 23, 26] },
     openD: { label: "Open D (DADF#AD)", tuning: [2, 9, 14, 18, 21, 26] },
-    dadgad: { label: "DADGAD", tuning: [2, 9, 14, 19, 21, 26] },
-    halfDown: { label: "Half Step Down", tuning: [3, 8, 13, 18, 22, 27] },
+    dadgad: { label: "DADGAD (DADGAD)", tuning: [2, 9, 14, 19, 21, 26] },
+    halfDown: { label: "Half Step Down (D#G#C#F#A#D#)", tuning: [3, 8, 13, 18, 22, 27] },
 };
 
 type Props = {
@@ -345,11 +348,6 @@ function StringInstrument(props: Props) {
 
                 });
 
-                if (noteDisplays.octaveGnostic[absoluteNote]?.length > 0) {
-                    noteNames.push(
-                        <Text key={`noteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 20} text={getNoteName(note)} fontSize={12} fontFamily='monospace' fill={colorPalette.Main_Background} align="center" verticalAlign="middle" />
-                    )
-                }
                 if (activeNotes.has(note)) {
                     const noteColor = (note === homeNote) ? colorPalette.Note_Home : colorPalette.Note_Active;
                     activeNoteIndicators.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={noteColor}></Circle>)
