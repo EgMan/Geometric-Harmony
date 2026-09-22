@@ -112,7 +112,7 @@ function StringInstrument(props: Props) {
         NoteNames,
         ActiveNoteNames,
     }
-    const [noteLabeling, setNoteLabeling] = React.useState(NoteLabling.None);
+    const [noteLabeling, setNoteLabeling] = React.useState(NoteLabling.ActiveNoteNames);
     const [fretCount, setFretCount] = React.useState(24);
     const fretSpacing = props.height / fretCount;
     const fretElemYOffset = -fretSpacing / 2;
