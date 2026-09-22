@@ -123,6 +123,7 @@ function smoothSines() {
         // const limiter = new Tone.Limiter(    -50).toDestination();
         // const polysynth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" } })
         const polysynth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" }, envelope: { attack: 0.05, decay: 0.05, sustain: 0.75, release: 0.2 } });
+        polysynth.maxPolyphony = 128;
         polysynth.chain(eq, compressor, gain, reverb, Tone.Destination);
 
         return { synth: polysynth, synthAfterEffects: compressor };
@@ -173,6 +174,7 @@ function sharpSquares() {
         // const limiter = new Tone.Limiter(    -50).toDestination();
         // const polysynth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" } })
         const polysynth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "square" }, envelope: { attack: 0.05, decay: 0.05, sustain: 0.75, release: 0.2 } });
+        polysynth.maxPolyphony = 128;
         polysynth.chain(eq, compressor, gain, reverb, Tone.Destination);
 
         return { synth: polysynth, synthAfterEffects: compressor };
@@ -223,6 +225,7 @@ function trickyTriangles() {
         // const limiter = new Tone.Limiter(    -50).toDestination();
         // const polysynth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" } })
         const polysynth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "triangle" }, envelope: { attack: 0.05, decay: 0.05, sustain: 0.75, release: 0.2 } });
+        polysynth.maxPolyphony = 128;
         polysynth.chain(eq, compressor, gain, reverb, Tone.Destination);
 
         return { synth: polysynth, synthAfterEffects: compressor };
@@ -273,6 +276,7 @@ function AMSynth() {
         // const limiter = new Tone.Limiter(    -50).toDestination();
         // const polysynth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" } })
         const polysynth = new Tone.PolySynth(Tone.AMSynth, { oscillator: { type: "sine" }, envelope: { attack: 0.05, decay: 0.05, sustain: 0.75, release: 0.2 } });
+        polysynth.maxPolyphony = 128;
         polysynth.chain(eq, compressor, gain, reverb, Tone.Destination);
 
         return { synth: polysynth, synthAfterEffects: compressor };
@@ -324,6 +328,7 @@ function FMSynth() {
         // const polysynth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" } })
         const polysynth = new Tone.PolySynth(Tone.FMSynth, { oscillator: { type: "sine" }, envelope: { attack: 0.05, decay: 0.05, sustain: 0.75, release: 0.2 } });
         // polysynth.voices.forEach(voice => {});
+        polysynth.maxPolyphony = 128;
         polysynth.chain(eq, compressor, gain, reverb, Tone.Destination);
 
         return { synth: polysynth, synthAfterEffects: compressor };
@@ -337,6 +342,7 @@ function snare(): SynthDrum {
         const polysynth = new Tone.PolySynth(Tone.MembraneSynth, {
             envelope: { attack: 0.001, decay: 0.01, sustain: 0, release: 0.01 },
         });
+        polysynth.maxPolyphony = 128;
         // Not chained to any output — silent
 
         // Noise layer — light snare transient
