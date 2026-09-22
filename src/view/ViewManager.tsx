@@ -37,6 +37,7 @@ export type WidgetTracker<T extends WidgetConfig = WidgetConfig> = {
 export interface WidgetConfig {
     type: string,
     displayName: string,
+    componentPropsOverride?: Record<string, any>,
 }
 
 export const WidgetConfig_Default: WidgetConfig =
@@ -400,7 +401,7 @@ function ViewManager(props: Props) {
             componentProps: {
                 width: wheelRadius,
                 height: guitarHeight,
-                fretCount: 13,
+                fretCount: 24,
             },
         },
         [WidgetType.Analyzer]: {
@@ -515,6 +516,7 @@ function ViewManager(props: Props) {
             contextMenuOffset={desc.contextMenuOffset}
             lockAspectRatio={desc.lockAspectRatio}
             {...desc.componentProps}
+            {...widget.config?.componentPropsOverride}
         />;
     }, [widgetDescriptors, isPeaceModeEnabled, setDraggedPosition, trackerActions])
 
@@ -537,11 +539,12 @@ function ViewManager(props: Props) {
         const desc = widgetDescriptors[previewWidgetInfo.type];
         if (!desc) return null;
         const Component = desc.component;
+        const mergedProps = { ...desc.componentProps, ...previewWidgetInfo.config?.componentPropsOverride };
         const spawnX = 0.5 * props.width;
         const spawnY = 0.25 * props.height;
-        const w = desc.componentProps.width ?? 0;
+        const w = mergedProps.width ?? 0;
         return <Group x={spawnX - w / 2} y={spawnY + desc.previewYOffset}>
-            <Component fromWidget={previewFromWidget} {...desc.componentProps} />
+            <Component key={previewWidgetInfo.config?.type ?? previewWidgetInfo.type} fromWidget={previewFromWidget} {...mergedProps} />
         </Group>;
     }, [previewWidgetInfo, widgetDescriptors, previewFromWidget, props.width, props.height]);
 

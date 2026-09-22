@@ -23,7 +23,12 @@ export const WidgetConfig_String_Guitar: StringWidgetConfig = {
 export const WidgetConfig_String_Harpejji: StringWidgetConfig = {
     type: "harpejji",
     displayName: "Harpejji",
-    tuning: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
+    tuning: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24],
+    componentPropsOverride: {
+        width: 500,
+        fretCount: 36,
+        contextMenuOffset: { x: 250, y: -20 },
+    },
 }
 
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -113,7 +118,7 @@ function StringInstrument(props: Props) {
         ActiveNoteNames,
     }
     const [noteLabeling, setNoteLabeling] = React.useState(NoteLabling.ActiveNoteNames);
-    const [fretCount, setFretCount] = React.useState(24);
+    const [fretCount, setFretCount] = React.useState(props.fretCount ?? 24);
     const fretSpacing = props.height / fretCount;
     const fretElemYOffset = -fretSpacing / 2;
     const circleElemRadius = Math.min(fretSpacing / 2, stringSpacing) / 2;
@@ -218,17 +223,18 @@ function StringInstrument(props: Props) {
 
         for (let fretNum = 0; fretNum < fretCount; fretNum++) {
             const posY = getYPos(fretNum);
+            const isGuitar = props.fromWidget.widgetConfig.type === "guitar";
             fretElements.push(
-                <Line key={`l1-${fretNum}`} stroke={colorPalette.Widget_Primary} strokeWidth={fretNum % 12 === 0 ? 6 : 3} points={[-circleElemRadius * 2, posY, props.width + circleElemRadius * 2, posY]} />
+                <Line key={`l1-${fretNum}`} stroke={colorPalette.Widget_Primary} strokeWidth={isGuitar && fretNum % 12 === 0 ? 6 : 3} points={isGuitar ? [-circleElemRadius * 2, posY, props.width + circleElemRadius * 2, posY] : [0, posY, props.width, posY]} />
             );
-            if (props.fromWidget.widgetConfig.type === "guitar" && [3, 5, 7, 9,].includes(fretNum % 12)) {
+            if (isGuitar && [3, 5, 7, 9,].includes(fretNum % 12)) {
                 const markerW = props.width * 0.309;
                 const markerH = fretSpacing * 0.309;
                 fretElements.push(
                     <Rect key={`c1-${fretNum}`} x={props.width / 2 - markerW / 2} y={posY - fretSpacing / 2 - markerH / 2} width={markerW} height={markerH} cornerRadius={5} fill={colorPalette.Widget_MutedPrimary} />
                 );
             }
-            if (fretNum % 12 === 0 && fretNum > 0) {
+            if (isGuitar && fretNum % 12 === 0 && fretNum > 0) {
                 const markerW = props.width * 0.309;
                 const markerH = fretSpacing * 0.309;
                 fretElements.push(
