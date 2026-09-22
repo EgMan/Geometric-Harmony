@@ -91,9 +91,6 @@ function StringInstrument(props: Props) {
     }, []);
 
     const stringSpacing = props.width / (tuning.length - 1);
-    const fretSpacing = props.height / props.fretCount;
-    const fretElemYOffset = -fretSpacing / 2;
-    const circleElemRadius = Math.min(fretSpacing / 2, stringSpacing) / 2;
 
     const activeNotes = useNoteSet(NoteSet.Active).notes;
     const checkEmphasis = useCheckNoteEmphasis();
@@ -116,6 +113,10 @@ function StringInstrument(props: Props) {
         ActiveNoteNames,
     }
     const [noteLabeling, setNoteLabeling] = React.useState(NoteLabling.None);
+    const [fretCount, setFretCount] = React.useState(24);
+    const fretSpacing = props.height / fretCount;
+    const fretElemYOffset = -fretSpacing / 2;
+    const circleElemRadius = Math.min(fretSpacing / 2, stringSpacing) / 2;
 
     // TODO add this back in
     // enum IntervalDisplayType {
@@ -139,6 +140,18 @@ function StringInstrument(props: Props) {
                 <MenuItem value={NoteLabling.NoteNames}>Note Names (all notes)</MenuItem>
                 <MenuItem value={NoteLabling.ActiveNoteNames}>Note Names (only active notes)</MenuItem>
             </Select></td>
+        </tr>),
+        (<tr key="fretcount">
+            <td>Fret count</td>
+            <td colSpan={2}>
+                <Select
+                    id="menu-dropdown"
+                    value={fretCount}
+                    onChange={e => setFretCount(e.target.value as number)}
+                >
+                    {[12, 18, 24, 36, 48].map(n => <MenuItem key={n} value={n}>{n}</MenuItem>)}
+                </Select>
+            </td>
         </tr>),
         ...(config.type === "guitar" ? [(
             <tr key="tuning-preset">
@@ -203,10 +216,10 @@ function StringInstrument(props: Props) {
         let emphasized: JSX.Element[] = [];
         let clickListeners: JSX.Element[] = [];
 
-        for (let fretNum = 0; fretNum < props.fretCount; fretNum++) {
+        for (let fretNum = 0; fretNum < fretCount; fretNum++) {
             const posY = getYPos(fretNum);
             fretElements.push(
-                <Line key={`l1-${fretNum}`} stroke={colorPalette.Widget_Primary} strokeWidth={3} points={[0, posY, props.width, posY]} />
+                <Line key={`l1-${fretNum}`} stroke={colorPalette.Widget_Primary} strokeWidth={fretNum % 12 === 0 ? 6 : 3} points={[-circleElemRadius * 2, posY, props.width + circleElemRadius * 2, posY]} />
             );
             if (props.fromWidget.widgetConfig.type === "guitar" && [3, 5, 7, 9,].includes(fretNum % 12)) {
                 const markerW = props.width * 0.309;
@@ -317,7 +330,7 @@ function StringInstrument(props: Props) {
                         updateNotes(NoteSet.Active, [note], !activeNotes.has(note));
                     }
                 };
-                if (fretNum !== props.fretCount - 1) {
+                if (fretNum !== fretCount - 1) {
                     stringElements.push(
                         <Line key={`l2-${fretNum}-${stringNum}`} stroke={colorPalette.Widget_Primary} strokeWidth={1} points={[posX, posY, posX, posY + fretSpacing]} />
                     );
@@ -352,6 +365,12 @@ function StringInstrument(props: Props) {
 
                 });
 
+                if (noteDisplays.octaveGnostic[absoluteNote]?.length > 0) {
+                    noteNames.push(
+                        <Text key={`playingNoteName${fretNum}-${stringNum}`} width={40} height={40} x={posX - 20} y={posY + fretElemYOffset - 19} text={getNoteName(note)} fontSize={12} fontFamily='monospace' fill={colorPalette.Main_Background} align="center" verticalAlign="middle" />
+                    )
+                }
+
                 if (activeNotes.has(note)) {
                     const noteColor = (note === homeNote) ? colorPalette.Note_Home : colorPalette.Note_Active;
                     activeNoteIndicators.push(<Circle key={`activeInd${fretNum}-${stringNum}`} x={posX} y={posY + fretElemYOffset} radius={circleElemRadius} fill={noteColor}></Circle>)
@@ -378,7 +397,7 @@ function StringInstrument(props: Props) {
             emphasized,
             clickListeners,
         }
-    }, [NoteLabling.ActiveNoteNames, NoteLabling.NoteNames, activeNotes, circleElemRadius, colorPalette.Main_Background, colorPalette.Note_Active, colorPalette.Note_Home, colorPalette.Widget_Primary, tuning, fretElemYOffset, fretSpacing, getNoteName, getXPos, getYPos, homeNote, noteDisplays.octaveGnostic, noteLabeling, props.fretCount, props.fromWidget.widgetConfig.type, props.width, setHomeNote, settings?.isPeaceModeEnabled, stringSpacing, updateNotes]);
+    }, [NoteLabling.ActiveNoteNames, NoteLabling.NoteNames, activeNotes, circleElemRadius, colorPalette.Main_Background, colorPalette.Note_Active, colorPalette.Note_Home, colorPalette.Widget_Primary, tuning, fretElemYOffset, fretSpacing, getNoteName, getXPos, getYPos, homeNote, noteDisplays.octaveGnostic, noteLabeling, fretCount, props.fromWidget.widgetConfig.type, props.width, setHomeNote, settings?.isPeaceModeEnabled, stringSpacing, updateNotes]);
 
     const getOrgnogonalUnitVect = (x: number, y: number) => {
         const mag = Math.sqrt(x * x + y * y);
@@ -396,8 +415,8 @@ function StringInstrument(props: Props) {
         if (channelDisplays.length > 0)
             tuning.forEach((openNoteA, stringA) => {
                 tuning.forEach((openNoteB, stringB) => {
-                    for (let fretA = 0; fretA < props.fretCount; fretA++) {
-                        for (let fretB = 0; fretB < props.fretCount; fretB++) {
+                    for (let fretA = 0; fretA < fretCount; fretA++) {
+                        for (let fretB = 0; fretB < fretCount; fretB++) {
                             if (stringA === stringB) continue;
 
                             const fretDist = Math.abs(fretA - fretB);
@@ -526,7 +545,7 @@ function StringInstrument(props: Props) {
             emphasized: emphasized,
             listeners: touchListeners,
         }
-    }, [channelDisplays.length, colorPalette, tuning, fretElemYOffset, fretSpacing, getXPos, getYPos, noteDisplays.octaveGnostic, props.fretCount, props.fromWidget.widgetConfig.type, props.height, stringSpacing, updateNotes]);
+    }, [channelDisplays.length, colorPalette, tuning, fretElemYOffset, fretSpacing, getXPos, getYPos, noteDisplays.octaveGnostic, fretCount, props.fromWidget.widgetConfig.type, props.height, stringSpacing, updateNotes]);
 
     const fullRender = React.useMemo((
     ) => {
