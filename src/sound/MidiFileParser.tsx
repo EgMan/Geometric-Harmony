@@ -8,7 +8,7 @@ import { useSetActiveShape } from './HarmonicModulation';
 import { SCALE_NATURAL } from '../utils/KnownHarmonicShapes';
 import { getNote, getNoteMIDI, useActiveNoteNames } from '../utils/Utils';
 import { useSettings } from '../view/SettingsProvider';
-import { useSynth, useSynthDrum } from './SoundEngine';
+import { useSynthRef, useSynthDrumRef } from './SoundEngine';
 import * as Tone from 'tone';
 import { ListItemIcon, MenuItem } from '@mui/material';
 import AudioFileIcon from '@mui/icons-material/AudioFile';
@@ -119,8 +119,8 @@ export function MidiFileParser(props: Props) {
 
     const setActiveShape = useSetActiveShape();
     const setHomeNote = useSetHomeNote();
-    const synth = useSynth();
-    const synthDrum = useSynthDrum();
+    const synthRef = useSynthRef();
+    const synthDrumRef = useSynthDrumRef();
 
     const preprocessData = React.useCallback((midiData: midiManager.MidiData): MidiPreprocessedData => {
         let outTempos: TemposByTrack = {};
@@ -211,16 +211,16 @@ export function MidiFileParser(props: Props) {
                     // Tone.js
                     if (!isDrums) {
                         if (isNoteOn) {
-                            synth?.triggerAttack(getNote(noteNum), Tone.now() + 0.01, (event as MidiNoteOnEvent).velocity / 127);
+                            synthRef?.current?.triggerAttack(getNote(noteNum), Tone.now() + 0.01, (event as MidiNoteOnEvent).velocity / 127);
                         } else {
-                            synth?.triggerRelease(getNote(noteNum), Tone.now() + 0.01);
+                            synthRef?.current?.triggerRelease(getNote(noteNum), Tone.now() + 0.01);
                         }
                     } else {
                         const freq = Tone.Frequency(getNoteMIDI(noteNum)).toFrequency();
                         if (isNoteOn) {
-                            synthDrum?.triggerAttack(freq, Tone.now() + 0.01, (event as MidiNoteOnEvent).velocity / 127);
+                            synthDrumRef?.current?.triggerAttack(freq, Tone.now() + 0.01, (event as MidiNoteOnEvent).velocity / 127);
                         } else {
-                            synthDrum?.triggerRelease(freq, Tone.now() + 0.01);
+                            synthDrumRef?.current?.triggerRelease(freq, Tone.now() + 0.01);
                         }
                     }
                 }, delay);
@@ -316,7 +316,7 @@ export function MidiFileParser(props: Props) {
         }
 
         totalPendingScheduled.current++;
-    }, [getNoteName, midiEventTrackers, playbackGeneration, setActiveShape, setHomeNote, settings?.prioritizeMIDIAudio, stateContext.midiChannelTrackers, stateContext.midiEventTrackers, synth, synthDrum, totalPendingScheduled, updateNotes]);
+    }, [getNoteName, midiEventTrackers, playbackGeneration, setActiveShape, setHomeNote, settings?.prioritizeMIDIAudio, stateContext.midiChannelTrackers, stateContext.midiEventTrackers, totalPendingScheduled, updateNotes]);
 
     const tickWithDrift = React.useCallback(() => {
         if (!midiData?.current || !midiEventTrackers?.current) { return; }
@@ -383,20 +383,20 @@ export function MidiFileParser(props: Props) {
         isPaused.current = true;
         pausedAtMs.current = Math.max(0, performance.now() - startTime.current);
         playbackGeneration.current++;
-        synth?.releaseAll();
-        synthDrum?.releaseAll();
+        synthRef?.current?.releaseAll();
+        synthDrumRef?.current?.releaseAll();
         // Belt-and-suspenders: a triggerAttack scheduled just before pause
         // may not be "active" yet when releaseAll fires above. Release again
         // after the 10ms lookahead window, but only if still paused.
         setTimeout(() => {
             if (isPaused.current) {
-                synth?.releaseAll();
-                synthDrum?.releaseAll();
+                synthRef?.current?.releaseAll();
+                synthDrumRef?.current?.releaseAll();
             }
         }, 50);
         clearChannels(NoteSet.MIDIFileInput);
         setTransport(t => ({ ...t, isPlaying: false, positionMs: pausedAtMs.current }));
-    }, [clearChannels, isPaused, pausedAtMs, playbackGeneration, startTime, synth, synthDrum, setTransport]);
+    }, [clearChannels, isPaused, pausedAtMs, playbackGeneration, startTime, setTransport]);
 
     const resume = React.useCallback(() => {
         if (!isPaused.current || !midiData.current) return;
@@ -412,8 +412,8 @@ export function MidiFileParser(props: Props) {
 
         isPaused.current = true;
         playbackGeneration.current++;
-        synth?.releaseAll();
-        synthDrum?.releaseAll();
+        synthRef?.current?.releaseAll();
+        synthDrumRef?.current?.releaseAll();
         clearChannels(NoteSet.MIDIFileInput);
 
         midiData.current.tracks.forEach((track, trackIdx) => {
@@ -445,7 +445,7 @@ export function MidiFileParser(props: Props) {
             isPaused.current = false;
             tickWithDrift();
         }
-    }, [clearChannels, isPaused, midiData, midiEventTrackers, pausedAtMs, playbackGeneration, preprocessedData, startTime, synth, synthDrum, tickWithDrift, tickToTime, setTransport]);
+    }, [clearChannels, isPaused, midiData, midiEventTrackers, pausedAtMs, playbackGeneration, preprocessedData, startTime, tickWithDrift, tickToTime, setTransport]);
 
     // Store controls so MidiTransport can call them regardless of popover state
     controls.pause.current = pause;

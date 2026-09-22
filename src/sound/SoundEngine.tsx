@@ -11,9 +11,11 @@ export type SpeakerSoundType = "AMSynth";
 
 const synthContext = React.createContext<Tone.PolySynth | null>(null);
 const synthOutContext = React.createContext<Tone.ToneAudioNode | null>(null);
+const synthRefContext = React.createContext<React.MutableRefObject<Tone.PolySynth | null> | null>(null);
 
 const synthDrumContext = React.createContext<Tone.PolySynth | null>(null);
 const synthDrumOutContext = React.createContext<Tone.ToneAudioNode | null>(null);
+const synthDrumRefContext = React.createContext<React.MutableRefObject<Tone.PolySynth | null> | null>(null);
 
 type Props = {
     children: JSX.Element
@@ -68,6 +70,11 @@ function SoundEngine(props: Props) {
 
     const { synth, synthAfterEffects } = useSynthVoiceFromSettings();
     const { synthDrum, synthDrumAfterEffects } = useSynthDrumFromSettings();
+
+    const synthRef = React.useRef<Tone.PolySynth | null>(synth);
+    const synthDrumRef = React.useRef<Tone.PolySynth | null>(synthDrum);
+    synthRef.current = synth;
+    synthDrumRef.current = synthDrum;
 
     // TODO https://tonejs.github.io/docs/r12/Master READ THIS DUDE WTF
     React.useEffect(() => {
@@ -126,13 +133,17 @@ function SoundEngine(props: Props) {
         updateMIDIOutWithFiltering(notesTurnedOn, notesTurnedOff);
     });
     return <synthContext.Provider value={synth}>
+        <synthRefContext.Provider value={synthRef}>
         <synthOutContext.Provider value={synthAfterEffects}>
             <synthDrumContext.Provider value={synthDrum}>
+                <synthDrumRefContext.Provider value={synthDrumRef}>
                 <synthDrumOutContext.Provider value={synthDrumAfterEffects}>
                     {props.children}
                 </synthDrumOutContext.Provider>
+                </synthDrumRefContext.Provider>
             </synthDrumContext.Provider>
         </synthOutContext.Provider>
+        </synthRefContext.Provider>
     </synthContext.Provider>
 }
 export default SoundEngine;
@@ -155,6 +166,14 @@ export function useSynthDrum() {
 export function useSynthDrumAfterEffects() {
     const synthDrumOut = React.useContext(synthDrumOutContext);
     return synthDrumOut;
+}
+
+export function useSynthRef() {
+    return React.useContext(synthRefContext);
+}
+
+export function useSynthDrumRef() {
+    return React.useContext(synthDrumRefContext);
 }
 
 export function useExecuteOnPlayingNoteStateChange(callback: (notesTurnedOn: [NoteChannel, number][], notesTurnedOff: [NoteChannel, number][], playingNotes: [NoteChannel, number][]) => void) {

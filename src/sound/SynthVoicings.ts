@@ -48,7 +48,6 @@ export function useSynthVoiceFromSettings(): SynthVoice {
     if (synth && prevSynthVoice && prevSynthVoice !== settings?.localSynthVoice) {
         if (!synth.synth.disposed) {
             synth.synth.releaseAll();
-            // synth.synth.dispose(); //memory leak?
         }
     }
 
