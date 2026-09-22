@@ -30,8 +30,8 @@ const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 
 
 const GUITAR_TUNINGS: Record<string, { label: string; tuning: number[] }> = {
     standard: { label: "Standard (EADGBE)", tuning: [4, 9, 14, 19, 23, 28] },
-    allFourths: { label: "All Fourths (The best tuning)", tuning: [4, 9, 14, 19, 24, 29] },
-    allFourths7: { label: "All Fourths 7 string", tuning: [4, 9, 14, 19, 24, 29, 34] },
+    allFourths: { label: "All Fourths (EADGCF)", tuning: [4, 9, 14, 19, 24, 29] },
+    allFourths7: { label: "All Fourths 7 string (The best tuning)", tuning: [-1, 4, 9, 14, 19, 24, 29] },
     dropD: { label: "Drop D (DADGBE)", tuning: [2, 9, 14, 19, 23, 28] },
     openG: { label: "Open G (DGDGBD)", tuning: [2, 7, 14, 19, 23, 26] },
     openD: { label: "Open D (DADF#AD)", tuning: [2, 9, 14, 18, 21, 26] },
