@@ -27,6 +27,8 @@ type Settings = {
     setPercussionVolume: React.Dispatch<React.SetStateAction<number>>,
     noteDisplayMode: NoteDisplayMode,
     setNoteDisplayMode: React.Dispatch<React.SetStateAction<NoteDisplayMode>>,
+    isDiscoMode: boolean,
+    setIsDiscoMode: React.Dispatch<React.SetStateAction<boolean>>,
 }
 
 const settingsContext = React.createContext<Settings | null>(null);
@@ -40,6 +42,7 @@ function SettingsProvider(props: Props) {
     const [synthVolume, setSynthVolume] = React.useState<number>(100);
     const [percussionVolume, setPercussionVolume] = React.useState<number>(50);
     const [noteDisplayMode, setNoteDisplayMode] = React.useState<NoteDisplayMode>(NoteDisplayMode.NoteNames);
+    const [isDiscoMode, setIsDiscoMode] = React.useState<boolean>(false);
 
     const settings = React.useMemo(() => ({
         isMuted,
@@ -58,7 +61,9 @@ function SettingsProvider(props: Props) {
         setPercussionVolume,
         noteDisplayMode,
         setNoteDisplayMode,
-    }), [isMuted, isPeaceModeEnabled, isPercussionMuted, localSynthVoice, noteDisplayMode, percussionVolume, prioritizeMIDIAudio, synthVolume]);
+        isDiscoMode,
+        setIsDiscoMode,
+    }), [isDiscoMode, isMuted, isPeaceModeEnabled, isPercussionMuted, localSynthVoice, noteDisplayMode, percussionVolume, prioritizeMIDIAudio, synthVolume]);
 
     return (
         <settingsContext.Provider value={settings}>

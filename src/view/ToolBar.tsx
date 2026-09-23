@@ -800,6 +800,23 @@ function ToolBar(props: Props) {
                                         <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold", textAlign: "center" }}>MIDI File</DialogTitle>
                                         <MidiFileParser key={"midifileparser"} closeContainer={() => setMidiSettingsDropdownOpen(false)} />
                                         <MidiTransport />
+                                        <MenuItem onClick={() => settings?.setIsDiscoMode(d => !d)}>
+                                            <ListItemIcon>
+                                                <ColorLensIcon style={{ color: colorPalette.UI_Primary }} fontSize="small" />
+                                            </ListItemIcon>
+                                            <ListItemText>
+                                                Disco Mode
+                                                <Typography sx={{
+                                                    color: colorPalette.UI_Primary,
+                                                    fontFamily: 'monospace',
+                                                    fontSize: 11,
+                                                    opacity: 0.8,
+                                                }}>
+                                                    WARNING: Flashing Lights
+                                                </Typography>
+                                            </ListItemText>
+                                            <Switch checked={settings?.isDiscoMode ?? false} onChange={e => settings?.setIsDiscoMode(e.target.checked)} />
+                                        </MenuItem>
                                     </Box>
                                     <Box sx={{ borderRadius: 1, backgroundColor: colorPalette.UI_Background_Alternate, textAlign: "left" }}>
                                         <DialogTitle fontSize="large" sx={{ fontFamily: "monospace", fontWeight: "bold", textAlign: "center" }}>MIDI Devices</DialogTitle>

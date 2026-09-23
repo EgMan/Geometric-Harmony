@@ -1,5 +1,5 @@
 import React from 'react';
-import { MidiNoteMixins, MidiSetTempoEvent, MidiProgramChangeEvent, MidiKeySignatureEvent, MidiControllerEvent, MidiNoteAftertouchEvent, MidiPitchBendEvent, MidiTextEvent, MidiNoteOnEvent, MidiNoteOffEvent } from "midi-file";
+import { MidiNoteMixins, MidiSetTempoEvent, MidiProgramChangeEvent, MidiKeySignatureEvent, MidiControllerEvent, MidiNoteAftertouchEvent, MidiPitchBendEvent, MidiTextEvent, MidiNoteOnEvent, MidiNoteOffEvent, MidiTimeSignatureEvent } from "midi-file";
 import * as midiManager from 'midi-file';
 import { NoteSet, useClearChannelsOfType, useSetHomeNote, useUpdateNoteSet } from './NoteProvider';
 import { midiNoteToProgramNote } from './MIDIInterface';
@@ -12,7 +12,8 @@ import { useSynthRef, useSynthDrumRef } from './SoundEngine';
 import * as Tone from 'tone';
 import { ListItemIcon, MenuItem } from '@mui/material';
 import AudioFileIcon from '@mui/icons-material/AudioFile';
-import { useAppTheme } from '../view/ThemeManager';
+import { useAppTheme, useChangeAppTheme } from '../view/ThemeManager';
+import { changeLightness, getRandomColor, getRandomColorWithAlpha, blendColors } from '../utils/Utils';
 
 type Props = {
     closeContainer: () => void,
@@ -42,6 +43,7 @@ export type TransportState = {
 };
 
 const scheduleAheadMS = 300;
+let _isDiscoMode = false;
 
 type MidiDataContextType = {
     midiData: React.MutableRefObject<midiManager.MidiData | null>,
@@ -121,6 +123,10 @@ export function MidiFileParser(props: Props) {
     const setHomeNote = useSetHomeNote();
     const synthRef = useSynthRef();
     const synthDrumRef = useSynthDrumRef();
+    const changeTheme = useChangeAppTheme();
+    const lastDiscoPhrase = React.useRef<number>(-1);
+    const discoTimeSig = React.useRef<{ numerator: number; denominator: number }>({ numerator: 4, denominator: 4 });
+    _isDiscoMode = settings?.isDiscoMode ?? false;
 
     const preprocessData = React.useCallback((midiData: midiManager.MidiData): MidiPreprocessedData => {
         let outTempos: TemposByTrack = {};
@@ -304,6 +310,13 @@ export function MidiFileParser(props: Props) {
                 }, delay);
                 break;
             }
+            case 'timeSignature':
+                discoTimeSig.current = {
+                    numerator: (event as MidiTimeSignatureEvent).numerator,
+                    denominator: (event as MidiTimeSignatureEvent).denominator,
+                };
+                lastDiscoPhrase.current = -1;
+                break;
             case 'text':
                 setTimeout(() => {
                     if (playbackGeneration.current !== gen) return;
@@ -315,8 +328,38 @@ export function MidiFileParser(props: Props) {
                 break;
         }
 
+        // Disco mode: trigger random theme on new phrases
+        if (_isDiscoMode && midiData.current) {
+            const ticksPerBeat = midiData.current.header.ticksPerBeat ?? 480;
+            const { numerator, denominator } = discoTimeSig.current;
+            const measuresPerPhrase = 4;
+            const ticksPerPhrase = ticksPerBeat * numerator * (4 / denominator) * measuresPerPhrase;
+            const currentPhrase = Math.floor(ticks / ticksPerPhrase);
+            if (currentPhrase > lastDiscoPhrase.current) {
+                lastDiscoPhrase.current = currentPhrase;
+                setTimeout(() => {
+                    if (playbackGeneration.current !== gen) return;
+                    changeTheme?.(prev => {
+                        const Widget_Primary = changeLightness(getRandomColor(), 1.25);
+                        const Main_Background = changeLightness(getRandomColor(), 0.75);
+                        const Widget_MutedPrimary = blendColors([Widget_Primary, Widget_Primary, Widget_Primary, Main_Background, Main_Background])!;
+                        return {
+                            ...prev,
+                            Main_Background,
+                            UI_Background: getRandomColorWithAlpha(),
+                            UI_Primary: getRandomColor(),
+                            UI_Accent: getRandomColor(),
+                            Widget_Primary,
+                            Widget_MutedPrimary,
+                            Note_Home: getRandomColor(),
+                        };
+                    });
+                }, delay);
+            }
+        }
+
         totalPendingScheduled.current++;
-    }, [getNoteName, midiEventTrackers, playbackGeneration, setActiveShape, setHomeNote, settings?.prioritizeMIDIAudio, stateContext.midiChannelTrackers, stateContext.midiEventTrackers, totalPendingScheduled, updateNotes]);
+    }, [changeTheme, getNoteName, midiData, midiEventTrackers, playbackGeneration, setActiveShape, setHomeNote, settings?.prioritizeMIDIAudio, stateContext.midiChannelTrackers, stateContext.midiEventTrackers, totalPendingScheduled, updateNotes]);
 
     const tickWithDrift = React.useCallback(() => {
         if (!midiData?.current || !midiEventTrackers?.current) { return; }
@@ -439,6 +482,7 @@ export function MidiFileParser(props: Props) {
 
         startTime.current = performance.now() - targetMs;
         pausedAtMs.current = targetMs;
+        lastDiscoPhrase.current = -1;
         setTransport(t => ({ ...t, positionMs: targetMs, isPlaying: wasPlaying }));
 
         if (wasPlaying) {
@@ -489,6 +533,8 @@ export function MidiFileParser(props: Props) {
         playbackGeneration.current++;
         isPaused.current = false;
         pausedAtMs.current = 0;
+        lastDiscoPhrase.current = -1;
+        discoTimeSig.current = { numerator: 4, denominator: 4 };
         startTime.current = performance.now();
         setTransport({ isPlaying: true, positionMs: 0, durationMs: maxMs });
 
