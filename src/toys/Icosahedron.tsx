@@ -4,6 +4,7 @@ import { blendColors, getIntervalColor, getIntervalDistance, smallGold } from '.
 import Wireframe, { WireframeLine, WireframePoint } from './Wireframe';
 import { NoteSet, normalizeToSingleOctave, useHomeNote, useNoteDisplays, useNoteSet } from '../sound/NoteProvider';
 import { useAppTheme } from '../view/ThemeManager';
+import { NOTE_CIRCLE_RADIUS_DEFAULT, NOTE_CIRCLE_RADIUS_ACTIVE, NOTE_CIRCLE_RADIUS_HOME, SEMITONES_PER_OCTAVE } from '../utils/MagicNumbers';
 
 type Props = {
     width: number,
@@ -42,24 +43,24 @@ function Icosahedron(props: Props) {
             const isActiveNote = activeNotes.has(normalizeToSingleOctave(note))
             const isBeingChannelDisplayed = (channelDisplay?.length ?? 0) > 0;
             let color = colorPalette.Widget_Primary;
-            let circleRadius = 2.5;
+            let circleRadius = NOTE_CIRCLE_RADIUS_DEFAULT;
             let outlineColor = undefined;
             let opacity = 1;
             // let moreText = "";
             if (isBeingChannelDisplayed) {
-                circleRadius = 5;
+                circleRadius = NOTE_CIRCLE_RADIUS_ACTIVE;
                 color = blendColors(channelDisplay ?? []) ?? "rgba(0,0,0,0)";
             }
             else if (homeNote === normalizeToSingleOctave(note)) {
-                circleRadius = 3;
+                circleRadius = NOTE_CIRCLE_RADIUS_HOME;
                 color = colorPalette.Note_Home;
             }
             else if (isActiveNote) {
-                circleRadius = 2.5;
+                circleRadius = NOTE_CIRCLE_RADIUS_DEFAULT;
                 color = colorPalette.Note_Active;
             } else {
                 color = colorPalette.Main_Background;
-                circleRadius = 2.5;
+                circleRadius = NOTE_CIRCLE_RADIUS_DEFAULT;
                 outlineColor = colorPalette.Widget_Primary;
             }
             return {
@@ -93,8 +94,8 @@ function Icosahedron(props: Props) {
             [11],
         ];
 
-        for (let start = 0; start < 12; start++) {
-            for (let end = start + 1; end < 12; end++) {
+        for (let start = 0; start < SEMITONES_PER_OCTAVE; start++) {
+            for (let end = start + 1; end < SEMITONES_PER_OCTAVE; end++) {
                 const startNote = idxToNote[start];
                 const endNote = idxToNote[end];
                 const startNotechannelDisplay = noteDisplays.normalized[startNote]?.length > 0;
@@ -103,7 +104,7 @@ function Icosahedron(props: Props) {
 
                 // const isOtherNoteBeingChannelDisplayed = (endNoteChannelDisplay?.length ?? 0) > 0;
                 if (startNotechannelDisplay && endNoteChannelDisplay) {
-                    color = getIntervalColor(getIntervalDistance(normalizeToSingleOctave(startNote), normalizeToSingleOctave(endNote), 12), colorPalette);
+                    color = getIntervalColor(getIntervalDistance(normalizeToSingleOctave(startNote), normalizeToSingleOctave(endNote), SEMITONES_PER_OCTAVE), colorPalette);
                     out.push({
                         start: start,
                         end: end,

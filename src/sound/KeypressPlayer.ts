@@ -4,6 +4,7 @@ import { NoteSet, normalizeToSingleOctave, useNoteSet, useUpdateNoteSet } from "
 import { useGetActiveShapeScaleDegreeFromNote, useGetNoteFromActiveShapeScaleDegree} from "../toys/HarmonyAnalyzer";
 import { useExecuteOnPlayingNoteStateChange } from "./SoundEngine";
 import { useActiveNoteBank } from "../utils/NotesetBank";
+import { SEMITONES_PER_OCTAVE } from "../utils/MagicNumbers";
 
 const keyToNoteNumber = new Map<string, number>(
     [
@@ -305,12 +306,12 @@ function useKeypressPlayer() {
             }
 
             var specificKeyOffset = 0;
-            if (key === ' ') specificKeyOffset -= 12;
-            if (keyToScaleDegreeMid.has(key)) specificKeyOffset += 12;
-            if (keyToScaleDegreeHigh.has(key)) specificKeyOffset += 12*2;
+            if (key === ' ') specificKeyOffset -= SEMITONES_PER_OCTAVE;
+            if (keyToScaleDegreeMid.has(key)) specificKeyOffset += SEMITONES_PER_OCTAVE;
+            if (keyToScaleDegreeHigh.has(key)) specificKeyOffset += SEMITONES_PER_OCTAVE*2;
 
             const noteFromScaleDegree = getNoteFromScaleDegree(scaleDegree);
-            const offset = specificKeyOffset+(octaveShift*12);
+            const offset = specificKeyOffset+(octaveShift*SEMITONES_PER_OCTAVE);
 
             // The case where there are no active notes
             if (isNaN(noteFromScaleDegree)){

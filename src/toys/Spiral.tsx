@@ -6,6 +6,7 @@ import Wireframe, { WireframeLine, WireframePoint } from './Wireframe';
 import { NoteSet, normalizeToSingleOctave, useHomeNote, useNoteDisplays, useNoteSet } from '../sound/NoteProvider';
 import { useAppTheme } from '../view/ThemeManager';
 import Quaternion from "quaternion";
+import { NOTE_CIRCLE_RADIUS_DEFAULT, NOTE_CIRCLE_RADIUS_ACTIVE, NOTE_CIRCLE_RADIUS_HOME, SEMITONES_PER_OCTAVE } from '../utils/MagicNumbers';
 
 type Props = {
     width: number,
@@ -16,7 +17,7 @@ const radius = 1;
 const octaveCount = 8;
 
 function Spiral(props: Props) {
-    const rungSpacing = bigGold / (12 * octaveCount);
+    const rungSpacing = bigGold / (SEMITONES_PER_OCTAVE * octaveCount);
     const noteDisplays = useNoteDisplays();
     const activeNotes = useNoteSet(NoteSet.Active).notes;
     const { colorPalette } = useAppTheme()!;
@@ -26,34 +27,34 @@ function Spiral(props: Props) {
     const frameElems = React.useMemo(() => {
         let outPoints: WireframePoint[] = [];
         let outLines: WireframeLine[] = [];
-        for (let noteIdx = 0; noteIdx < 12 * octaveCount; noteIdx++) {
+        for (let noteIdx = 0; noteIdx < SEMITONES_PER_OCTAVE * octaveCount; noteIdx++) {
             // const a = noteDisplays.octaveGnostic[i]?.map((noteDisplay) => noteDisplay.color!);
             // const color = blendColors(a ?? []) ?? undefined;
             // const color = noteDisplays.octaveGnostic[i] ? "green" : "red";
             const noteOffset = 24;
             const note = noteIdx - noteOffset;
-            const radians = -note * 2 * Math.PI / 12;
+            const radians = -note * 2 * Math.PI / SEMITONES_PER_OCTAVE;
             const channelDisplay = noteDisplays.octaveGnostic[note]?.map((noteDisplay) => noteDisplay.color!);
             const isActiveNote = activeNotes.has(normalizeToSingleOctave(note))
             const isBeingChannelDisplayed = (channelDisplay?.length ?? 0) > 0;
             let color = colorPalette.Widget_Primary;
-            let circleRadius = 2.5;
+            let circleRadius = NOTE_CIRCLE_RADIUS_DEFAULT;
             let outlineColor = undefined;
             let opacity = 1;
             if (isBeingChannelDisplayed) {
-                circleRadius = 5;
+                circleRadius = NOTE_CIRCLE_RADIUS_ACTIVE;
                 color = blendColors(channelDisplay ?? []) ?? "rgba(0,0,0,0)";
             }
             else if (homeNote === normalizeToSingleOctave(note)) {
-                circleRadius = 3;
+                circleRadius = NOTE_CIRCLE_RADIUS_HOME;
                 color = colorPalette.Note_Home;
             }
             else if (isActiveNote) {
-                circleRadius = 2.5;
+                circleRadius = NOTE_CIRCLE_RADIUS_DEFAULT;
                 color = colorPalette.Note_Active;
             } else {
                 color = colorPalette.Main_Background;
-                circleRadius = 2.5;
+                circleRadius = NOTE_CIRCLE_RADIUS_DEFAULT;
                 outlineColor = colorPalette.Widget_Primary;
             }
 
@@ -75,13 +76,13 @@ function Spiral(props: Props) {
             });
 
             if (isBeingChannelDisplayed) {
-                for (let otherNote = note + 1; otherNote < Math.min(note + (12 * 3) + 1, 12 * octaveCount - noteOffset); otherNote++) {
+                for (let otherNote = note + 1; otherNote < Math.min(note + (SEMITONES_PER_OCTAVE * 3) + 1, SEMITONES_PER_OCTAVE * octaveCount - noteOffset); otherNote++) {
                     const otherNoteChannelDisplay = noteDisplays.octaveGnostic[otherNote]?.map((noteDisplay) => noteDisplay.color!);
                     const isOtherNoteBeingChannelDisplayed = (otherNoteChannelDisplay?.length ?? 0) > 0;
 
                     if (isOtherNoteBeingChannelDisplayed) {
-                        var intervalColor = getIntervalColor(getIntervalDistance(normalizeToSingleOctave(otherNote), normalizeToSingleOctave(note), 12), colorPalette);
-                        const octavesApart = Math.floor((otherNote - note) / 12);
+                        var intervalColor = getIntervalColor(getIntervalDistance(normalizeToSingleOctave(otherNote), normalizeToSingleOctave(note), SEMITONES_PER_OCTAVE), colorPalette);
+                        const octavesApart = Math.floor((otherNote - note) / SEMITONES_PER_OCTAVE);
                         // intervalColor = changeAlpha(intervalColor, 1 / octavesApart);
                         outLines.push({
                             start: note + noteOffset,

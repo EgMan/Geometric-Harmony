@@ -8,6 +8,7 @@ import { getIntervalColor, getIntervalDistance, useActiveNoteNames } from '../ut
 import { NoteSet, normalizeToSingleOctave, useChannelDisplays, useGetCombinedModdedEmphasis, useHomeNote, useNoteDisplays, useNoteSet, useSetHomeNote, useUpdateNoteSet } from '../sound/NoteProvider';
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import useRenderingTrace from '../utils/ProfilingUtils';
+import { PERFECT_FIFTH_SEMITONES, SEMITONES_PER_OCTAVE } from '../utils/MagicNumbers';
 import { useSettings } from '../view/SettingsProvider';
 import { useAppTheme } from '../view/ThemeManager';
 import { WidgetConfig } from '../view/ViewManager';
@@ -80,7 +81,7 @@ function Wheel(props: Props) {
 
     const getNoteLocation = React.useCallback((i: number) => {
         if (isCircleOfFifths) {
-            i = (i * 7) % props.subdivisionCount;
+            i = (i * PERFECT_FIFTH_SEMITONES) % props.subdivisionCount;
         }
         const radians = i * 2 * Math.PI / props.subdivisionCount;
         return {
@@ -181,7 +182,7 @@ function Wheel(props: Props) {
                 noteDiff += props.subdivisionCount;
             }
             if (isCircleOfFifths) {
-                noteDiff = (noteDiff * 7) % props.subdivisionCount;
+                noteDiff = (noteDiff * PERFECT_FIFTH_SEMITONES) % props.subdivisionCount;
             }
             // updateNotes(NoteSet.Emphasized, getNotesInCommon(noteDiff), true, true);
             setHighlightedNotes(new Set(Array.from(getNotesInCommon(noteDiff)).map((note) => (note + props.subdivisionCount - noteDiff) % props.subdivisionCount)));
@@ -261,8 +262,8 @@ function Wheel(props: Props) {
         var emphasized: JSX.Element[] = [];
         var highlighted: JSX.Element[] = [];
 
-        for (let noteA = 0; noteA < 12; noteA++) {
-            for (let noteB = noteA; noteB < 12; noteB++) {
+        for (let noteA = 0; noteA < SEMITONES_PER_OCTAVE; noteA++) {
+            for (let noteB = noteA; noteB < SEMITONES_PER_OCTAVE; noteB++) {
                 const aLoc = getNoteLocation(noteA);
                 const bLoc = getNoteLocation(noteB);
                 const dist = getIntervalDistance(noteA, noteB, props.subdivisionCount);

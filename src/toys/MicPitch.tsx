@@ -7,6 +7,7 @@ import * as Pitchfinder from "pitchfinder";
 import { useAppTheme } from "../view/ThemeManager";
 import SettingsMenuOverlay from "../view/SettingsMenuOverlay";
 import { Switch } from "@mui/material";
+import { SEMITONES_PER_OCTAVE } from "../utils/MagicNumbers";
 
 export interface MicPitchConfig extends WidgetConfig {
     snapToScale: boolean;
@@ -24,7 +25,7 @@ const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 
 const MIC_GREEN = "#22c55e";
 
 function noteHz(midiNote: number): number {
-    return 440 * Math.pow(2, (midiNote - 69) / 12);
+    return 440 * Math.pow(2, (midiNote - 69) / SEMITONES_PER_OCTAVE);
 }
 
 type Props = {
@@ -86,7 +87,7 @@ function MicPitch(props: Props) {
     const [playAudio, setPlayAudio] = React.useState(config.playAudio);
 
     // Raw MIDI note from detected Hz
-    const rawMidi = hz !== null ? Math.round(12 * Math.log2(hz / 440)) + 69 : null;
+    const rawMidi = hz !== null ? Math.round(SEMITONES_PER_OCTAVE * Math.log2(hz / 440)) + 69 : null;
 
     // Apply snap-to-scale if enabled
     const effectiveMidi = React.useMemo(() => {
@@ -101,7 +102,7 @@ function MicPitch(props: Props) {
         activeNotes.forEach(activeDegree => {
             const dist = Math.min(
                 Math.abs(activeDegree - rawDegree),
-                12 - Math.abs(activeDegree - rawDegree)
+                SEMITONES_PER_OCTAVE - Math.abs(activeDegree - rawDegree)
             );
             if (dist < bestDist) {
                 bestDist = dist;
@@ -134,7 +135,7 @@ function MicPitch(props: Props) {
 
     // Display values
     const noteName = micError ? "!" : effectiveMidi !== null
-        ? `${NOTE_NAMES[((effectiveMidi % 12) + 12) % 12]}${Math.floor(effectiveMidi / 12) - 1}`
+        ? `${NOTE_NAMES[((effectiveMidi % SEMITONES_PER_OCTAVE) + SEMITONES_PER_OCTAVE) % SEMITONES_PER_OCTAVE]}${Math.floor(effectiveMidi / SEMITONES_PER_OCTAVE) - 1}`
         : "—";
     const hzText = micError ?? (hz !== null ? `${hz.toFixed(1)} Hz` : "");
 
@@ -154,8 +155,8 @@ function MicPitch(props: Props) {
         for (let i = -1; i <= 1; i++) {
             const midi = nearestMidi + i;
             const x = centerX + i * semitoneSpacing;
-            const degree = ((midi % 12) + 12) % 12;
-            const octave = Math.floor(midi / 12) - 1;
+            const degree = ((midi % SEMITONES_PER_OCTAVE) + SEMITONES_PER_OCTAVE) % SEMITONES_PER_OCTAVE;
+            const octave = Math.floor(midi / SEMITONES_PER_OCTAVE) - 1;
             const label = `${NOTE_NAMES[degree]}${octave}`;
             const isCenter = i === 0;
 

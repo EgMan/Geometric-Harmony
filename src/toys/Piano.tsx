@@ -8,6 +8,12 @@ import { KonvaEventObject } from 'konva/lib/Node';
 import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import { useSettings } from '../view/SettingsProvider';
 import { useAppTheme } from '../view/ThemeManager';
+import { SEMITONES_PER_OCTAVE } from '../utils/MagicNumbers';
+
+const WHITE_KEYS_PER_OCTAVE = 7;
+const PIANO_NOTE_FONT_SIZE = 12;
+const PIANO_INTERVAL_STROKE_WIDTH = 5;
+const PIANO_INTERVAL_OPACITY = 0.225;
 
 const noteToXOffsetFactor = [0, 1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 6];
 const blackKeyNums = [1, 3, 6, 8, 10];
@@ -143,12 +149,12 @@ function Piano(props: Props) {
 
     const getPropsForWhiteNote: (note: number, octave: number) => NoteProps = React.useCallback((note: number, octave: number) => {
         const individualKeyOffset = (octave * octaveWidth);
-        const keyWidth = octaveWidth / 7;
+        const keyWidth = octaveWidth / WHITE_KEYS_PER_OCTAVE;
         const keyHeight = props.height;
         const individualActiveIndicaterOffset = individualKeyOffset + (keyWidth / 2);
         const activeIndicatorWidth = keyWidth / 3;
         const activeIndicatorY = 5 * keyHeight / 6;
-        const xpos = (noteToXOffsetFactor[note] * octaveWidth / 7);
+        const xpos = (noteToXOffsetFactor[note] * octaveWidth / WHITE_KEYS_PER_OCTAVE);
         const extraProps = { stroke: colorPalette.Widget_Primary, strokeWidth: 2 }
         return {
             keyWidth,
@@ -169,7 +175,7 @@ function Piano(props: Props) {
         const individualActiveIndicaterOffset = individualKeyOffset + (keyWidth / 2);
         const activeIndicatorWidth = keyWidth * 2 / 3;
         const activeIndicatorY = 3 * keyHeight / 4;
-        const xpos = noteToXOffsetFactor[note] * octaveWidth / 7;
+        const xpos = noteToXOffsetFactor[note] * octaveWidth / WHITE_KEYS_PER_OCTAVE;
         const extraProps = { stroke: colorPalette.Widget_Primary, fill: colorPalette.Widget_Primary }
         return {
             keyWidth,
@@ -191,7 +197,7 @@ function Piano(props: Props) {
     }, [getPropsForBlackNote, getPropsForWhiteNote]);
 
     const getAbsoluteNoteNum = React.useCallback((note: number, octave: number) => {
-        return note + ((octave + props.octaveOffset) * 12);
+        return note + ((octave + props.octaveOffset) * SEMITONES_PER_OCTAVE);
     }, [props.octaveOffset]);
 
     const keys = React.useMemo(() => {
@@ -297,7 +303,7 @@ function Piano(props: Props) {
                             x={noteprops.xpos + noteprops.individualActiveIndicaterOffset - 20}
                             y={noteprops.activeIndicatorY - 20}
                             text={getNoteName(note)}
-                            fontSize={12}
+                            fontSize={PIANO_NOTE_FONT_SIZE}
                             fontFamily='monospace'
                             fill={nameColor}
                             align="center"
@@ -333,8 +339,8 @@ function Piano(props: Props) {
                     const noteA = normalizeToSingleOctave(absoluteNoteA);
                     const noteB = normalizeToSingleOctave(absoluteNoteB);
 
-                    const octaveA = Math.floor(absoluteNoteA / 12) - props.octaveOffset;
-                    const octaveB = Math.floor(absoluteNoteB / 12) - props.octaveOffset;
+                    const octaveA = Math.floor(absoluteNoteA / SEMITONES_PER_OCTAVE) - props.octaveOffset;
+                    const octaveB = Math.floor(absoluteNoteB / SEMITONES_PER_OCTAVE) - props.octaveOffset;
 
                     const propsA = getPropsForNote(noteA, octaveA);
                     const propsB = getPropsForNote(noteB, octaveB);
@@ -343,9 +349,9 @@ function Piano(props: Props) {
                     const bLoc = { x: propsB.xpos + propsB.individualActiveIndicaterOffset, y: propsB.activeIndicatorY };
 
 
-                    const dist = getIntervalDistance(noteA, noteB, 12);
+                    const dist = getIntervalDistance(noteA, noteB, SEMITONES_PER_OCTAVE);
                     const discColor = getIntervalColor(dist, colorPalette);
-                    const absoluteDist = Math.abs((noteA + (12 * octaveA)) - (noteB + (12 * octaveB)));
+                    const absoluteDist = Math.abs((noteA + (SEMITONES_PER_OCTAVE * octaveA)) - (noteB + (SEMITONES_PER_OCTAVE * octaveB)));
 
                     if (onlyShowIntervalsOnHover) {
                         if (combinedEmphasis.size === 0)
@@ -363,7 +369,7 @@ function Piano(props: Props) {
                         continue;
                     }
 
-                    if (showInverseIntervals && absoluteDist > 12 - dist) {
+                    if (showInverseIntervals && absoluteDist > SEMITONES_PER_OCTAVE - dist) {
                         continue;
                     }
                     if (!showInverseIntervals && absoluteDist > dist) {
@@ -386,9 +392,9 @@ function Piano(props: Props) {
                                 context.moveTo(aLoc.x, aLoc.y);
                                 context.bezierCurveTo(
                                     aLoc.x,
-                                    aLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
+                                    aLoc.y - (props.height * (absoluteDist + absoluteDist) / (SEMITONES_PER_OCTAVE)),
                                     bLoc.x,
-                                    bLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
+                                    bLoc.y - (props.height * (absoluteDist + absoluteDist) / (SEMITONES_PER_OCTAVE)),
                                     bLoc.x,
                                     bLoc.y
                                 );
@@ -396,8 +402,8 @@ function Piano(props: Props) {
                             }}
                             stroke={discColor}
                             // strokeWidth={isIntervalEmphasized ? 3 : 1.5}
-                            strokeWidth={5}
-                            opacity={0.225}
+                            strokeWidth={PIANO_INTERVAL_STROKE_WIDTH}
+                            opacity={PIANO_INTERVAL_OPACITY}
                             shadowEnabled={true}
                             shadowColor={'white'}
                             shadowOpacity={0.5}
@@ -412,9 +418,9 @@ function Piano(props: Props) {
                                 context.moveTo(aLoc.x, aLoc.y);
                                 context.bezierCurveTo(
                                     aLoc.x,
-                                    aLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
+                                    aLoc.y - (props.height * (absoluteDist + absoluteDist) / (SEMITONES_PER_OCTAVE)),
                                     bLoc.x,
-                                    bLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
+                                    bLoc.y - (props.height * (absoluteDist + absoluteDist) / (SEMITONES_PER_OCTAVE)),
                                     bLoc.x,
                                     bLoc.y
                                 );

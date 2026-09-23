@@ -14,6 +14,12 @@ import { ListItemIcon, MenuItem } from '@mui/material';
 import AudioFileIcon from '@mui/icons-material/AudioFile';
 import { useAppTheme, useChangeAppTheme } from '../view/ThemeManager';
 import { changeLightness, getRandomColor, getRandomColorWithAlpha, blendColors } from '../utils/Utils';
+import { SEMITONES_PER_OCTAVE } from '../utils/MagicNumbers';
+
+const MIDI_SCHEDULE_AHEAD_MS = 300;
+const DEFAULT_BPM = 120;
+const DEFAULT_MICROSECONDS_PER_BEAT = 60000000 / DEFAULT_BPM;
+const DEFAULT_MS_PER_BEAT = 60000 / DEFAULT_BPM;
 
 type Props = {
     closeContainer: () => void,
@@ -42,7 +48,7 @@ export type TransportState = {
     durationMs: number,
 };
 
-const scheduleAheadMS = 300;
+const scheduleAheadMS = MIDI_SCHEDULE_AHEAD_MS;
 let _isDiscoMode = false;
 
 type MidiDataContextType = {
@@ -82,7 +88,7 @@ export function MidiFileDataProvider({ children }: ProviderProps) {
             preprocessedData: React.useRef<MidiPreprocessedData>({ tempos: [] }),
             lastTime: React.useRef<number>(performance.now()),
             startTime: React.useRef<number>(performance.now()),
-            microsecPerBeat: React.useRef<number>(60000000 / 120),
+            microsecPerBeat: React.useRef<number>(DEFAULT_MICROSECONDS_PER_BEAT),
             inputRef: React.useRef<HTMLInputElement>(null),
             loadedFileNameState: React.useState<string | null>(null),
             totalPendingScheduled: React.useRef<number>(0),
@@ -132,8 +138,8 @@ export function MidiFileParser(props: Props) {
         let outTempos: TemposByTrack = {};
         midiData.tracks.forEach((track, trackIdx) => {
             let ticks = 0;
-            let MSPerTick = (60000 / 120) / ((midiData.header?.ticksPerBeat ?? 400));
-            outTempos[trackIdx] = [{ ticks: 0, msPerTick: MSPerTick, beatsPerMinute: 120 }];
+            let MSPerTick = DEFAULT_MS_PER_BEAT / ((midiData.header?.ticksPerBeat ?? 400));
+            outTempos[trackIdx] = [{ ticks: 0, msPerTick: MSPerTick, beatsPerMinute: DEFAULT_BPM }];
             track.forEach(event => {
                 ticks += event.deltaTime;
                 if (event.type === 'setTempo') {
@@ -183,7 +189,7 @@ export function MidiFileParser(props: Props) {
                 const isDrums = event.channel === 9 || event.channel === 10;
                 const offset = 3;
                 const chanColor = `hsl(${(Math.floor(45 * (event.channel + offset) + (Math.floor((event.channel + offset) / 8) * (45 / 2)))) % 360}, 100%, 70%)`;
-                const noteNum = midiNoteToProgramNote((event as MidiNoteMixins).noteNumber, Math.floor((event as MidiNoteMixins).noteNumber / 12) - 1);
+                const noteNum = midiNoteToProgramNote((event as MidiNoteMixins).noteNumber, Math.floor((event as MidiNoteMixins).noteNumber / SEMITONES_PER_OCTAVE) - 1);
                 const noteVelocity = isNoteOn ? (event as MidiNoteOnEvent).velocity / 127 : (event as MidiNoteOffEvent).velocity / 127;
                 const prioritizeMidi = settings?.prioritizeMIDIAudio ?? false;
 

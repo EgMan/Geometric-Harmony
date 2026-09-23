@@ -9,6 +9,7 @@ import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import { useSettings } from '../view/SettingsProvider';
 import { useAppTheme } from '../view/ThemeManager';
 import { WidgetConfig } from '../view/ViewManager';
+import { SEMITONES_PER_OCTAVE } from '../utils/MagicNumbers';
 
 interface StringWidgetConfig extends WidgetConfig {
     tuning: number[],
@@ -82,7 +83,7 @@ function StringInstrument(props: Props) {
     const updateStringNote = React.useCallback((index: number, note: number) => {
         setTuning(prev => {
             const next = [...prev];
-            next[index] = Math.floor(prev[index] / 12) * 12 + note;
+            next[index] = Math.floor(prev[index] / SEMITONES_PER_OCTAVE) * SEMITONES_PER_OCTAVE + note;
             return next;
         });
     }, []);
@@ -90,7 +91,7 @@ function StringInstrument(props: Props) {
     const updateStringOctave = React.useCallback((index: number, octave: number) => {
         setTuning(prev => {
             const next = [...prev];
-            next[index] = octave * 12 + ((prev[index] % 12) + 12) % 12;
+            next[index] = octave * SEMITONES_PER_OCTAVE + ((prev[index] % SEMITONES_PER_OCTAVE) + SEMITONES_PER_OCTAVE) % SEMITONES_PER_OCTAVE;
             return next;
         });
     }, []);
@@ -189,14 +190,14 @@ function StringInstrument(props: Props) {
                             <span style={{ fontFamily: 'monospace', fontSize: 11, width: 16, opacity: 0.5 }}>{i + 1}</span>
                             <Select
                                 id="menu-dropdown"
-                                value={((semitone % 12) + 12) % 12}
+                                value={((semitone % SEMITONES_PER_OCTAVE) + SEMITONES_PER_OCTAVE) % SEMITONES_PER_OCTAVE}
                                 onChange={e => updateStringNote(i, e.target.value as number)}
                             >
                                 {NOTE_NAMES.map((name, n) => <MenuItem key={n} value={n}>{name}</MenuItem>)}
                             </Select>
                             <Select
                                 id="menu-dropdown"
-                                value={Math.floor(semitone / 12)}
+                                value={Math.floor(semitone / SEMITONES_PER_OCTAVE)}
                                 onChange={e => updateStringOctave(i, e.target.value as number)}
                             >
                                 {[-1, 0, 1, 2, 3, 4].map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
@@ -225,16 +226,16 @@ function StringInstrument(props: Props) {
             const posY = getYPos(fretNum);
             const isGuitar = props.fromWidget.widgetConfig.type === "guitar";
             fretElements.push(
-                <Line key={`l1-${fretNum}`} stroke={colorPalette.Widget_Primary} strokeWidth={isGuitar && fretNum % 12 === 0 ? 6 : 3} points={isGuitar ? [-circleElemRadius * 2, posY, props.width + circleElemRadius * 2, posY] : [0, posY, props.width, posY]} />
+                <Line key={`l1-${fretNum}`} stroke={colorPalette.Widget_Primary} strokeWidth={isGuitar && fretNum % SEMITONES_PER_OCTAVE === 0 ? 6 : 3} points={isGuitar ? [-circleElemRadius * 2, posY, props.width + circleElemRadius * 2, posY] : [0, posY, props.width, posY]} />
             );
-            if (isGuitar && [3, 5, 7, 9,].includes(fretNum % 12)) {
+            if (isGuitar && [3, 5, 7, 9,].includes(fretNum % SEMITONES_PER_OCTAVE)) {
                 const markerW = props.width * 0.309;
                 const markerH = fretSpacing * 0.309;
                 fretElements.push(
                     <Rect key={`c1-${fretNum}`} x={props.width / 2 - markerW / 2} y={posY - fretSpacing / 2 - markerH / 2} width={markerW} height={markerH} cornerRadius={5} fill={colorPalette.Widget_MutedPrimary} />
                 );
             }
-            if (isGuitar && fretNum % 12 === 0 && fretNum > 0) {
+            if (isGuitar && fretNum % SEMITONES_PER_OCTAVE === 0 && fretNum > 0) {
                 const markerW = props.width * 0.309;
                 const markerH = fretSpacing * 0.309;
                 fretElements.push(
@@ -251,7 +252,7 @@ function StringInstrument(props: Props) {
                 }
 
                 const absoluteNote = props.fromWidget.widgetConfig.type === "guitar" ? (openNote + fretNum) : (openNote - fretNum);
-                const note = (absoluteNote + (12 * 12)) % 12;
+                const note = (absoluteNote + (SEMITONES_PER_OCTAVE * SEMITONES_PER_OCTAVE)) % SEMITONES_PER_OCTAVE;
                 // <Line x={props.x} y={props.y} stroke={discColor} strokeWidth={lineWidth} points={[aLoc.x, aLoc.y, bLoc.x, bLoc.y]} />
 
                 if (props.fromWidget.widgetConfig.type === "harpejji" && fretNum !== 0) {
@@ -427,7 +428,7 @@ function StringInstrument(props: Props) {
 
                             const fretDist = Math.abs(fretA - fretB);
                             const stringDist = Math.abs(stringA - stringB);
-                            if (fretDist + stringDist > 12 / 2) continue;
+                            if (fretDist + stringDist > SEMITONES_PER_OCTAVE / 2) continue;
 
                             // const noteA = activeNoteArr[a];
                             // const noteB = activeNoteArr[b];
@@ -447,7 +448,7 @@ function StringInstrument(props: Props) {
                             const bLoc = { x: getXPos(stringB), y: getYPos(fretB) + fretElemYOffset };
 
 
-                            const dist = getIntervalDistance(noteA, noteB, 12);
+                            const dist = getIntervalDistance(noteA, noteB, SEMITONES_PER_OCTAVE);
                             const discColor = getIntervalColor(dist, colorPalette);
                             const absoluteDist = Math.abs(absoluteNoteA - absoluteNoteB);
                             if (dist === 0) continue;
@@ -529,9 +530,9 @@ function StringInstrument(props: Props) {
                                         context.moveTo(aLoc.x, aLoc.y);
                                         context.bezierCurveTo(
                                             aLoc.x,
-                                            aLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
+                                            aLoc.y - (props.height * (absoluteDist + absoluteDist) / (SEMITONES_PER_OCTAVE)),
                                             bLoc.x,
-                                            bLoc.y - (props.height * (absoluteDist + absoluteDist) / (12)),
+                                            bLoc.y - (props.height * (absoluteDist + absoluteDist) / (SEMITONES_PER_OCTAVE)),
                                             bLoc.x,
                                             bLoc.y
                                         );

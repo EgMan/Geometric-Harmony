@@ -7,6 +7,8 @@ import { Input, NoteMessageEvent, WebMidi } from "webmidi";
 import * as Tone from 'tone';
 import { useSettings } from '../view/SettingsProvider';
 import { useSynthDrumFromSettings, useSynthVoiceFromSettings } from './SynthVoicings';
+const VOLUME_SCALE_OFFSET = 98;
+const VOLUME_RAMP_SECONDS = 0.5;
 export type SpeakerSoundType = "AMSynth";
 
 const synthContext = React.createContext<Tone.PolySynth | null>(null);
@@ -82,8 +84,8 @@ function SoundEngine(props: Props) {
             synth.volume.value = -Infinity;
         }
         else {
-            synth.volume.value = volume - 98;
-            synth.volume.rampTo(volume - 98, 0.5);
+            synth.volume.value = volume - VOLUME_SCALE_OFFSET;
+            synth.volume.rampTo(volume - VOLUME_SCALE_OFFSET, VOLUME_RAMP_SECONDS);
         }
     }, [isMuted, synth.volume, volume]);
 

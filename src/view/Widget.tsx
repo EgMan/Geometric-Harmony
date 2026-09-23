@@ -12,6 +12,12 @@ import { addVectors, setPointer, useShadowVector } from "../utils/Utils";
 import { WidgetConfig, WidgetTracker, WidgetTrackerActions } from "./ViewManager";
 import { useHTMLOverlay } from "./HTMLOverlayProvider";
 
+const WIDGET_SHADOW_DEPTH = 7;
+const MIN_WIDGET_SIZE = 50;
+const WIDGET_BUTTON_HIT_RADIUS = 16;
+const CONSTRAIN_DRAG_FROM_SIDES = 16;
+const CONSTRAIN_DRAG_FROM_BOTTOM = 16;
+
 export type WidgetComponentProps = {
     fromWidget: {
         isOverlayVisible: boolean;
@@ -65,7 +71,7 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
         leave: { opacity: 0 },
         // config: { duration: 750 }
     });
-    const [shadowVect] = useShadowVector(addVectors(initialPosition, draggedPosition), { x: window.innerWidth / 2, y: 0 }, 7);
+    const [shadowVect] = useShadowVector(addVectors(initialPosition, draggedPosition), { x: window.innerWidth / 2, y: 0 }, WIDGET_SHADOW_DEPTH);
 
     const [fullContextMenuOpen, setFullContextMenuOpenRaw] = React.useState(false);
     const setFullContextMenuOpen = React.useCallback((val: boolean) => {
@@ -136,7 +142,6 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
     const bottomBoundDraggedRef = React.useRef(0);
     const resizeBorderRef = React.useRef<Konva.Rect>(null);
     const resizeButtonGroupRef = React.useRef<Konva.Group>(null);
-    const MIN_WIDGET_SIZE = 50;
     const currentBaseWidth = rightBoundBase - leftBoundBase;
     const currentBaseHeight = bottomBoundBase - topBoundBase;
 
@@ -240,8 +245,6 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
         widgetSize: { width: contentWidth, height: contentHeight },
     }), [isSettingsOverlayVisible, initialPosition.x, initialPosition.y, draggedPosition.x, draggedPosition.y, initialWidth, scaledOffsetY, leftBoundBase, topBoundBase, tracker.config, contentWidth, contentHeight]);
 
-    const CONSTRAIN_DRAG_FROM_SIDES = 16;
-    const CONSTRAIN_DRAG_FROM_BOTTOM = 16;
     const onDrag = React.useCallback((event: KonvaEventObject<DragEvent>) => {
         const stage = event.target.getStage();
         if (stage) {
@@ -586,7 +589,7 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                                     shadowOffset={shadowVect}
                                 ></animated.Circle>
                                 <Circle
-                                    radius={16}
+                                    radius={WIDGET_BUTTON_HIT_RADIUS}
                                     opacity={0}
                                     onMouseEnter={() => { setMainButtonHover(true) }}
                                     onMouseLeave={() => { setMainButtonHover(false) }}

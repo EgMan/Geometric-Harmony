@@ -8,6 +8,7 @@ import { ColorPalette } from "../view/ThemeManager";
 import { useActiveNoteBank } from "./NotesetBank";
 import { deprecate } from "util";
 import { NoteDisplayMode, useSettings } from "../view/SettingsProvider";
+import { SEMITONES_PER_OCTAVE } from "./MagicNumbers";
 
 // const numberToNote = ["C-1", "C#3", "D3", "D#3", "E3", "F3", "F#3", "G3", "G#3", "A3", "A#3", "B3"];
 const numberToPlayableNote = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
@@ -19,12 +20,12 @@ export const bigGold = 1.6180339887;
 export const smallGold = 1 / bigGold;
 
 export function getNote(i: number) {
-    const octaveNum = Math.floor(i / 12) + 3;
+    const octaveNum = Math.floor(i / SEMITONES_PER_OCTAVE) + 3;
     return `${numberToPlayableNote[normalizeToSingleOctave(i)]}${octaveNum}`;
 }
 
 export function getNoteMIDI(note: number) {
-    var octaveNum = Math.floor(note / 12) + 3;
+    var octaveNum = Math.floor(note / SEMITONES_PER_OCTAVE) + 3;
     if (octaveNum < -1) octaveNum = -1;
     if (octaveNum > 9) octaveNum = 9;
     var singleOctaveNote = normalizeToSingleOctave(note);
@@ -98,7 +99,7 @@ function useIntervalNames(notes: Set<number>) {
 
         const genericInterval = ((noteNameIdx - homeNameIdx) + 7) % 7; // 0-6
         const expectedSemitones = noteNameToNaturalIndex[genericInterval];
-        const actualSemitones = ((normalizedNote - normalizedHome) + 12) % 12;
+        const actualSemitones = ((normalizedNote - normalizedHome) + SEMITONES_PER_OCTAVE) % SEMITONES_PER_OCTAVE;
         const quality = actualSemitones - expectedSemitones;
         const degreeNumber = genericInterval + 1;
 
@@ -115,13 +116,13 @@ export function getNoteName_DEPRECATED(i: number, activeNotes: Set<number>) {
 
     const noteSpelling = noteSpellingResult.spelling.get(i);
     if (!noteSpelling) {
-        return noteSpellingResult.preferSharps ? numberToNoteNameSharp[i % 12] : numberToNoteNameFlat[i % 12];
+        return noteSpellingResult.preferSharps ? numberToNoteNameSharp[i % SEMITONES_PER_OCTAVE] : numberToNoteNameFlat[i % SEMITONES_PER_OCTAVE];
     }
 
     if (noteSpelling.accidentalNum >= 0) {
-        return numberToNoteNameSharp[i % 12] ?? "?";
+        return numberToNoteNameSharp[i % SEMITONES_PER_OCTAVE] ?? "?";
     } else {
-        return numberToNoteNameFlat[i % 12] ?? "?";
+        return numberToNoteNameFlat[i % SEMITONES_PER_OCTAVE] ?? "?";
     }
 }
 

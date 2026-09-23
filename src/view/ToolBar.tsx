@@ -40,6 +40,8 @@ import { shapeToNoteArray } from "../sound/HarmonicModulation";
 import { useActiveNoteBank } from "../utils/NotesetBank";
 import { on } from "events";
 import { ShapeType } from "../utils/KnownHarmonicShapes";
+const TOOLBAR_Z_INDEX = 1301;
+const SHAPE_NAV_WIDTH = 600;
 // import useSettings from "./SettingsProvider"
 
 function cssColorToHex(color: string): string {
@@ -246,7 +248,7 @@ function ToolBar(props: Props) {
             flexDirection: "row",
             flexWrap: "wrap"
         }}>
-            <div ref={addButtonRef} style={{ position: "fixed", transform: "translate(0, 0px)", zIndex: 1301 /*one higher than mui popup backdrop*/, width: "100vw", backgroundColor: "transparent", borderBottomLeftRadius: "9px", borderBottomRightRadius: "9px", display: "flex", flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }}>
+            <div ref={addButtonRef} style={{ position: "fixed", transform: "translate(0, 0px)", zIndex: TOOLBAR_Z_INDEX /*one higher than mui popup backdrop*/, width: "100vw", backgroundColor: "transparent", borderBottomLeftRadius: "9px", borderBottomRightRadius: "9px", display: "flex", flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }}>
                 <div className="nav-left" style={{ display: "flex" }}>
                     {
                         settings?.isPeaceModeEnabled ? null :
@@ -480,7 +482,7 @@ function ToolBar(props: Props) {
                 <div className='nav-middle menu-section' style={{ display: "flex", height: "auto" }}>
                     {
                         settings?.isPeaceModeEnabled ? null :
-                            <ShapeNavigationTool width={600} subdivisionCount={12} />
+                            <ShapeNavigationTool width={SHAPE_NAV_WIDTH} subdivisionCount={12} />
                     }
                 </div>
                 <div className='nav-right menu-section' style={{ display: "flex", height: "auto" }}>

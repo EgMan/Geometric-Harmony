@@ -14,9 +14,12 @@ import Konva from "konva";
 import zIndex from "@mui/material/styles/zIndex";
 import Quaternion from "quaternion";
 
+const WIREFRAME_Z_DISTANCE = 9;
+const WIREFRAME_FOG_INTENSITY = 0.75;
+const WIREFRAME_ROTATION_FRAME_MS = 30;
+
 const LINE_WIDTH = 1;
-// const zDist = 9;
-const zDist = 9;
+const zDist = WIREFRAME_Z_DISTANCE;
 
 export type WireframeLine = {
     start: Point3D | number,
@@ -49,7 +52,7 @@ type Props = {
 function Wireframe(props: Props) {
     const { colorPalette } = useAppTheme()!;
 
-    const fogEffect = .75;
+    const fogEffect = WIREFRAME_FOG_INTENSITY;
 
     const settingsMenuItems = [
         (<tr key={'tr0'}>
@@ -167,7 +170,7 @@ function Wireframe(props: Props) {
         }
         setTimeout(() => {
             rotateWireframe();
-        }, 30);
+        }, WIREFRAME_ROTATION_FRAME_MS);
     }, [props.autoRotateVector?.x, props.autoRotateVector?.y, props.autoRotateVector?.z]);
 
     React.useEffect(() => {

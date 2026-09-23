@@ -9,7 +9,10 @@ import { Vector2d } from 'konva/lib/types';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { useSettings } from '../view/SettingsProvider';
 import { useAppTheme } from '../view/ThemeManager';
+import { PERFECT_FIFTH_SEMITONES, SEMITONES_PER_OCTAVE } from '../utils/MagicNumbers';
 
+const TONNETZ_NOTE_SPACING = 75;
+const MINOR_THIRD_SEMITONES = 3;
 const sqrt3over2 = Math.sqrt(3) / 2;
 
 type Props = {
@@ -80,7 +83,7 @@ function Tonnetz(props: Props) {
     const cordsToNote = React.useCallback((cord: Vector2d) => {
         // const drift = -Math.floor(-cord.y / 2);
         // const drift = 0;
-        return (homeNote ?? 0) + ((cord.x) * 7) + (-cord.y * 3);
+        return (homeNote ?? 0) + ((cord.x) * PERFECT_FIFTH_SEMITONES) + (-cord.y * MINOR_THIRD_SEMITONES);
     }, [homeNote]);
 
     const cordsToPosition = React.useCallback((cord: Vector2d) => {
@@ -103,7 +106,7 @@ function Tonnetz(props: Props) {
             isEmphasized: true,
             opacity: 1,
             strokeWidth: 3,
-            strokeColor: getIntervalColor(getIntervalDistance(noteA, noteB, 12), colorPalette),
+            strokeColor: getIntervalColor(getIntervalDistance(noteA, noteB, SEMITONES_PER_OCTAVE), colorPalette),
         }
     }, [colorPalette])
 
@@ -112,7 +115,7 @@ function Tonnetz(props: Props) {
         setDraggedPosition(event.currentTarget.position());
     }, []);
 
-    const spacing = 75;
+    const spacing = TONNETZ_NOTE_SPACING;
     const distFromCenter = Math.ceil(radius / spacing) + 1;
     const xDraggedOffset = Math.floor(-(draggedPosition.x / spacing) - (draggedPosition.y * 0.5 / (sqrt3over2 * spacing)));
     const yDraggedOffset = Math.floor(-draggedPosition.y / (sqrt3over2 * spacing));

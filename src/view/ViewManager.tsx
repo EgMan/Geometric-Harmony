@@ -22,6 +22,10 @@ import Icosahedron from "../toys/Icosahedron";
 import Spiral from "../toys/Spiral";
 import DiatonicChordExplorer from "../toys/DiatonicChordExplorer";
 import MicPitch, { WidgetConfig_MicPitch } from "../toys/MicPitch";
+import { SEMITONES_PER_OCTAVE } from "../utils/MagicNumbers";
+
+const GUITAR_HEIGHT_OFFSET = 200;
+const DEFAULT_TOOLBAR_HEIGHT = 50;
 
 export type WidgetTracker<T extends WidgetConfig = WidgetConfig> = {
     type: WidgetType,
@@ -125,7 +129,7 @@ function ViewManager(props: Props) {
     const wheelRadius = wheelDiameter / 2;
     const pianoOctaveCount = limitingAxisIsHeight ? 7 : 2;
     const pianoHeight = ((props.height / 2) - wheelRadius) * 2 / 3;
-    const guitarHeight = props.height - 200;
+    const guitarHeight = props.height - GUITAR_HEIGHT_OFFSET;
     // const pianoWidth = (props.width) - .5;
     const pianoWidth = (props.width) + 1.5;
     // const [isPeaceModeEnabled, setIsPeaceModeEnabled] = React.useState(false);
@@ -133,7 +137,7 @@ function ViewManager(props: Props) {
     const isPeaceModeEnabled = settings?.isPeaceModeEnabled ?? false;
     const [isHeartModalOpen, setIsHeartModalOpen] = React.useState(false);
     const [previewWidgetInfo, setPreviewWidgetInfo] = React.useState<{ type: WidgetType, config?: WidgetConfig } | null>(null);
-    const [toolbarHeight, setToolbarHeight] = React.useState(50);
+    const [toolbarHeight, setToolbarHeight] = React.useState(DEFAULT_TOOLBAR_HEIGHT);
 
     const prevWindowRef = React.useRef({ w: window.innerWidth, h: window.innerHeight });
     React.useEffect(() => {
@@ -422,7 +426,7 @@ function ViewManager(props: Props) {
             componentProps: {
                 width: wheelRadius * 2,
                 height: wheelRadius * 2,
-                subdivisionCount: 12,
+                subdivisionCount: SEMITONES_PER_OCTAVE,
             },
         },
         [WidgetType.Guitar]: {
@@ -443,7 +447,7 @@ function ViewManager(props: Props) {
             previewYOffset: 0,
             componentProps: {
                 width: props.width / (8 / 3),
-                subdivisionCount: 12,
+                subdivisionCount: SEMITONES_PER_OCTAVE,
             },
         },
         [WidgetType.Tonnetz]: {

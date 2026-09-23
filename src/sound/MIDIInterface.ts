@@ -3,6 +3,7 @@ import { WebMidi } from "webmidi";
 import { BrowserType, emitSnackbar, useBrowserVersion } from "../utils/Utils";
 import { normalizeToSingleOctave } from "./NoteProvider";
 import { enqueueSnackbar } from "notistack";
+import { SEMITONES_PER_OCTAVE } from "../utils/MagicNumbers";
 
 export function useConnectToMidi(onReady: () => void) {
     const browserType = useBrowserVersion();
@@ -44,7 +45,7 @@ export function useConnectToMidi(onReady: () => void) {
 }
 
 export function midiNoteToProgramNote (midiNote: number, octaveNumber: number){
-        return normalizeToSingleOctave(midiNote) + (12 * (octaveNumber - 3))
+        return normalizeToSingleOctave(midiNote) + (SEMITONES_PER_OCTAVE * (octaveNumber - 3))
 }
 
 export function connectedDevices() {

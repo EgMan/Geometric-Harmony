@@ -10,6 +10,7 @@ import { useSettings } from '../view/SettingsProvider';
 import { useAppTheme } from '../view/ThemeManager';
 import { useChannelDisplaysExactFits, useDiatonicRomanNumerals, useGetActiveShapeScaleDegreeFromNote, useGetDiatonicFits } from './HarmonyAnalyzer';
 import { MenuItem, Select, Switch } from '@mui/material';
+import { SEMITONES_PER_OCTAVE } from '../utils/MagicNumbers';
 type Props = {
     width: number,
     height: number,
@@ -134,7 +135,7 @@ function DiatonicChordExplorer(props: Props) {
                 // TODO configurable voicings
                 for (let i = 1; i < chordNotes.length; i++) {
                     while (chordNotes[i] <= chordNotes[i - 1]) {
-                        chordNotes[i] += 12;
+                        chordNotes[i] += SEMITONES_PER_OCTAVE;
                     }
                 }
 
@@ -145,7 +146,7 @@ function DiatonicChordExplorer(props: Props) {
                         const interval = chordNotes[i] - chordNotes[0];
                         // ♭9, 9, 11, #11, ♭13, 13
                         if ([1, 2, 5, 6, 8, 9].includes(interval) && chordNotes[i] <= chordNotes[i - 1] + 2) {
-                            chordNotes[i] += 12;
+                            chordNotes[i] += SEMITONES_PER_OCTAVE;
                         }
                     }
                 }

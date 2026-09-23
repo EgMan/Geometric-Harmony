@@ -4,6 +4,7 @@ import { SpeakerSoundType } from "./SoundEngine";
 import { channel } from "diagnostics_channel";
 import { DefaultNoteBank, INITIAL_ACTIVE_NOTES, INITIAL_HOME_NOTE, NoteBank } from "../utils/NotesetBank";
 import { getIntervalDistance } from "../utils/Utils";
+import { SEMITONES_PER_OCTAVE } from "../utils/MagicNumbers";
 
 type Props = {
     children: JSX.Element
@@ -62,7 +63,7 @@ function NoteProvider(props: Props) {
         var nearest = null;
         var nearestDist = -1;
         for (let activeNote of Array.from(channels[NoteSet.Active].notes)) {
-            const dist = getIntervalDistance(activeNote, homeNoteRaw ?? 0, 12);
+            const dist = getIntervalDistance(activeNote, homeNoteRaw ?? 0, SEMITONES_PER_OCTAVE);
             if (!nearest || dist < nearestDist!) {
                 nearest = activeNote;
                 nearestDist = dist;
@@ -109,7 +110,7 @@ function NoteProvider(props: Props) {
                     const startingPoint = overwriteExisting ? new Set<number>() : newNoteSets[noteSet]?.notes;
 
                     const maybeModdedNums = !octaveAgnosticNoteSets.has(noteSet) ? nums : nums.map(elem => {
-                        return ((12 * 12) + elem) % 12;
+                        return ((SEMITONES_PER_OCTAVE * SEMITONES_PER_OCTAVE) + elem) % SEMITONES_PER_OCTAVE;
                     });
 
                     if (areEnabled) {
@@ -228,7 +229,7 @@ export function useNoteBank() {
 }
 
 export function normalizeToSingleOctave(i: number) {
-    return ((12 * 12) + i) % 12;
+    return ((SEMITONES_PER_OCTAVE * SEMITONES_PER_OCTAVE) + i) % SEMITONES_PER_OCTAVE;
 }
 
 // TODO we can get rid of this function

@@ -8,6 +8,7 @@ import { getModeNameInShape, useGetAllExactFits } from "../toys/HarmonyAnalyzer"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import { useAppTheme } from "./ThemeManager";
+import { SEMITONES_PER_OCTAVE } from "../utils/MagicNumbers";
 
 const inputBoxNoteNameRegex = /^([aAbBcCdDeEfFgG][b#♭♯]?)\s/
 
@@ -106,7 +107,7 @@ function ShapeNavigationTool(props: Props) {
 
 
     const keySelectors = React.useMemo(() => {
-        return [<MenuItem key={'nullSelectorOption'} value={-1}>{""}</MenuItem>].concat(Array.from(Array(12).keys()).map((num, idx) => {
+        return [<MenuItem key={'nullSelectorOption'} value={-1}>{""}</MenuItem>].concat(Array.from(Array(SEMITONES_PER_OCTAVE).keys()).map((num, idx) => {
             return <MenuItem key={`selectorOption${idx}`} value={num}>{getNoteName(num)}</MenuItem>;
         }));
     }, [getNoteName]);

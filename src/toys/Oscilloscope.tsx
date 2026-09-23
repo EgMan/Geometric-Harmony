@@ -9,6 +9,8 @@ import { Waveform } from 'tone';
 import { useChannelDisplays } from '../sound/NoteProvider';
 import { blendColors, changeLightness } from '../utils/Utils';
 import { useAppTheme } from '../view/ThemeManager';
+const WAVEFORM_UPDATE_PERIOD_MS = 30;
+const WAVEFORM_SAMPLE_SIZE = 4096;
 
 type Props = {
     width: number,
@@ -16,9 +18,9 @@ type Props = {
 } & WidgetComponentProps
 
 function Oscilloscope(props: Props) {
-    const updatePeriod = 30;
+    const updatePeriod = WAVEFORM_UPDATE_PERIOD_MS;
 
-    const waveformSampleSize = 4096;
+    const waveformSampleSize = WAVEFORM_SAMPLE_SIZE;
     const latchDownsampleRate = 4;
     const waveformDownsampleRate = 2;
     const latchRatio = 4;

@@ -7,6 +7,11 @@ import { WidgetComponentProps } from "../view/Widget";
 import SettingsMenuOverlay from "../view/SettingsMenuOverlay";
 import { Switch } from "@mui/material";
 import { useAppTheme } from "../view/ThemeManager";
+import { SEMITONES_PER_OCTAVE } from '../utils/MagicNumbers';
+
+const ANALYZER_TEXT_OFFSET = 28;
+const ANALYZER_INFO_Y_OFFSET = 50;
+const ANALYZER_INFO_FONT_SIZE = 20;
 
 const inputBoxNoteNameRegex = /^([aAbBcCdDeEfFgG][b#♭♯]?)\s/
 
@@ -172,9 +177,9 @@ function HarmonyAnalyzer(props: Props) {
 
         // Convert infos to text elements
         var idx = 0;
-        const textelemoffset = 28;
-        const infosYOffset = 50;
-        const infosFontSize = 20;
+        const textelemoffset = ANALYZER_TEXT_OFFSET;
+        const infosYOffset = ANALYZER_INFO_Y_OFFSET;
+        const infosFontSize = ANALYZER_INFO_FONT_SIZE;
         return infos.filter(info => info.text !== "").map((info) => {
             return (<Text key={`info${info.text}${idx++}`} text={info.text} x={0} y={textelemoffset * (idx) + infosYOffset} fontSize={infosFontSize} fontFamily='monospace' fill={info.color} align="center" width={props.width} />);
         });
@@ -232,7 +237,7 @@ export function useGetNoteFromActiveShapeScaleDegree() {
     // At least it's memoized ¯\_(ツ)_/¯
     const scaleDegToNote = React.useMemo(() => {
         const arr = Array(activeNotes.size);
-        Array.from(Array(12).keys()).forEach(note => {
+        Array.from(Array(SEMITONES_PER_OCTAVE).keys()).forEach(note => {
             const scaleDegree = getActiveShapeScaleDegree(note);
             if (scaleDegree > 0) arr[scaleDegree - 1] = note;
         });
@@ -244,7 +249,7 @@ export function useGetNoteFromActiveShapeScaleDegree() {
         const noteSingleOctave = scaleDegToNote[(scaleDeg - 1) % scaleDegToNote.length];
         var octaveShift = Math.floor((scaleDeg - 1) / scaleDegToNote.length);
         if (noteSingleOctave < homeNote) octaveShift++;
-        return noteSingleOctave + (octaveShift * 12);
+        return noteSingleOctave + (octaveShift * SEMITONES_PER_OCTAVE);
     }, [homeNote, scaleDegToNote]);
 }
 
@@ -382,7 +387,7 @@ function useAllShapeFits() {
 export function getDynamicShape(notes: Set<number>): HarmonicShape {
     return {
         name: "",
-        notes: Array.from(Array(12).keys()).map(i => [notes.has(i)]),
+        notes: Array.from(Array(SEMITONES_PER_OCTAVE).keys()).map(i => [notes.has(i)]),
         type: ShapeType.DYNAMIC,
     }
 }

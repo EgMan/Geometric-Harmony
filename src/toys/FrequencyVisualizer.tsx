@@ -6,6 +6,9 @@ import SettingsMenuOverlay from '../view/SettingsMenuOverlay';
 import { Group } from 'react-konva';
 import { useSynth } from '../sound/SoundEngine';
 import { FFT } from 'tone';
+const FREQUENCY_UPDATE_PERIOD_MS = 50;
+const FREQUENCY_FFT_SIZE = 8192;
+const FREQUENCY_DISPLAY_CUTOFF_HZ = 3000;
 
 type Props = {
     width: number,
@@ -13,14 +16,14 @@ type Props = {
 } & WidgetComponentProps
 
 function Oscilloscope(props: Props) {
-    const updatePeriod = 50;
+    const updatePeriod = FREQUENCY_UPDATE_PERIOD_MS;
 
     const synth = useSynth();
     const [values, setValues] = React.useState<number[]>([]);
     const [minValue, setMinValue] = React.useState<number>(1);
     const [maxValue, setMaxValue] = React.useState<number>(-1);
 
-    const size = 1024 * 8;
+    const size = FREQUENCY_FFT_SIZE;
 
     // const analyser = useSynthAnalyser();
     const analyser = React.useMemo(() => {
@@ -41,7 +44,7 @@ function Oscilloscope(props: Props) {
         let rawValues = analyser.getValue();
         let displayValues = Array.from(rawValues).filter((val, idx) => {
             const freq = analyser.getFrequencyOfIndex(idx);
-            return freq < 3000;
+            return freq < FREQUENCY_DISPLAY_CUTOFF_HZ;
         }).map(val => {
             if (isFinite(val) && !isNaN(val)) {
                 minVal = Math.min(val, minVal);

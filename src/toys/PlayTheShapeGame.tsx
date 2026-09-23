@@ -8,6 +8,7 @@ import { HarmonicShape, knownShapes } from '../utils/KnownHarmonicShapes';
 import { NoteSet, normalizeToSingleOctave, useGetCombinedModdedEmphasis, useNoteSet } from '../sound/NoteProvider';
 import { useGetAllExactFits } from './HarmonyAnalyzer';
 import { useActiveNoteNames } from '../utils/Utils';
+import { SEMITONES_PER_OCTAVE } from '../utils/MagicNumbers';
 
 const quizShapes = knownShapes[3].concat(knownShapes[4]);
 
@@ -33,7 +34,7 @@ function PlayTheShapeGame(props: Props) {
     // ];
 
     const pickNewShape = React.useCallback(() => {
-        return { shape: quizShapes[Math.floor(Math.random() * quizShapes.length)], keyCenter: Math.floor(Math.random() * 12) }
+        return { shape: quizShapes[Math.floor(Math.random() * quizShapes.length)], keyCenter: Math.floor(Math.random() * SEMITONES_PER_OCTAVE) }
     }, []);
 
     const [question, setQuestion] = React.useState<Question>(pickNewShape());
@@ -48,7 +49,7 @@ function PlayTheShapeGame(props: Props) {
     const getNoteName = useActiveNoteNames();
 
     React.useEffect(() => {
-        if (exactFit.shape === question.shape && exactFit.rootNote % 12 === normalizeToSingleOctave(question.keyCenter)) {
+        if (exactFit.shape === question.shape && exactFit.rootNote % SEMITONES_PER_OCTAVE === normalizeToSingleOctave(question.keyCenter)) {
             setQuestion(nextQuestion);
             setNextQuestion(pickNewShape());
         }
