@@ -44,6 +44,7 @@ type WidgetProps<TElem extends React.ElementType> = {
     setDragComplete?: (val: Vector2d) => void;
     lockAspectRatio?: boolean | undefined;
     isPeaceModeEnabled: boolean;
+    toolbarHeight?: number;
     layout: WidgetLayout;
     // width: number,
     // height: number,
@@ -51,7 +52,7 @@ type WidgetProps<TElem extends React.ElementType> = {
     // trackerActions: WidgetTrackerActions,
 } & Omit<React.ComponentPropsWithoutRef<TElem>, keyof WidgetComponentProps>;
 
-function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, children, initialPosition, draggedPosition, contextMenuOffset, isMaxamized, lockAspectRatio, isPeaceModeEnabled, setDraggedPosition, setDragComplete, layout, ...otherProps }: WidgetProps<TElem>) {
+function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, children, initialPosition, draggedPosition, contextMenuOffset, isMaxamized, lockAspectRatio, isPeaceModeEnabled, toolbarHeight, setDraggedPosition, setDragComplete, layout, ...otherProps }: WidgetProps<TElem>) {
     const Component = of || Group;
 
     const [isSettingsOverlayVisible, setIsSettingsOverlayVisible] = React.useState(false);
@@ -239,7 +240,6 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
         widgetSize: { width: contentWidth, height: contentHeight },
     }), [isSettingsOverlayVisible, initialPosition.x, initialPosition.y, draggedPosition.x, draggedPosition.y, initialWidth, scaledOffsetY, leftBoundBase, topBoundBase, tracker.config, contentWidth, contentHeight]);
 
-    const CONSTRAIN_DRAG_FROM_TOP = 50;
     const CONSTRAIN_DRAG_FROM_SIDES = 16;
     const CONSTRAIN_DRAG_FROM_BOTTOM = 16;
     const onDrag = React.useCallback((event: KonvaEventObject<DragEvent>) => {
@@ -249,7 +249,7 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
             const stagePos = stage.getAbsolutePosition();
             const minX = CONSTRAIN_DRAG_FROM_SIDES + stagePos.x - horrizontalOffsetFromResizing;
             const maxX = window.innerWidth - CONSTRAIN_DRAG_FROM_SIDES + stagePos.x - horrizontalOffsetFromResizing;
-            const minY = CONSTRAIN_DRAG_FROM_TOP + stagePos.y - topBoundBase;
+            const minY = (toolbarHeight ?? 50) + 16 + stagePos.y - topBoundBase;
             const maxY = window.innerHeight - CONSTRAIN_DRAG_FROM_BOTTOM + stagePos.y - topBoundBase;
             event.target.setAbsolutePosition({
                 x: Math.min(Math.max(pos.x, minX), maxX),
@@ -257,7 +257,7 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
             });
         }
         setDraggedPosition(event.currentTarget.position());
-    }, [setDraggedPosition, topBoundBase, horrizontalOffsetFromResizing]);
+    }, [setDraggedPosition, topBoundBase, horrizontalOffsetFromResizing, toolbarHeight]);
 
     const onDragEnd = React.useCallback((event: KonvaEventObject<DragEvent>) => {
         setDragComplete?.({ x: event.currentTarget.x() + initialPosition.x, y: event.currentTarget.y() + initialPosition.y });

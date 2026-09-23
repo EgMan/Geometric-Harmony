@@ -108,10 +108,23 @@ type Props =
         stageRef: React.RefObject<Stage>,
         setIsHeartModalOpen: React.Dispatch<React.SetStateAction<boolean>>,
         onWidgetHover: (info: { type: WidgetType, config?: WidgetConfig } | null) => void,
+        onHeightChange?: (height: number) => void,
     }
 
 function ToolBar(props: Props) {
-    const addButtonRef = React.useRef(null);
+    const addButtonRef = React.useRef<HTMLDivElement>(null);
+    React.useEffect(() => {
+        const el = addButtonRef.current;
+        if (!el || !props.onHeightChange) return;
+        const observer = new ResizeObserver(entries => {
+            for (const entry of entries) {
+                props.onHeightChange?.(entry.contentRect.height);
+            }
+        });
+        observer.observe(el);
+        return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
     const [addDropdownOpen, setAddDropdownOpen] = React.useState(false);
     const [settingsDropdownOpen, setSettingsDropdownOpen] = React.useState(false);
     const [midiSettingsDropdownOpen, setMidiSettingsDropdownOpen] = React.useState(false);

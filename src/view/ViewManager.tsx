@@ -133,6 +133,7 @@ function ViewManager(props: Props) {
     const isPeaceModeEnabled = settings?.isPeaceModeEnabled ?? false;
     const [isHeartModalOpen, setIsHeartModalOpen] = React.useState(false);
     const [previewWidgetInfo, setPreviewWidgetInfo] = React.useState<{ type: WidgetType, config?: WidgetConfig } | null>(null);
+    const [toolbarHeight, setToolbarHeight] = React.useState(50);
 
     const prevWindowRef = React.useRef({ w: window.innerWidth, h: window.innerHeight });
     React.useEffect(() => {
@@ -546,10 +547,11 @@ function ViewManager(props: Props) {
             setDraggedPosition={setDraggedPosition(uid)}
             contextMenuOffset={desc.contextMenuOffset}
             lockAspectRatio={desc.lockAspectRatio}
+            toolbarHeight={toolbarHeight}
             {...desc.componentProps}
             {...widget.config?.componentPropsOverride}
         />;
-    }, [widgetDescriptors, isPeaceModeEnabled, setDraggedPosition, trackerActions])
+    }, [widgetDescriptors, isPeaceModeEnabled, setDraggedPosition, trackerActions, toolbarHeight])
 
     const widgetElements = React.useMemo(() => {
         return Array.from(trackedWidgets).map(([uid, widget]) => renderWidgetFromTracker(uid, widget));
@@ -589,7 +591,7 @@ function ViewManager(props: Props) {
 
     return (
         <div className="container-div" onFocus={onContainerFocus}>
-            <ToolBar widgetTrackerActions={trackerActions} stageRef={stageRef} setIsHeartModalOpen={setIsHeartModalOpen} onWidgetHover={setPreviewWidgetInfo} />
+            <ToolBar widgetTrackerActions={trackerActions} stageRef={stageRef} setIsHeartModalOpen={setIsHeartModalOpen} onWidgetHover={setPreviewWidgetInfo} onHeightChange={setToolbarHeight} />
             {previewWidgetInfo && (
                 <animated_web.div
                     style={{
