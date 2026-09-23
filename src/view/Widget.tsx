@@ -1,3 +1,6 @@
+// May god help you if you're looking in here.  
+// Turn away now, it's not too late.
+
 import React from "react";
 import { Circle, Group, Line, Rect } from "react-konva";
 import { animated, useSpring, useTransition } from '@react-spring/konva';
@@ -95,21 +98,44 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
     const [rightBoundBase, setRightBoundBase] = React.useState(initialWidth);
     const [topBoundBase, setTopBoundBase] = React.useState(0);
     const [bottomBoundBase, setBottomBoundBase] = React.useState(initialHeight);
+    const leftBoundDraggedRef = React.useRef(0);
+    const rightBoundDraggedRef = React.useRef(0);
+    const topBoundDraggedRef = React.useRef(0);
+    const bottomBoundDraggedRef = React.useRef(0);
+    const resizeBorderRef = React.useRef<Konva.Rect>(null);
+    const resizeButtonGroupRef = React.useRef<Konva.Group>(null);
+    const MIN_WIDGET_SIZE = 50;
+    const currentBaseWidth = rightBoundBase - leftBoundBase;
+    const currentBaseHeight = bottomBoundBase - topBoundBase;
 
-    const [leftBoundDragged, setLeftBoundDragged] = React.useState(0);
-    const [rightBoundDragged, setRightBoundDragged] = React.useState(0);
-    const [topBoundDragged, setTopBoundDragged] = React.useState(0);
-    const [bottomBoundDragged, setBottomBoundDragged] = React.useState(0);
+    const horrizontalOffsetFromResizing = (leftBoundBase + (rightBoundBase - initialWidth)) / 2;
+    const contentWidth = currentBaseWidth;
+    const contentHeight = currentBaseHeight;
 
-    const leftBound = leftBoundBase + leftBoundDragged;
-    const rightBound = rightBoundBase + rightBoundDragged;
-    const topBound = topBoundBase + topBoundDragged;
-    const bottomBound = bottomBoundBase + bottomBoundDragged;
-    const horrizontalOffsetFromResizing = (leftBound + (rightBound - initialWidth)) / 2;
-    const verticalOffsetFromResizing = topBound;
+    const updateResizeVisuals = React.useCallback(() => {
+        const ld = leftBoundDraggedRef.current;
+        const rd = rightBoundDraggedRef.current;
+        const td = topBoundDraggedRef.current;
+        const bd = bottomBoundDraggedRef.current;
+        const lb = leftBoundBase + ld;
+        const rb = rightBoundBase + rd;
+        const tb = topBoundBase + td;
+        const w = rb - lb;
+        const h = (bottomBoundBase + bd) - (topBoundBase + td);
+        if (resizeBorderRef.current) {
+            resizeBorderRef.current.setAttrs({ x: lb, y: tb, width: w, height: h });
+        }
+        if (resizeButtonGroupRef.current) {
+            const hOffset = (lb + (rb - initialWidth)) / 2;
+            resizeButtonGroupRef.current.setAttrs({ x: hOffset, y: tb });
+        }
+    }, [leftBoundBase, rightBoundBase, topBoundBase, bottomBoundBase, initialWidth]);
 
-    const resizedWidth = (rightBoundDragged + rightBoundBase) - (leftBoundBase + leftBoundDragged);
-    const resizedHeight = (bottomBoundBase + bottomBoundDragged) - (topBoundBase + topBoundDragged);
+    // Set/update border and button positions imperatively (not via React props)
+    // so external re-renders can't overwrite values during active resize
+    React.useLayoutEffect(() => {
+        updateResizeVisuals();
+    }, [updateResizeVisuals]);
 
     const [mainButtonHover, setMainButtonHoverRaw] = React.useState(false);
     const setMainButtonHover = React.useCallback((val: boolean) => {
@@ -173,43 +199,34 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
         ...mainButtonAttr.textAttr,
     });
 
-    const fromWidget = {
+    const fromWidget = React.useMemo(() => ({
         isOverlayVisible: isSettingsOverlayVisible,
         setIsOverlayVisible: setIsSettingsOverlayVisible,
         position: { x: initialPosition.x + draggedPosition.x, y: initialPosition.y + draggedPosition.y },
-        containerPosition: { x: - contextMenuOffset.x + leftBound, y: - contextMenuOffset.y + topBound },
+        containerPosition: { x: - contextMenuOffset.x + leftBoundBase, y: - contextMenuOffset.y + topBoundBase },
         widgetConfig: tracker.config,
-        widgetSize: { width: resizedWidth, height: resizedHeight },
-    }
+        widgetSize: { width: contentWidth, height: contentHeight },
+    }), [isSettingsOverlayVisible, initialPosition.x, initialPosition.y, draggedPosition.x, draggedPosition.y, contextMenuOffset.x, contextMenuOffset.y, leftBoundBase, topBoundBase, tracker.config, contentWidth, contentHeight]);
 
     const CONSTRAIN_DRAG_FROM_TOP = 50;
     const CONSTRAIN_DRAG_FROM_SIDES = 16;
     const CONSTRAIN_DRAG_FROM_BOTTOM = 16;
     const onDrag = React.useCallback((event: KonvaEventObject<DragEvent>) => {
-        var stage = event.target.getStage();
-        // Constrain widget
-        // const a = event.target.absolutePosition();
-        // event.target.setAbsolutePosition({ x: a.x, y: Math.max(a.y, CONSTRAIN_DRAG_FROM_TOP) });
-        // event.target.y(Math.max(event.target.y(), 50));
-        // console.log("ypos", event.target.absolutePosition().y, event.target.y(), event.target.absolutePosition().y - event.target.y())
-
-
-        // Constrain widget to screen bounds
-        if (stage !== null) {
-            // console.log("stagepos", stage.getAbsolutePosition());
-            var pointerPos = stage.getPointerPosition();
-
-            if (pointerPos !== null) {
-                const stagePos = stage.getAbsolutePosition();
-                const minY = CONSTRAIN_DRAG_FROM_TOP + stagePos.y;
-                const maxY = window.innerHeight - CONSTRAIN_DRAG_FROM_BOTTOM + stagePos.y;
-                const minX = CONSTRAIN_DRAG_FROM_SIDES + stagePos.x;
-                const maxX = window.innerWidth - CONSTRAIN_DRAG_FROM_SIDES + stagePos.x;
-                event.target.setAbsolutePosition({ x: Math.min(Math.max(pointerPos.x - horrizontalOffsetFromResizing, minX), maxX), y: Math.min(Math.max(pointerPos.y, minY) - verticalOffsetFromResizing, maxY) });
-            }
+        const stage = event.target.getStage();
+        if (stage) {
+            const pos = event.target.getAbsolutePosition();
+            const stagePos = stage.getAbsolutePosition();
+            const minX = CONSTRAIN_DRAG_FROM_SIDES + stagePos.x - horrizontalOffsetFromResizing;
+            const maxX = window.innerWidth - CONSTRAIN_DRAG_FROM_SIDES + stagePos.x - horrizontalOffsetFromResizing;
+            const minY = CONSTRAIN_DRAG_FROM_TOP + stagePos.y - topBoundBase;
+            const maxY = window.innerHeight - CONSTRAIN_DRAG_FROM_BOTTOM + stagePos.y - topBoundBase;
+            event.target.setAbsolutePosition({
+                x: Math.min(Math.max(pos.x, minX), maxX),
+                y: Math.min(Math.max(pos.y, minY), maxY),
+            });
         }
         setDraggedPosition(event.currentTarget.position());
-    }, [horrizontalOffsetFromResizing, setDraggedPosition, verticalOffsetFromResizing]);
+    }, [setDraggedPosition, topBoundBase, horrizontalOffsetFromResizing]);
 
     const onDragEnd = React.useCallback((event: KonvaEventObject<DragEvent>) => {
         setDragComplete?.({ x: event.currentTarget.x() + initialPosition.x, y: event.currentTarget.y() + initialPosition.y });
@@ -252,16 +269,20 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
     }, [layout.displayName]);
 
     const resizeComplete = React.useCallback((event: KonvaEventObject<DragEvent>) => {
-        setLeftBoundBase(oldVal => (oldVal + leftBoundDragged));
-        setRightBoundBase(oldVal => (oldVal + rightBoundDragged));
-        setTopBoundBase(oldVal => (oldVal + topBoundDragged));
-        setBottomBoundBase(oldVal => (oldVal + bottomBoundDragged));
-        setLeftBoundDragged(0);
-        setRightBoundDragged(0);
-        setTopBoundDragged(0);
-        setBottomBoundDragged(0);
+        const ld = leftBoundDraggedRef.current;
+        const rd = rightBoundDraggedRef.current;
+        const td = topBoundDraggedRef.current;
+        const bd = bottomBoundDraggedRef.current;
+        leftBoundDraggedRef.current = 0;
+        rightBoundDraggedRef.current = 0;
+        topBoundDraggedRef.current = 0;
+        bottomBoundDraggedRef.current = 0;
+        setLeftBoundBase(oldVal => oldVal + ld);
+        setRightBoundBase(oldVal => oldVal + rd);
+        setTopBoundBase(oldVal => oldVal + td);
+        setBottomBoundBase(oldVal => oldVal + bd);
         event.currentTarget.setPosition({ x: 0, y: 0 });
-    }, [bottomBoundDragged, leftBoundDragged, rightBoundDragged, topBoundDragged])
+    }, [])
 
     return (
         <Group x={(initialPosition?.x ?? 0)} y={(initialPosition?.y ?? 0)} ref={widgetRef}>
@@ -269,14 +290,14 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                 return (
                     /* @ts-ignore: https://github.com/pmndrs/react-spring/issues/1515 */
                     < animated.Group
-                        x={draggedPosition.x - (contextMenuOffset?.x ?? 0) + leftBound}
-                        y={draggedPosition.y - (contextMenuOffset?.y ?? 0) + topBound}
+                        x={draggedPosition.x - (contextMenuOffset?.x ?? 0) + leftBoundBase}
+                        y={draggedPosition.y - (contextMenuOffset?.y ?? 0) + topBoundBase}
                         opacity={transitionProps.opacity}
                         listening={!resizeMenuOpen}
                     >
                         {item && (
                             <Group ref={contentRef}>
-                                <Component {...otherProps} fromWidget={fromWidget} width={resizedWidth} height={resizedHeight}>
+                                <Component {...otherProps} fromWidget={fromWidget} width={contentWidth} height={contentHeight}>
                                     {children}
                                 </Component>
                             </Group>
@@ -296,7 +317,7 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                         onDragEnd={onDragEnd}
                         onMouseLeave={() => setFullContextMenuOpen(false)}>
                         <animated.Group {...resizeMenuProps} x={-contextMenuOffset.x} y={-contextMenuOffset.y} listening={resizeMenuOpen}>
-                            <Rect stroke={"white"} dash={[2, 2]} fill="rgba(255,255,255,0.1)" x={leftBound} y={topBound} width={resizedWidth} height={resizedHeight}></Rect>
+                            <Rect ref={resizeBorderRef} stroke={"white"} dash={[2, 2]} fill="rgba(255,255,255,0.1)"></Rect>
                             <Group key="resize hitbox group"
                                 onMouseLeave={evt => setPointer(evt, "default")}
                             >
@@ -305,16 +326,17 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                                         stroke={"red"}
                                         opacity={0}
                                         strokeWidth={9}
-                                        points={[leftBound, 0, leftBound + resizedWidth, 0]}
+                                        points={[leftBoundBase, 0, leftBoundBase + contentWidth, 0]}
                                         onDragMove={evt => {
-                                            // actions.updateWidgetTracker(uid, widget => ({ ...widget, width: evt.currentTarget.position().x + 100 }));
-                                            // actions.setWidgetTracker(uid, { ...tracker, width: evt.currentTarget.position().x });
-                                            evt.currentTarget.setPosition({ x: 0, y: evt.currentTarget.position().y })
-                                            setTopBoundDragged(evt.currentTarget.position().y);
+                                            const maxDrag = (lockAspectRatio ? Math.min(currentBaseHeight, currentBaseWidth) : currentBaseHeight) - MIN_WIDGET_SIZE;
+                                            const y = Math.min(evt.currentTarget.position().y, maxDrag);
+                                            evt.currentTarget.setPosition({ x: 0, y });
+                                            topBoundDraggedRef.current = y;
                                             if (lockAspectRatio) {
-                                                setRightBoundDragged(-evt.currentTarget.position().y / 2);
-                                                setLeftBoundDragged(evt.currentTarget.position().y / 2);
+                                                rightBoundDraggedRef.current = -y / 2;
+                                                leftBoundDraggedRef.current = y / 2;
                                             }
+                                            updateResizeVisuals();
                                         }}
                                         onDragEnd={resizeComplete}
                                         onMouseEnter={evt => setPointer(evt, "n-resize")}
@@ -325,14 +347,17 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                                         stroke={"yellow"}
                                         opacity={0}
                                         strokeWidth={9}
-                                        points={[leftBound, 0, leftBound + resizedWidth, 0]}
+                                        points={[leftBoundBase, 0, leftBoundBase + contentWidth, 0]}
                                         onDragMove={evt => {
-                                            evt.currentTarget.setPosition({ x: 0, y: evt.currentTarget.position().y })
-                                            setBottomBoundDragged(evt.currentTarget.position().y);
+                                            const minDrag = -((lockAspectRatio ? Math.min(currentBaseHeight, currentBaseWidth) : currentBaseHeight) - MIN_WIDGET_SIZE);
+                                            const y = Math.max(evt.currentTarget.position().y, minDrag);
+                                            evt.currentTarget.setPosition({ x: 0, y });
+                                            bottomBoundDraggedRef.current = y;
                                             if (lockAspectRatio) {
-                                                setRightBoundDragged(evt.currentTarget.position().y / 2);
-                                                setLeftBoundDragged(-evt.currentTarget.position().y / 2);
+                                                rightBoundDraggedRef.current = y / 2;
+                                                leftBoundDraggedRef.current = -y / 2;
                                             }
+                                            updateResizeVisuals();
                                         }}
                                         onDragEnd={resizeComplete}
                                         onMouseEnter={evt => setPointer(evt, "s-resize")}
@@ -343,13 +368,16 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                                         stroke={"green"}
                                         opacity={0}
                                         strokeWidth={9}
-                                        points={[0, topBound, 0, topBound + resizedHeight]}
+                                        points={[0, topBoundBase, 0, topBoundBase + contentHeight]}
                                         onDragMove={evt => {
-                                            evt.currentTarget.setPosition({ x: evt.currentTarget.position().x, y: 0 })
-                                            setLeftBoundDragged(evt.currentTarget.position().x);
+                                            const maxDrag = (lockAspectRatio ? Math.min(currentBaseWidth, currentBaseHeight) : currentBaseWidth) - MIN_WIDGET_SIZE;
+                                            const x = Math.min(evt.currentTarget.position().x, maxDrag);
+                                            evt.currentTarget.setPosition({ x, y: 0 });
+                                            leftBoundDraggedRef.current = x;
                                             if (lockAspectRatio) {
-                                                setBottomBoundDragged(-evt.currentTarget.position().x);
+                                                bottomBoundDraggedRef.current = -x;
                                             }
+                                            updateResizeVisuals();
                                         }}
                                         onDragEnd={resizeComplete}
                                         onMouseEnter={evt => setPointer(evt, "w-resize")}
@@ -360,14 +388,17 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                                         stroke={"blue"}
                                         opacity={0}
                                         strokeWidth={9}
-                                        points={[0, topBound, 0, topBound + resizedHeight]}
+                                        points={[0, topBoundBase, 0, topBoundBase + contentHeight]}
 
                                         onDragMove={evt => {
-                                            evt.currentTarget.setPosition({ x: evt.currentTarget.position().x, y: 0 })
-                                            setRightBoundDragged(evt.currentTarget.position().x);
+                                            const minDrag = -((lockAspectRatio ? Math.min(currentBaseWidth, currentBaseHeight) : currentBaseWidth) - MIN_WIDGET_SIZE);
+                                            const x = Math.max(evt.currentTarget.position().x, minDrag);
+                                            evt.currentTarget.setPosition({ x, y: 0 });
+                                            rightBoundDraggedRef.current = x;
                                             if (lockAspectRatio) {
-                                                setBottomBoundDragged(evt.currentTarget.position().x);
+                                                bottomBoundDraggedRef.current = x;
                                             }
+                                            updateResizeVisuals();
                                         }}
                                         onDragEnd={resizeComplete}
                                         onMouseEnter={evt => setPointer(evt, "e-resize")}
@@ -381,11 +412,18 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                                         opacity={0}
                                         onDragMove={evt => {
                                             if (lockAspectRatio) {
-                                                const lockToSquarePos = (evt.currentTarget.position().x + evt.currentTarget.position().y) / 2;
-                                                evt.currentTarget.setPosition({ x: lockToSquarePos, y: lockToSquarePos })
+                                                const maxDrag = Math.min(currentBaseWidth, currentBaseHeight) - MIN_WIDGET_SIZE;
+                                                const lockToSquarePos = Math.min((evt.currentTarget.position().x + evt.currentTarget.position().y) / 2, maxDrag);
+                                                evt.currentTarget.setPosition({ x: lockToSquarePos, y: lockToSquarePos });
+                                            } else {
+                                                evt.currentTarget.setPosition({
+                                                    x: Math.min(evt.currentTarget.position().x, currentBaseWidth - MIN_WIDGET_SIZE),
+                                                    y: Math.min(evt.currentTarget.position().y, currentBaseHeight - MIN_WIDGET_SIZE),
+                                                });
                                             }
-                                            setLeftBoundDragged(evt.currentTarget.position().x);
-                                            setTopBoundDragged(evt.currentTarget.position().y);
+                                            leftBoundDraggedRef.current = evt.currentTarget.position().x;
+                                            topBoundDraggedRef.current = evt.currentTarget.position().y;
+                                            updateResizeVisuals();
                                         }}
                                         onDragEnd={resizeComplete}
                                         onMouseEnter={evt => setPointer(evt, "nw-resize")}
@@ -399,11 +437,18 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                                         opacity={0}
                                         onDragMove={evt => {
                                             if (lockAspectRatio) {
-                                                const lockToSquarePos = (evt.currentTarget.position().x - evt.currentTarget.position().y) / 2;
-                                                evt.currentTarget.setPosition({ x: lockToSquarePos, y: -lockToSquarePos })
+                                                const minDrag = -(Math.min(currentBaseWidth, currentBaseHeight) - MIN_WIDGET_SIZE);
+                                                const lockToSquarePos = Math.max((evt.currentTarget.position().x - evt.currentTarget.position().y) / 2, minDrag);
+                                                evt.currentTarget.setPosition({ x: lockToSquarePos, y: -lockToSquarePos });
+                                            } else {
+                                                evt.currentTarget.setPosition({
+                                                    x: Math.max(evt.currentTarget.position().x, -(currentBaseWidth - MIN_WIDGET_SIZE)),
+                                                    y: Math.min(evt.currentTarget.position().y, currentBaseHeight - MIN_WIDGET_SIZE),
+                                                });
                                             }
-                                            setRightBoundDragged(evt.currentTarget.position().x);
-                                            setTopBoundDragged(evt.currentTarget.position().y);
+                                            rightBoundDraggedRef.current = evt.currentTarget.position().x;
+                                            topBoundDraggedRef.current = evt.currentTarget.position().y;
+                                            updateResizeVisuals();
                                         }}
                                         onDragEnd={resizeComplete}
                                         onMouseEnter={evt => setPointer(evt, "ne-resize")}
@@ -417,11 +462,18 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                                         opacity={0}
                                         onDragMove={evt => {
                                             if (lockAspectRatio) {
-                                                const lockToSquarePos = (evt.currentTarget.position().x - evt.currentTarget.position().y) / 2;
-                                                evt.currentTarget.setPosition({ x: lockToSquarePos, y: -lockToSquarePos })
+                                                const maxDrag = Math.min(currentBaseWidth, currentBaseHeight) - MIN_WIDGET_SIZE;
+                                                const lockToSquarePos = Math.min((evt.currentTarget.position().x - evt.currentTarget.position().y) / 2, maxDrag);
+                                                evt.currentTarget.setPosition({ x: lockToSquarePos, y: -lockToSquarePos });
+                                            } else {
+                                                evt.currentTarget.setPosition({
+                                                    x: Math.min(evt.currentTarget.position().x, currentBaseWidth - MIN_WIDGET_SIZE),
+                                                    y: Math.max(evt.currentTarget.position().y, -(currentBaseHeight - MIN_WIDGET_SIZE)),
+                                                });
                                             }
-                                            setLeftBoundDragged(evt.currentTarget.position().x);
-                                            setBottomBoundDragged(evt.currentTarget.position().y);
+                                            leftBoundDraggedRef.current = evt.currentTarget.position().x;
+                                            bottomBoundDraggedRef.current = evt.currentTarget.position().y;
+                                            updateResizeVisuals();
                                         }}
                                         onDragEnd={resizeComplete}
                                         onMouseEnter={evt => setPointer(evt, "sw-resize")}
@@ -435,11 +487,18 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                                         opacity={0}
                                         onDragMove={evt => {
                                             if (lockAspectRatio) {
-                                                const lockToSquarePos = (evt.currentTarget.position().x + evt.currentTarget.position().y) / 2;
-                                                evt.currentTarget.setPosition({ x: lockToSquarePos, y: lockToSquarePos })
+                                                const minDrag = -(Math.min(currentBaseWidth, currentBaseHeight) - MIN_WIDGET_SIZE);
+                                                const lockToSquarePos = Math.max((evt.currentTarget.position().x + evt.currentTarget.position().y) / 2, minDrag);
+                                                evt.currentTarget.setPosition({ x: lockToSquarePos, y: lockToSquarePos });
+                                            } else {
+                                                evt.currentTarget.setPosition({
+                                                    x: Math.max(evt.currentTarget.position().x, -(currentBaseWidth - MIN_WIDGET_SIZE)),
+                                                    y: Math.max(evt.currentTarget.position().y, -(currentBaseHeight - MIN_WIDGET_SIZE)),
+                                                });
                                             }
-                                            setRightBoundDragged(evt.currentTarget.position().x);
-                                            setBottomBoundDragged(evt.currentTarget.position().y);
+                                            rightBoundDraggedRef.current = evt.currentTarget.position().x;
+                                            bottomBoundDraggedRef.current = evt.currentTarget.position().y;
+                                            updateResizeVisuals();
                                         }}
                                         onDragEnd={resizeComplete}
                                         onMouseEnter={evt => setPointer(evt, "se-resize")}
@@ -449,7 +508,7 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                         </animated.Group>
                         {/* <Rect ref={contextMenuRef} cornerRadius={15} fill="black" width={90} height={60} x={-45} y={-45} /> */}
                         {/* @ts-ignore: https://github.com/pmndrs/react-spring/issues/1515 */}
-                        <Group x={horrizontalOffsetFromResizing} y={topBound} >
+                        <Group ref={resizeButtonGroupRef} >
                             <animated.Group {...fullContextMenuProps} listening={fullContextMenuOpen} >
                                 <Rect cornerRadius={15} fill="rgba(255,255,255,0.1)" width={90} height={60} x={-45} y={-45} />
                                 <Rect cornerRadius={15} fill="rgba(255,255,255,0)" width={110} height={80} x={-55} y={-55} />
@@ -533,43 +592,6 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                         </Group>
                     </Group>
             }
-            {/* <Group>
-                <Line draggable key={'l1'}
-                    stroke={"red"}
-                    strokeWidth={5}
-                    points={[0, 0, testWidth, 0]}
-                />
-                <Line draggable key={'l2'}
-                    stroke={"red"}
-                    strokeWidth={5}
-                    points={[0, testHeight, testWidth, testHeight]}
-                />
-                <Line draggable key={'l3'}
-                    stroke={"green"}
-                    strokeWidth={5}
-                    points={[0, 0, 0, testHeight]}
-                    onDragMove={evt => {
-                        // actions.updateWidgetTracker(uid, widget => ({ ...widget, width: evt.currentTarget.position().x + 100 }));
-                        // actions.setWidgetTracker(uid, { ...tracker, width: evt.currentTarget.position().x });
-                        evt.currentTarget.setPosition({ x: evt.currentTarget.position().x, y: 0 })
-                        setLeftBound(evt.currentTarget.position().x);
-                        console.log(evt.currentTarget.position().x);
-                    }}
-                />
-                <Line draggable key={'l4'}
-                    stroke={"blue"}
-                    strokeWidth={5}
-                    points={[testWidth, 0, testWidth, testHeight]}
-
-                    onDragMove={evt => {
-                        // actions.updateWidgetTracker(uid, widget => ({ ...widget, width: evt.currentTarget.position().x + 100 }));
-                        // actions.setWidgetTracker(uid, { ...tracker, width: Math.max(0, evt.currentTarget.position().x) });
-                        evt.currentTarget.setPosition({ x: evt.currentTarget.position().x, y: 0 })
-                        setRightBound(evt.currentTarget.position().x + testWidth);
-                        console.log(evt.currentTarget.position().x);
-                    }}
-                />
-            </Group> */}
         </Group >
     )
 }
