@@ -134,6 +134,37 @@ function ViewManager(props: Props) {
     const [isHeartModalOpen, setIsHeartModalOpen] = React.useState(false);
     const [previewWidgetInfo, setPreviewWidgetInfo] = React.useState<{ type: WidgetType, config?: WidgetConfig } | null>(null);
 
+    const prevWindowRef = React.useRef({ w: window.innerWidth, h: window.innerHeight });
+    React.useEffect(() => {
+        const handleResize = () => {
+            const prev = prevWindowRef.current;
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            if (prev.w === w && prev.h === h) return;
+            const scaleX = w / prev.w;
+            const scaleY = h / prev.h;
+            prevWindowRef.current = { w, h };
+            setTrackedWidgets(old => {
+                const updated = new Map<String, WidgetTracker>();
+                old.forEach((widget, uid) => {
+                    const effectiveX = widget.initialPosition.x + (widget.draggedPosition?.x ?? 0);
+                    const effectiveY = widget.initialPosition.y + (widget.draggedPosition?.y ?? 0);
+                    updated.set(uid, {
+                        ...widget,
+                        initialPosition: {
+                            x: effectiveX * scaleX,
+                            y: effectiveY * scaleY,
+                        },
+                        draggedPosition: { x: 0, y: 0 },
+                    });
+                });
+                return updated;
+            });
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const [trackedWidgets, setTrackedWidgets] = React.useState<Map<String, WidgetTracker>>(
         new Map<String, WidgetTracker>(limitingAxisIsHeight ?
             // Landscape mode

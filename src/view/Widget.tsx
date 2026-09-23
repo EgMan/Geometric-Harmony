@@ -91,13 +91,44 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
     const widgetRef = React.useRef<Konva.Group>(null);
     const contentRef = React.useRef<Konva.Group>(null);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const [initialWidth, initialHeight] = React.useMemo(() => [otherProps.width ?? 1, otherProps.height ?? 1], []);
+    const [initialWidth, setInitialWidth] = React.useState(otherProps.width ?? 1);
+    const [initialHeight, setInitialHeight] = React.useState(otherProps.height ?? 1);
+    const [scaledOffsetY, setScaledOffsetY] = React.useState(contextMenuOffset.y);
 
     const [leftBoundBase, setLeftBoundBase] = React.useState(0);
     const [rightBoundBase, setRightBoundBase] = React.useState(initialWidth);
     const [topBoundBase, setTopBoundBase] = React.useState(0);
     const [bottomBoundBase, setBottomBoundBase] = React.useState(initialHeight);
+
+    const prevWindowRef = React.useRef({ w: window.innerWidth, h: window.innerHeight });
+    const lockAspectRatioRef = React.useRef(lockAspectRatio);
+    lockAspectRatioRef.current = lockAspectRatio;
+    React.useEffect(() => {
+        const handleResize = () => {
+            const prev = prevWindowRef.current;
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            if (prev.w === w && prev.h === h) return;
+            let scaleX = w / prev.w;
+            let scaleY = h / prev.h;
+            prevWindowRef.current = { w, h };
+            if (lockAspectRatioRef.current) {
+                const uniformScale = Math.min(w, h) / Math.min(prev.w, prev.h);
+                scaleX = uniformScale;
+                scaleY = uniformScale;
+            }
+            setInitialWidth(old => old * scaleX);
+            setInitialHeight(old => old * scaleY);
+            setScaledOffsetY(old => old * scaleY);
+            setLeftBoundBase(old => old * scaleX);
+            setRightBoundBase(old => old * scaleX);
+            setTopBoundBase(old => old * scaleY);
+            setBottomBoundBase(old => old * scaleY);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const leftBoundDraggedRef = React.useRef(0);
     const rightBoundDraggedRef = React.useRef(0);
     const topBoundDraggedRef = React.useRef(0);
@@ -203,10 +234,10 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
         isOverlayVisible: isSettingsOverlayVisible,
         setIsOverlayVisible: setIsSettingsOverlayVisible,
         position: { x: initialPosition.x + draggedPosition.x, y: initialPosition.y + draggedPosition.y },
-        containerPosition: { x: - contextMenuOffset.x + leftBoundBase, y: - contextMenuOffset.y + topBoundBase },
+        containerPosition: { x: - initialWidth / 2 + leftBoundBase, y: - scaledOffsetY + topBoundBase },
         widgetConfig: tracker.config,
         widgetSize: { width: contentWidth, height: contentHeight },
-    }), [isSettingsOverlayVisible, initialPosition.x, initialPosition.y, draggedPosition.x, draggedPosition.y, contextMenuOffset.x, contextMenuOffset.y, leftBoundBase, topBoundBase, tracker.config, contentWidth, contentHeight]);
+    }), [isSettingsOverlayVisible, initialPosition.x, initialPosition.y, draggedPosition.x, draggedPosition.y, initialWidth, scaledOffsetY, leftBoundBase, topBoundBase, tracker.config, contentWidth, contentHeight]);
 
     const CONSTRAIN_DRAG_FROM_TOP = 50;
     const CONSTRAIN_DRAG_FROM_SIDES = 16;
@@ -290,8 +321,8 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                 return (
                     /* @ts-ignore: https://github.com/pmndrs/react-spring/issues/1515 */
                     < animated.Group
-                        x={draggedPosition.x - (contextMenuOffset?.x ?? 0) + leftBoundBase}
-                        y={draggedPosition.y - (contextMenuOffset?.y ?? 0) + topBoundBase}
+                        x={draggedPosition.x - initialWidth / 2 + leftBoundBase}
+                        y={draggedPosition.y - (scaledOffsetY ?? 0) + topBoundBase}
                         opacity={transitionProps.opacity}
                         listening={!resizeMenuOpen}
                     >
@@ -316,7 +347,7 @@ function Widget<TElem extends React.ElementType>({ of, actions, uid, tracker, ch
                         onDragMove={onDrag}
                         onDragEnd={onDragEnd}
                         onMouseLeave={() => setFullContextMenuOpen(false)}>
-                        <animated.Group {...resizeMenuProps} x={-contextMenuOffset.x} y={-contextMenuOffset.y} listening={resizeMenuOpen}>
+                        <animated.Group {...resizeMenuProps} x={-initialWidth / 2} y={-scaledOffsetY} listening={resizeMenuOpen}>
                             <Rect ref={resizeBorderRef} stroke={"white"} dash={[2, 2]} fill="rgba(255,255,255,0.1)"></Rect>
                             <Group key="resize hitbox group"
                                 onMouseLeave={evt => setPointer(evt, "default")}
